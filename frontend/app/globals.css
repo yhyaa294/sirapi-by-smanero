@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* 
+     * HSE COMMAND CENTER - STRICT PALETTE 
+     * Theme: Industrial Navy & Safety Orange
+     */
+    
+    /* BACKGROUNDS (Slate-950 base) */
+    --background: 222 47% 5%;       /* #020617 Slate-950 */
+    --surface: 222 47% 11%;         /* #0f172a Slate-900 */
+    --surface-highlight: 215 28% 17%; /* #1e293b Slate-800 */
+    
+    /* FOREGROUNDS/TEXT */
+    --foreground: 210 40% 98%;      /* #f8fafc Slate-50 */
+    --foreground-muted: 215 20% 65%; /* #94a3b8 Slate-400 */
+    --foreground-dim: 215 16% 47%;  /* #64748b Slate-500 */
+
+    /* SEMANTIC ACCENTS */
+    --primary: 24 95% 53%;          /* #f97316 Orange-500 (Safety/Action) */
+    --primary-hover: 24 95% 45%;    /* Darker Orange */
+    
+    --safe: 158 64% 52%;            /* #34d399 Emerald-400 (Compliance) */
+    --warning: 45 93% 47%;          /* #eab308 Yellow-500 (Caution) */
+    --critical: 0 84% 60%;          /* #ef4444 Red-500 (Violation/Danger) */
+    --info: 217 91% 60%;            /* #3b82f6 Blue-500 (System Status) */
+
+    /* BORDERS */
+    --border: 217 19% 27%;          /* Slate-700/50 mix */
+    --border-subtle: 217 19% 20%;   /* Slate-800 mostly */
+  }
+
+  body {
+    @apply bg-[hsl(var(--background))] text-[hsl(var(--foreground))] antialiased selection:bg-orange-500/30 selection:text-orange-100;
+  }
+}
+
+@layer components {
+  /* 
+   * GLASS PANEL (Subtle, professional)
+   * Replacing high-gloss generic glassmorphism 
+   */
+  .glass-panel {
+    @apply bg-[hsl(var(--surface))]/80 backdrop-blur-md border border-[hsl(var(--border))] rounded-sm;
+  }
+
+  .glass-panel-hover {
+    @apply hover:border-orange-500/50 hover:shadow-[0_0_15px_rgba(249,115,22,0.1)] transition-all duration-300;
+  }
+
+  /* 
+   * DATA DISPLAY
+   * High density, monospace numbers 
+   */
+  .data-value {
+    @apply font-mono tracking-tight text-[hsl(var(--foreground))];
+  }
+
+  .label-text {
+    @apply text-[10px] uppercase tracking-[0.15em] text-[hsl(var(--foreground-dim))] font-bold;
+  }
+
+  /*
+   * STATUS INDICATORS
+   */
+  .status-dot {
+    @apply w-2 h-2 rounded-full inline-block mr-2;
+  }
+  
+  .status-dot-safe { @apply bg-[hsl(var(--safe))] shadow-[0_0_8px_hsl(var(--safe))]; }
+  .status-dot-critical { @apply bg-[hsl(var(--critical))] shadow-[0_0_8px_hsl(var(--critical))] animate-pulse; }
+}
+
+/* Custom Scrollbar for Dashboard */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: hsl(var(--background)); 
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--surface-highlight)); 
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary)); 
+}

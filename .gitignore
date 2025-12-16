@@ -74,9 +74,6 @@ sdist/
 var/
 wheels/
 share/python-wheels/
-.env
-.env.dummy
-.env.example
 # OS
 Thumbs.db
 Desktop.ini

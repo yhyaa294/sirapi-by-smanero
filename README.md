@@ -1,487 +1,430 @@
-# 🦺 Smart Safety Vision (SSV) - PPE Violation Detection System
+# 🦺 SmartAPD - AI-Powered PPE Detection System
 
-## 🎯 Project Overview
+<div align="center">
 
-**Smart Safety Vision** is an AI-powered Personal Protective Equipment (PPE) violation detection system designed to enhance workplace safety through real-time monitoring. The system uses computer vision and machine learning to automatically detect workers who are not wearing proper safety equipment (helmets, safety vests, gloves) and sends instant alerts to supervisors.
+![SmartAPD Logo](frontend/public/images/logo.jpg)
 
-### 🌟 Key Features
+**Sistem Pemantauan Kepatuhan APD (Alat Pelindung Diri) Berbasis AI**
 
-- ✅ **Real-time PPE Detection** using YOLOv8 object detection
-- 📱 **Telegram Bot Integration** for instant violation alerts
-- 🌐 **Modern React Web Dashboard** with Next.js + Tailwind CSS
-- 📹 **CCTV Monitoring System** with multi-camera view & area map
-- 💾 **Database Logging** for compliance tracking
-- 📹 **Multi-source Support** (CCTV, IP Camera, Webcam, Video files)
-- 🚀 **Lightweight & Efficient** - runs on regular laptops
-- 📊 **Analytics & Reporting** with violation statistics
-- 🔐 **Secure Login System** with access code authentication
-- 📈 **Interactive Charts** with Recharts visualization
-- 📤 **Export Functionality** - Download data as CSV
+[![Next.js](https://img.shields.io/badge/Frontend-Next.js%2014-black?logo=nextdotjs)](https://nextjs.org/)
+[![Go](https://img.shields.io/badge/Backend-Go%201.21-00ADD8?logo=go)](https://golang.org/)
+[![Python](https://img.shields.io/badge/AI-Python%203.10-3776AB?logo=python)](https://python.org/)
+[![YOLOv8](https://img.shields.io/badge/Model-YOLOv8-FF6F00)](https://ultralytics.com/)
+
+[Demo](#-demo) • [Instalasi](#-instalasi) • [Dokumentasi](#-dokumentasi) • [API](#-api-endpoints)
+
+</div>
 
 ---
 
-## 🏗️ System Architecture
+## 🎯 Tentang SmartAPD
 
-```
-👷 Worker → 🎥 Camera Feed → 🤖 YOLOv8 Detection → 💾 SQLite Database
-                                        ↓
-                              📱 Telegram Alert + 🌐 Web Dashboard
-```
+**SmartAPD** adalah sistem pemantauan keselamatan kerja berbasis AI yang mendeteksi penggunaan Alat Pelindung Diri (APD) secara real-time. Sistem ini dirancang untuk industri konstruksi, manufaktur, dan pertambangan.
 
-### Workflow
+### ✨ Fitur Utama
 
-1. **Input**: Video stream from CCTV/IP Camera/Webcam
-2. **Processing**: YOLOv8 model detects people and PPE items
-3. **Classification**: Determines compliance status (wearing/not wearing PPE)
-4. **Alert**: Sends Telegram notification if violation detected
-5. **Logging**: Stores detection data in database
-6. **Visualization**: Real-time dashboard displays statistics
+| Fitur | Deskripsi |
+|-------|-----------|
+| 🤖 **AI Detection** | Deteksi helm, rompi, sarung tangan, sepatu dalam < 2 detik |
+| 📡 **Real-time Monitoring** | Pantau live dari webcam atau IP Camera (RTSP) |
+| 🔔 **Telegram Alerts** | Notifikasi instan saat pelanggaran terdeteksi |
+| 📊 **Dashboard Analytics** | Statistik kepatuhan harian, mingguan, bulanan |
+| 📹 **Multi-Camera** | Support hingga 50+ kamera simultan |
+| 💾 **Auto Reports** | Laporan otomatis jam 18:00 setiap hari |
+| 🔒 **Edge Computing** | Semua proses lokal, data tetap aman |
 
 ---
 
-## 📁 Project Structure
+## 🏗️ Arsitektur Sistem
 
 ```
-smart-safety-vision/
-├── src/                      # Python backend source code
-│   ├── detector.py           # YOLO detection engine
-│   ├── telegram_bot.py       # Telegram notification system
-│   ├── database.py           # Database operations
-│   ├── config.py             # Configuration settings
-│   └── utils.py              # Helper functions
-├── web-dashboard/            # React/Next.js frontend
-│   ├── app/
-│   │   ├── page.tsx          # Landing page
-│   │   ├── login/page.tsx    # Login system
-│   │   ├── dashboard/page.tsx # Main dashboard
-│   │   ├── monitoring/page.tsx # CCTV monitoring
-│   │   ├── layout.tsx        # Root layout
-│   │   └── globals.css       # Global styles
-│   ├── middleware.ts         # Auth middleware
-│   ├── package.json          # Dependencies
-│   ├── tailwind.config.js    # Tailwind config
-│   └── tsconfig.json         # TypeScript config
-├── demo/                     # Demo scripts
-│   ├── demo_detection.py     # Detection demo
-│   ├── demo_simple.py        # Simple demo
-│   ├── demo_with_helmet.py   # Helmet detection demo
-│   └── setup_demo_data.py    # Demo data setup
-├── tests/                    # Unit tests
-│   ├── test_system.py        # System tests
-│   └── test_telegram.py      # Telegram tests
-├── notebooks/                # Jupyter notebooks
-│   └── train_model.ipynb     # Model training
-├── models/                   # Model weights
-│   └── best.pt               # Trained YOLOv8 model
-├── logs/                     # Logs & database
-│   ├── detections.db         # SQLite database
-│   └── violations/           # Violation images
-├── training_data/            # Training dataset
-├── docs/                     # Documentation
-│   ├── WEB_MASTER_PLAN.md    # Web dashboard plan
-│   ├── CCTV_MONITORING_GUIDE.md # CCTV guide
-│   └── ...                   # Other guides
-├── main.py                   # Main application
-├── requirements.txt          # Python dependencies
-├── config.yaml               # System configuration
-├── .env.example              # Environment template
-└── README.md                 # This file
+┌─────────────────────────────────────────────────────────────────┐
+│                     SMARTAPD ARCHITECTURE                       │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│   📷 CCTV/Webcam                                               │
+│         │                                                       │
+│         ▼                                                       │
+│   ┌───────────────┐    HTTP POST    ┌───────────────┐          │
+│   │  🤖 AI-ENGINE │ ──────────────▶ │  🔧 BACKEND   │          │
+│   │    (Python)   │                 │   (Golang)    │          │
+│   │    YOLOv8     │                 │    Fiber      │          │
+│   └───────────────┘                 └───────┬───────┘          │
+│          │                                  │                   │
+│          │ Screenshots                      │ WebSocket         │
+│          ▼                                  ▼                   │
+│   ┌───────────────┐                 ┌───────────────┐          │
+│   │  📱 TELEGRAM  │                 │  🎨 FRONTEND  │          │
+│   │    Alerts     │                 │   (Next.js)   │          │
+│   └───────────────┘                 └───────────────┘          │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🚀 Quick Start
+## 📁 Struktur Project
+
+```
+smartapd/
+├── 🤖 ai-engine/              # AI Detection Engine (Python)
+│   ├── detector.py            # PPE Detector class
+│   ├── detector_realtime.py   # Real-time webcam detection
+│   ├── telegram_bot.py        # Telegram notifications
+│   ├── config.py              # Configuration
+│   ├── database.py            # Database operations
+│   ├── models/                # ONNX/PyTorch models
+│   └── requirements.txt       # Python dependencies
+│
+├── 🔧 backend/                # API Server (Golang)
+│   ├── cmd/server/main.go     # Entry point
+│   ├── internal/
+│   │   ├── handlers/          # API handlers
+│   │   ├── services/          # Business logic
+│   │   ├── models/            # Database models
+│   │   ├── middleware/        # Custom middleware
+│   │   └── database/          # GORM + SQLite
+│   └── pkg/utils/             # Utilities
+│
+├── 🎨 frontend/               # Dashboard (Next.js)
+│   ├── app/                   # App router pages
+│   │   ├── page.tsx           # Landing page
+│   │   ├── dashboard/         # Main dashboard
+│   │   ├── alerts/            # Alerts management
+│   │   └── settings/          # Settings
+│   ├── components/            # React components
+│   └── public/images/         # Static assets
+│
+├── 📚 training/               # Training data
+│   ├── with_helmet/           # Positive samples
+│   └── without_helmet/        # Negative samples
+│
+├── 📓 notebooks/              # Jupyter notebooks
+│   └── 01_training_ppe_model.py
+│
+├── 📖 docs/                   # Documentation
+├── 💾 data/                   # Database & screenshots
+├── 🧪 tests/                  # Test files
+├── 🖼️ assets/                 # Static assets
+│
+├── .env                       # Environment variables
+├── .env.example               # Environment template
+├── config.yaml                # System configuration
+├── requirements.txt           # Root Python deps
+└── README.md                  # This file
+```
+
+---
+
+## 🚀 Instalasi
 
 ### Prerequisites
 
-- Python 3.8 or higher
-- Webcam/IP Camera/CCTV access
-- Telegram Bot Token (optional, for notifications)
+| Requirement | Version | Note |
+|-------------|---------|------|
+| Python | 3.10+ | Untuk AI Engine |
+| Go | 1.21+ | Untuk Backend |
+| Node.js | 18+ | Untuk Frontend |
+| Git | Latest | Version control |
 
-### Installation
+### 1. Clone Repository
 
-1. **Clone the repository**
 ```bash
-git clone https://github.com/yourusername/smart-safety-vision.git
-cd smart-safety-vision
+git clone https://github.com/yourusername/smartapd.git
+cd smartapd
 ```
 
-2. **Install dependencies**
+### 2. Setup Environment
+
 ```bash
+# Copy environment template
+cp .env.example .env
+
+# Edit dengan nilai yang sesuai
+# TELEGRAM_BOT_TOKEN=your_token
+# TELEGRAM_CHAT_ID=your_chat_id
+```
+
+### 3. Install AI Engine
+
+```bash
+cd ai-engine
 pip install -r requirements.txt
 ```
 
-3. **Configure settings**
+### 4. Install Backend
+
 ```bash
-cp .env.example .env
-# Edit .env with your Telegram Bot Token and other settings
+cd backend
+go mod tidy
+go build -o smartapd-backend.exe ./cmd/server/
 ```
 
-4. **Download or train the model**
-- Option A: Download pre-trained model (see Dataset & Model section)
-- Option B: Train your own model using `notebooks/train_model.ipynb`
+### 5. Install Frontend
 
-### Running the System
-
-**1. Start Real-time Detection (Python Backend)**
 ```bash
-python main.py --source 0  # Webcam
-python main.py --source video.mp4  # Video file
-python main.py --source http://192.168.1.100:8080/video  # IP Camera
+cd frontend
+npm install
 ```
 
-**2. Launch Web Dashboard (React/Next.js)**
+---
+
+## ▶️ Menjalankan Aplikasi
+
+### Option A: Development Mode (Terpisah)
+
+**Terminal 1 - Backend:**
 ```bash
-cd web-dashboard
-npm install  # First time only
+cd backend
+./smartapd-backend.exe
+# atau: go run cmd/server/main.go
+```
+
+**Terminal 2 - Frontend:**
+```bash
+cd frontend
 npm run dev
 ```
-Then open: http://localhost:3000
 
-**3. Test Telegram Bot**
+**Terminal 3 - AI Engine:**
 ```bash
-python src/telegram_bot.py --test
+cd ai-engine
+python detector_realtime.py --camera 0
 ```
 
-**4. Run Demo Scripts**
+### Option B: Quick Start Script
+
 ```bash
-python demo/demo_detection.py  # Basic detection demo
-python demo/demo_with_helmet.py  # Helmet detection demo
+# Coming soon: docker-compose up
+```
+
+### 🌐 Akses Aplikasi
+
+| Service | URL |
+|---------|-----|
+| Frontend | http://localhost:3000 |
+| Backend API | http://localhost:8080 |
+| API Health | http://localhost:8080/health |
+| WebSocket | ws://localhost:8080/ws |
+
+---
+
+## 📡 API Endpoints
+
+### Health Check
+```http
+GET /health
+```
+
+### Detections
+```http
+GET    /api/v1/detections          # List semua deteksi
+GET    /api/v1/detections/:id      # Detail deteksi
+POST   /api/v1/detections          # Tambah deteksi baru
+GET    /api/v1/detections/stats    # Statistik deteksi
+```
+
+### Alerts
+```http
+GET    /api/v1/alerts              # List semua alert
+POST   /api/v1/alerts              # Buat alert baru
+PUT    /api/v1/alerts/:id/acknowledge  # Acknowledge alert
+```
+
+### Cameras
+```http
+GET    /api/v1/cameras             # List kamera
+GET    /api/v1/cameras/:id         # Detail kamera
+POST   /api/v1/cameras             # Tambah kamera
+PUT    /api/v1/cameras/:id         # Update kamera
+DELETE /api/v1/cameras/:id         # Hapus kamera
+```
+
+### Reports
+```http
+GET    /api/v1/reports/daily       # Laporan harian
+GET    /api/v1/reports/weekly      # Laporan mingguan
+GET    /api/v1/reports/export      # Export laporan
+```
+
+### WebSocket
+```http
+WS     /ws                         # Real-time updates
 ```
 
 ---
 
-## 📊 Dataset & Model Training
+## 🎯 Kelas Deteksi
 
-### Recommended Datasets
-
-1. **Roboflow PPE Detection Dataset**
-   - URL: https://universe.roboflow.com/ppe-detection
-   - Classes: helmet, no_helmet, vest, no_vest, person
-
-2. **Kaggle Hard Hat Detection**
-   - URL: https://www.kaggle.com/datasets/andrewmvd/hard-hat-detection
-
-3. **Custom Dataset Creation**
-   - Use tools like LabelImg or Roboflow for annotation
-   - Minimum 500 images per class recommended
-
-### Training Process
-
-1. **Prepare Dataset**
-   - Organize in YOLO format (images + labels)
-   - Split: 70% train, 20% validation, 10% test
-
-2. **Train Model** (Google Colab recommended)
-```python
-from ultralytics import YOLO
-
-# Load pretrained YOLOv8n model
-model = YOLO('yolov8n.pt')
-
-# Train on custom dataset
-results = model.train(
-    data='data.yaml',
-    epochs=100,
-    imgsz=640,
-    batch=16,
-    name='ppe_detection'
-)
-```
-
-3. **Evaluate Performance**
-```python
-metrics = model.val()
-print(f"mAP50: {metrics.box.map50}")
-print(f"mAP50-95: {metrics.box.map}")
-```
-
-4. **Export Model**
-```python
-model.export(format='onnx')  # Optional: for faster inference
-```
+| ID | Kelas | Status | Deskripsi |
+|----|-------|--------|-----------|
+| 0 | `helmet` | ✅ Patuh | Memakai helm safety |
+| 1 | `no_helmet` | ⚠️ Pelanggaran | Tidak memakai helm |
+| 2 | `vest` | ✅ Patuh | Memakai rompi safety |
+| 3 | `no_vest` | ⚠️ Pelanggaran | Tidak memakai rompi |
+| 4 | `gloves` | ✅ Patuh | Memakai sarung tangan |
+| 5 | `no_gloves` | ⚠️ Pelanggaran | Tidak memakai sarung tangan |
+| 6 | `boots` | ✅ Patuh | Memakai sepatu safety |
+| 7 | `no_boots` | ⚠️ Pelanggaran | Tidak memakai sepatu safety |
+| 8 | `person` | ℹ️ Info | Orang terdeteksi |
 
 ---
 
-## ⚙️ Configuration
+## ⚙️ Konfigurasi
+
+### Environment Variables (.env)
+
+```env
+# Backend
+PORT=8080
+DATABASE_URL=./data/detections.db
+
+# Telegram
+TELEGRAM_BOT_TOKEN=your_bot_token_here
+TELEGRAM_CHAT_ID=your_chat_id_here
+
+# AI Engine
+CONFIDENCE_THRESHOLD=0.5
+DETECTION_INTERVAL=0.5
+```
 
 ### config.yaml
 
 ```yaml
 model:
-  weights: "models/best.pt"
+  weights: "ai-engine/models/ppe_detector.onnx"
   confidence: 0.5
   iou_threshold: 0.45
 
 camera:
-  source: 0  # 0 for webcam, URL for IP camera
+  source: 0
   fps: 30
   resolution: [1280, 720]
 
-detection:
-  classes:
-    - helmet
-    - no_helmet
-    - vest
-    - no_vest
-    - person
-  
 telegram:
   enabled: true
-  cooldown: 60  # seconds between alerts
+  cooldown: 60
 
 database:
-  path: "logs/detections.db"
+  path: "data/detections.db"
   save_images: true
-```
-
-### Environment Variables (.env)
-
-```env
-TELEGRAM_BOT_TOKEN=your_bot_token_here
-TELEGRAM_CHAT_ID=your_chat_id_here
-MODEL_PATH=models/best.pt
-CONFIDENCE_THRESHOLD=0.5
 ```
 
 ---
 
 ## 📱 Telegram Bot Setup
 
-1. **Create Bot**
-   - Open Telegram and search for @BotFather
-   - Send `/newbot` and follow instructions
-   - Copy the Bot Token
+1. **Buat Bot**
+   - Buka Telegram, cari @BotFather
+   - Kirim `/newbot`
+   - Ikuti instruksi, simpan **Bot Token**
 
-2. **Get Chat ID**
-   - Send a message to your bot
-   - Visit: `https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates`
-   - Copy the `chat.id` value
+2. **Dapatkan Chat ID**
+   - Kirim pesan ke bot Anda
+   - Buka: `https://api.telegram.org/bot<TOKEN>/getUpdates`
+   - Cari value `chat.id`
 
-3. **Configure**
-   - Add token and chat ID to `.env` file
-
----
-
-## 🌐 Web Dashboard Features
-
-### **Landing Page** (`/`)
-- Modern hero section with gradient design
-- Feature showcase (4 cards)
-- Statistics display
-- How it works section
-- Call-to-action buttons
-
-### **Login System** (`/login`)
-- Secure access code authentication
-- 3 default codes: ADMIN2024, SAFETY001, SUPERVISOR
-- Password visibility toggle
-- Error handling & validation
-- LocalStorage session management
-
-### **Main Dashboard** (`/dashboard`)
-- **KPI Cards**: Total Detections, Violations, Compliance Rate, Compliant Workers
-- **Interactive Charts**: 
-  - Daily Violation Trend (Area Chart)
-  - Violation Distribution (Pie Chart)
-- **Violations Management**:
-  - Recent violations list
-  - Expandable details
-  - Filter by type
-  - Adjustable limit (5-50)
-- **Export Functionality**:
-  - Download Violations CSV
-  - Download Statistics CSV
-  - Download Violation Types CSV
-- **Real-time Features**:
-  - Live clock
-  - Manual refresh
-  - Auto-refresh toggle
-
-### **CCTV Monitoring** (`/monitoring`)
-- **Multi-View Modes**:
-  - Grid View (2x2 multi-camera)
-  - Single View (full-screen)
-  - Map View (interactive area map)
-- **Camera Features**:
-  - 4 camera feeds
-  - Online/Offline status
-  - Worker & violation count
-  - Location tracking
-- **Interactive Map**:
-  - Camera location markers
-  - Color-coded status
-  - Hover tooltips
-  - Click to view camera
-
-### **Security & Auth**
-- Protected routes
-- Auto-redirect if not logged in
-- Session persistence
-- Logout functionality
+3. **Konfigurasi**
+   - Masukkan token dan chat ID ke file `.env`
 
 ---
 
-## 🧪 Testing & Validation
+## 🛠️ Tech Stack
 
-### Unit Tests
+| Layer | Technology |
+|-------|------------|
+| **AI Engine** | Python, YOLOv8, OpenCV, ONNX Runtime |
+| **Backend** | Go 1.21, Fiber, GORM, SQLite |
+| **Frontend** | Next.js 14, React 18, TailwindCSS, Framer Motion |
+| **Database** | SQLite (bisa upgrade ke PostgreSQL) |
+| **Notifications** | Telegram Bot API |
+| **Real-time** | WebSocket |
+
+---
+
+## 🧪 Testing
+
+### Backend Test
 ```bash
-pytest tests/
+cd backend
+go test ./...
 ```
 
-### Performance Metrics
-- **Inference Speed**: ~30-50 FPS on CPU, ~100+ FPS on GPU
-- **Accuracy**: mAP50 > 0.85 (depends on training)
-- **False Positive Rate**: < 5%
+### Frontend Build Test
+```bash
+cd frontend
+npm run build
+```
 
-### Test Scenarios
-1. Different lighting conditions
-2. Various distances (2m - 10m)
-3. Multiple people in frame
-4. Partial occlusion
-5. Different PPE colors
-
----
-
-## 📈 Development Roadmap
-
-### Phase 1: Foundation ✅ COMPLETE
-- [x] Project setup and structure
-- [x] Dataset collection and preparation
-- [x] Model training and optimization
-- [x] File organization (src/, demo/, tests/)
-
-### Phase 2: Core Features ✅ COMPLETE
-- [x] Real-time detection engine
-- [x] Database integration
-- [x] Telegram notification system
-- [x] Multi-source support (webcam, video, IP camera)
-
-### Phase 3: Web Dashboard ✅ COMPLETE
-- [x] React/Next.js modern web interface
-- [x] Landing page with modern UI
-- [x] Secure login system
-- [x] Main dashboard with analytics
-- [x] Interactive charts (Recharts)
-- [x] Export functionality (CSV)
-- [x] Responsive design
-
-### Phase 4: CCTV Monitoring ✅ COMPLETE
-- [x] Multi-camera grid view
-- [x] Single camera full-screen view
-- [x] Interactive area map
-- [x] Camera status tracking
-- [x] Worker & violation monitoring
-
-### Phase 5: Testing & Deployment ⏳ IN PROGRESS
-- [x] Unit tests structure
-- [x] Demo scripts
-- [x] Comprehensive documentation
-- [ ] Performance optimization
-- [ ] Demo video creation
-- [ ] Production deployment
-
-### Phase 6: Future Enhancements 🔮 PLANNED
-- [ ] Real CCTV stream integration
-- [ ] Google Maps integration
-- [ ] WebSocket real-time updates
-- [ ] Mobile app (React Native)
-- [ ] Advanced analytics & AI insights
+### AI Engine Test
+```bash
+cd ai-engine
+python -c "from detector_realtime import PPEDetector; print('OK')"
+```
 
 ---
 
-## 🎓 Innovation Highlights
+## 📊 Performance
 
-### Technical Innovation
-1. **Multi-modal Detection**: Combines person detection with PPE classification
-2. **Smart Alerting**: Cooldown mechanism prevents alert spam
-3. **Adaptive Thresholding**: Configurable confidence levels
-4. **Edge Computing Ready**: Lightweight enough for edge devices
-
-### Practical Innovation
-1. **Low-cost Solution**: Uses existing cameras and consumer hardware
-2. **Easy Deployment**: Minimal setup required
-3. **Scalable**: Can monitor multiple camera feeds
-4. **Data-driven**: Provides actionable insights through analytics
-
-### Social Impact
-1. **Workplace Safety**: Reduces accidents through proactive monitoring
-2. **Compliance**: Helps organizations meet K3 (Occupational Health & Safety) standards
-3. **Education**: Raises awareness about safety equipment importance
+| Metric | Value |
+|--------|-------|
+| Inference Speed | 5-10 FPS (CPU), 30+ FPS (GPU) |
+| Model Size | ~20 MB (ONNX) |
+| API Response | < 50ms |
+| WebSocket Latency | < 100ms |
 
 ---
 
-## 🛠️ Troubleshooting
+## 📚 Dokumentasi Lengkap
 
-### Common Issues
-
-**1. Model not loading**
-- Ensure `best.pt` is in `models/` folder
-- Check file path in config.yaml
-
-**2. Camera not detected**
-- Try different source indices (0, 1, 2)
-- For IP camera, verify URL format: `http://IP:PORT/video`
-
-**3. Telegram not sending**
-- Verify bot token and chat ID
-- Check internet connection
-- Ensure bot is not blocked
-
-**4. Low FPS**
-- Reduce input resolution
-- Use GPU if available
-- Lower confidence threshold
+| Dokumen | Lokasi |
+|---------|--------|
+| Training Guide | `notebooks/01_training_ppe_model.py` |
+| AI Engine README | `ai-engine/README.md` |
+| Backend README | `backend/README.md` |
+| Design Concept | `docs/FRONTEND_DESIGN_CONCEPT.md` |
+| Training Docs | `docs/TRAINING_DOCUMENTATION_TEMPLATE.md` |
+| AI Prompts | `docs/AI_IMAGE_PROMPTS.md` |
 
 ---
 
-## 📚 References & Resources
+## 🤝 Kontribusi
 
-### Documentation
-- [YOLOv8 Documentation](https://docs.ultralytics.com/)
-- [OpenCV Python Tutorials](https://docs.opencv.org/4.x/d6/d00/tutorial_py_root.html)
-- [Streamlit Documentation](https://docs.streamlit.io/)
-
-### Datasets
-- [Roboflow Universe](https://universe.roboflow.com/)
-- [Kaggle Datasets](https://www.kaggle.com/datasets)
-
-### Research Papers
-- "You Only Look Once: Unified, Real-Time Object Detection" (Redmon et al.)
-- "YOLOv8: State-of-the-Art Object Detection"
-
----
-
-## 👥 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
+Kontribusi sangat diterima! Silakan buat Pull Request.
 
 ---
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+MIT License - lihat file [LICENSE](LICENSE)
 
 ---
 
 ## 👨‍💻 Author
 
-Developed by [Your Name] as part of STEAM Innovation Project
+**SmartAPD Team**
 
-**Contact**: your.email@example.com
+Developed by [@syarfddn_yhya](https://instagram.com/syarfddn_yhya)
+
+📞 Contact: [WhatsApp](https://wa.me/6282330919114)
 
 ---
 
 ## 🙏 Acknowledgments
 
-- Ultralytics team for YOLOv8
-- Roboflow for dataset tools
-- Open-source community
+- Ultralytics untuk YOLOv8
+- Roboflow untuk dataset tools
+- Fiber team untuk Go framework
+- Next.js team untuk React framework
 
 ---
 
-**⚠️ Disclaimer**: This system is designed as an assistive tool and should not replace human supervision in critical safety scenarios.
+<div align="center">
 
-# SmartAPD
-#   S m a r t A P D  
- 
+**⚠️ Disclaimer**: Sistem ini dirancang sebagai alat bantu dan tidak menggantikan pengawasan manusia dalam skenario keselamatan kritis.
+
+---
+
+Made with ❤️ for workplace safety
+
+</div>

@@ -1,0 +1,37 @@
+# SmartAPD AI Engine - Requirements
+
+# Core AI/ML
+ultralytics>=8.0.0          # YOLOv8
+torch>=2.0.0                # PyTorch
+torchvision>=0.15.0         # Image processing
+
+# ONNX Runtime untuk AMD GPU
+onnxruntime-directml>=1.16.0  # AMD GPU support via DirectML
+
+# Computer Vision
+opencv-python>=4.8.0        # Video/Image processing
+Pillow>=10.0.0              # Image handling
+
+# Data Processing
+numpy>=1.24.0               # Numerical computing
+pandas>=2.0.0               # Data analysis
+
+# Visualization (untuk dokumentasi lomba)
+matplotlib>=3.7.0           # Plotting
+seaborn>=0.12.0             # Statistical visualization
+
+# Dataset
+roboflow>=1.1.0             # Dataset download dari Roboflow
+albumentations>=1.3.0       # Data augmentation
+
+# API Communication
+requests>=2.31.0            # HTTP requests ke backend
+websocket-client>=1.6.0     # WebSocket client
+
+# Utilities
+python-dotenv>=1.0.0        # Environment variables
+tqdm>=4.65.0                # Progress bars
+PyYAML>=6.0                 # YAML parsing
+
+# Telegram Bot (opsional)
+python-telegram-bot>=20.0   # Telegram notifications

@@ -1,0 +1,107 @@
+{
+  "logo_and_branding": {
+    "logo_main": {
+      "prompt": "A modern, minimalist logo for 'SmartAPD' with a tech-safety theme. The logo should combine a shield icon with digital elements, using a color scheme of #F97316 (orange), #0F172A (dark blue), and #10B981 (green). The design should be clean, scalable, and work well on both light and dark backgrounds. Include a subtle gradient effect and make it look professional for a tech company in the industrial safety sector.",
+      "aspect_ratio": "1:1",
+      "style": "Flat design with subtle shadows",
+      "background": "Transparent"
+    },
+    "favicon": {
+      "prompt": "A simplified version of the SmartAPD logo, focusing on the shield icon only. The design should be extremely clear and recognizable even at small sizes (16x16px). Use the same color scheme as the main logo but with higher contrast for better visibility.",
+      "aspect_ratio": "1:1",
+      "style": "Minimalist, high contrast",
+      "background": "Transparent"
+    }
+  },
+  "hero_images": {
+    "hero_main": {
+      "prompt": "A professional industrial worker wearing full PPE (hard hat, safety vest, safety glasses, gloves) standing confidently at a construction site. The worker is holding a tablet showing the SmartAPD interface. The scene should show a modern, high-tech industrial environment with good lighting. The worker should be looking at the camera with a confident expression. The image should have a professional, high-quality look suitable for a hero banner.",
+      "aspect_ratio": "16:9",
+      "style": "Professional photography style, well-lit, high detail",
+      "background": "Transparent (with extended edges for flexible background use)",
+      "color_scheme": "Match brand colors (orange, blue, green)"
+    },
+    "ai_detection": {
+      "prompt": "A digital illustration showing AI detection in action. The scene shows a worker with a safety helmet being scanned by digital grid lines, with floating UI elements highlighting different safety equipment. The style should be modern, clean, and technical-looking, with a color scheme matching the SmartAPD brand.",
+      "aspect_ratio": "16:9",
+      "style": "Digital illustration with tech elements",
+      "background": "Transparent"
+    }
+  },
+  "icons": {
+    "safety_helmet": {
+      "prompt": "A detailed, modern line art icon of a safety helmet. The design should be clean, with medium line weight, and use the brand orange color (#F97316). The icon should be easily recognizable at small sizes.",
+      "aspect_ratio": "1:1",
+      "style": "Line art, modern",
+      "background": "Transparent"
+    },
+    "safety_vest": {
+      "prompt": "A clean, simple icon of a safety vest in the brand orange color (#F97316). The design should be recognizable at small sizes, with clear outlines and a modern, flat style.",
+      "aspect_ratio": "1:1",
+      "style": "Flat design, minimal",
+      "background": "Transparent"
+    },
+    "safety_shoes": {
+      "prompt": "A simple, modern icon of safety shoes in the brand orange color (#F97316). The design should be clean and easily recognizable at small sizes.",
+      "aspect_ratio": "1:1",
+      "style": "Flat design, minimal",
+      "background": "Transparent"
+    },
+    "ai_icon": {
+      "prompt": "A modern, abstract AI/neural network icon in the brand blue color (#0F172A). The design should represent artificial intelligence with interconnected nodes or a brain-like structure.",
+      "aspect_ratio": "1:1",
+      "style": "Modern, tech",
+      "background": "Transparent"
+    }
+  },
+  "feature_graphics": {
+    "real_time_alerts": {
+      "prompt": "An illustration showing a mobile phone with a notification alert about a safety violation. The phone should be floating with digital elements around it, showing sound waves and notification icons. Use the brand colors with emphasis on green (#10B981) for the notification elements.",
+      "aspect_ratio": "1:1",
+      "style": "Digital illustration with subtle glow effects",
+      "background": "Transparent"
+    },
+    "analytics_dashboard": {
+      "prompt": "A stylized, semi-transparent dashboard interface showing safety metrics and analytics. Include graphs, charts, and KPIs related to workplace safety. Use the brand color scheme with a dark theme for the dashboard elements.",
+      "aspect_ratio": "16:9",
+      "style": "UI/UX design, modern dashboard",
+      "background": "Transparent"
+    }
+  },
+  "illustrations": {
+    "safety_workflow": {
+      "prompt": "An isometric illustration showing the SmartAPD workflow: 1) Worker being monitored, 2) AI detection of safety equipment, 3) Real-time alerts, 4) Safety compliance achieved. The illustration should be in a continuous scene with numbered steps and use the brand colors.",
+      "aspect_ratio": "16:9",
+      "style": "Isometric illustration, clean lines",
+      "background": "Transparent"
+    },
+    "benefits": {
+      "prompt": "A set of 4 circular illustrations showing the benefits of SmartAPD: 1) Reduced accidents (graph going down), 2) Time savings (clock with checkmark), 3) Cost efficiency (money bag with shield), 4) Compliance (checklist with shield). Each illustration should be in the brand colors with a consistent style.",
+      "aspect_ratio": "1:1",
+      "style": "Flat design, modern icons",
+      "background": "Transparent"
+    }
+  },
+  "ui_elements": {
+    "app_screens": {
+      "prompt": "A set of modern, clean mobile app screens for the SmartAPD application showing: 1) Login screen, 2) Dashboard with safety stats, 3) Alert notifications, 4) Settings. The design should follow Material Design principles with the brand color scheme.",
+      "aspect_ratio": "9:16",
+      "style": "Mobile UI/UX, clean and modern",
+      "background": "Transparent"
+    },
+    "buttons": {
+      "prompt": "A set of UI buttons in different states (normal, hover, active) using the brand colors. Include primary (orange), secondary (blue), and success (green) button styles. The buttons should have a modern, slightly rounded design with subtle shadows.",
+      "aspect_ratio": "4:1",
+      "style": "UI elements, clean and modern",
+      "background": "Transparent"
+    }
+  },
+  "documentation": {
+    "infographic": {
+      "prompt": "An infographic showing the impact of SmartAPD: '50% reduction in safety incidents' with an arrow pointing down, '90% faster safety compliance checks' with a speedometer, '24/7 monitoring' with a clock icon. Use the brand colors with clear typography and simple icons.",
+      "aspect_ratio": "16:9",
+      "style": "Infographic, clean and professional",
+      "background": "Transparent"
+    }
+  }
+}
