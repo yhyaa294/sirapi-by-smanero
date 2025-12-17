@@ -1,21 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
-  Map,
   ShieldAlert,
   Video,
   FileText,
   Settings,
   Menu,
   Bell,
-  User,
-  ChevronLeft
+  ChevronLeft,
+  BarChart3,
+  History,
+  MapPin,
+  User
 } from "lucide-react";
-import StatsTicker from "@/components/dashboard/enterprise/StatsTicker";
 
 export default function DashboardLayout({
   children,
@@ -23,126 +25,196 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const [collapsed, setCollapsed] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
   const pathname = usePathname();
 
+  // Update time every second
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Menu items - ALL navigation here (no duplicate tabs)
   const menuItems = [
-    { icon: LayoutDashboard, label: "THE PULSE", href: "/dashboard" },
-    { icon: Map, label: "RISK MAP", href: "/dashboard/map" }, // Placeholder
-    { icon: Video, label: "CAMERAS", href: "/cameras" },
-    { icon: ShieldAlert, label: "INCIDENTS", href: "/alerts" },
-    { icon: FileText, label: "REPORTS", href: "/reports" },
-    { icon: Settings, label: "SYSTEM", href: "/settings" },
+    { icon: Video, label: "Monitor Utama", href: "/dashboard" },
+    { icon: BarChart3, label: "Analisis", href: "/dashboard/analytics" },
+    { icon: History, label: "Riwayat Kejadian", href: "/dashboard/alerts" },
+    { icon: MapPin, label: "Peta Lokasi", href: "/dashboard/map" },
+    { icon: FileText, label: "Laporan", href: "/dashboard/reports" },
+    { icon: Settings, label: "Pengaturan", href: "/dashboard/settings" },
+    { icon: User, label: "Profil", href: "/dashboard/profile" },
   ];
 
+  const lokasiItems = [
+    { name: "Global Overview", active: true },
+    { name: "Zona A - Gudang", active: false },
+    { name: "Zona B - Assembly", active: false },
+    { name: "Zona C - Welding", active: false },
+    { name: "Zona D - Office", active: false },
+  ];
+
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString('id-ID', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    });
+  };
+
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('id-ID', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  };
+
   return (
-    <div className="flex h-screen bg-background text-foreground overflow-hidden font-sans">
-      {/* SIDEBAR */}
+    <div className="flex h-screen bg-gradient-to-br from-white via-orange-50/30 to-amber-50/40 text-slate-900 overflow-hidden font-sans">
+
+      {/* SIDEBAR - Gradient Orange to Green */}
       <aside
-        className={`bg-surface border-r border-border transition-all duration-300 flex flex-col z-20 ${collapsed ? "w-16" : "w-64"
-          }`}
+        className={`relative transition-all duration-300 flex flex-col z-20 ${collapsed ? "w-16" : "w-64"}`}
       >
-        {/* Sidebar Header */}
-        <div className="h-14 flex items-center justify-between px-4 border-b border-border bg-surface-highlight">
-          {!collapsed && (
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-sm bg-primary/20 border border-primary flex items-center justify-center">
-                <ShieldAlert className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <h1 className="text-sm font-bold tracking-tight text-white leading-none">SmartAPD</h1>
-                <div className="text-[9px] text-primary tracking-widest font-mono">COMMAND CENTER</div>
-              </div>
-            </div>
-          )}
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="p-1 hover:bg-white/5 rounded text-foreground-muted"
-          >
-            {collapsed ? <Menu size={18} /> : <ChevronLeft size={18} />}
-          </button>
+        {/* Gradient Background */}
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
+          <div className="absolute top-0 left-0 right-0 h-1/3 bg-gradient-to-b from-orange-600/20 to-transparent"></div>
+          <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-emerald-600/20 to-transparent"></div>
+          <div className="absolute top-1/3 left-0 right-0 h-1/3 bg-gradient-to-b from-orange-500/10 via-transparent to-emerald-500/10"></div>
         </div>
 
-        {/* Menu Items */}
-        <nav className="flex-1 py-6 px-2 space-y-1 overflow-y-auto">
-          {menuItems.map((item) => {
-            const isActive = pathname === item.href;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-sm transition-all group ${isActive
-                    ? "bg-primary/10 text-primary border-l-2 border-primary"
-                    : "text-foreground-muted hover:bg-white/5 hover:text-white border-l-2 border-transparent"
-                  }`}
-              >
-                <item.icon size={20} className={isActive ? "text-primary" : "text-foreground-dim group-hover:text-white"} />
-                {!collapsed && (
-                  <span className="text-xs font-bold tracking-wide">{item.label}</span>
-                )}
-              </Link>
-            );
-          })}
-        </nav>
+        {/* Sidebar Content */}
+        <div className="relative z-10 flex flex-col h-full">
 
-        {/* Sidebar Footer */}
-        <div className="p-4 border-t border-border bg-surface-highlight/50">
-          {!collapsed ? (
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-surface border border-border flex items-center justify-center">
-                <User size={16} className="text-foreground-dim" />
+          {/* Sidebar Header - Logo */}
+          <div className="h-16 flex items-center justify-between px-4 border-b border-white/10">
+            {!collapsed && (
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl overflow-hidden border-2 border-orange-500/50 shadow-lg">
+                  <Image
+                    src="/images/logo.jpg"
+                    alt="SmartAPD Logo"
+                    width={40}
+                    height={40}
+                    className="object-cover"
+                  />
+                </div>
+                <div>
+                  <h1 className="text-base font-bold tracking-tight text-white leading-none">
+                    Smart<span className="text-orange-500">APD</span>
+                  </h1>
+                  <div className="text-[9px] text-orange-400 tracking-widest font-mono uppercase">Command Center</div>
+                </div>
               </div>
-              <div className="overflow-hidden">
-                <p className="text-xs font-bold text-white truncate">Supervisor HQ</p>
-                <p className="text-[10px] text-safe font-mono flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-safe"></span> ONLINE
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="flex justify-center">
-              <div className="w-2 h-2 rounded-full bg-safe animate-pulse"></div>
+            )}
+            <button
+              onClick={() => setCollapsed(!collapsed)}
+              className="p-1.5 hover:bg-white/10 rounded-lg transition-colors text-slate-400 hover:text-white"
+            >
+              {collapsed ? <Menu size={18} /> : <ChevronLeft size={18} />}
+            </button>
+          </div>
+
+          {/* Menu Utama Section */}
+          {!collapsed && (
+            <div className="px-4 pt-6 pb-2">
+              <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Menu Utama</p>
             </div>
           )}
+
+          <nav className="px-2 space-y-1">
+            {menuItems.map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all group ${isActive
+                    ? "bg-orange-500/20 text-orange-400 border-l-4 border-orange-500"
+                    : "text-slate-400 hover:bg-white/5 hover:text-white border-l-4 border-transparent"
+                    }`}
+                >
+                  <item.icon size={20} className={isActive ? "text-orange-400" : "text-slate-500 group-hover:text-white"} />
+                  {!collapsed && (
+                    <span className="text-sm font-medium">{item.label}</span>
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
+
+          {/* Sidebar Footer - System Status */}
+          <div className="p-4 border-t border-white/10 mt-auto">
+            <div className="flex items-center justify-between">
+              {!collapsed && (
+                <span className="text-[10px] text-slate-500 uppercase tracking-widest">System Status</span>
+              )}
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-lg shadow-emerald-500/50"></span>
+                {!collapsed && <span className="text-xs text-emerald-400 font-mono">ONLINE</span>}
+              </div>
+            </div>
+            {!collapsed && (
+              <div className="mt-2 text-[10px] text-slate-600 font-mono">
+                © 2024 SmartAPD • ENT V2.0
+              </div>
+            )}
+          </div>
         </div>
       </aside>
 
       {/* MAIN CONTENT */}
-      <main className="flex-1 flex flex-col relative overflow-hidden bg-background">
+      <main className="flex-1 flex flex-col relative overflow-hidden">
 
-        {/* TOP HEADER */}
-        <header className="h-14 bg-surface border-b border-border flex items-center justify-between px-6 z-10 shrink-0">
-          {/* Breadcrumbs / Page Title */}
-          <div className="flex items-center gap-4">
-            <h2 className="text-lg font-bold tracking-tight text-white flex items-center gap-2">
-              <span className="text-primary">///</span> DASHBOARD OVERVIEW
+        {/* TOP HEADER - Clean, no duplicate tabs */}
+        <header className="h-16 bg-white/80 backdrop-blur-xl border-b border-slate-200 flex items-center justify-between px-6 z-10 shrink-0 shadow-sm">
+
+          {/* Left - Page Title */}
+          <div className="flex items-center gap-3">
+            <div className="w-1 h-8 bg-orange-500 rounded-full"></div>
+            <h2 className="text-lg font-bold tracking-tight text-slate-900">
+              COMMAND CENTER
             </h2>
           </div>
 
-          {/* Right Actions */}
+          {/* Right - Time & User */}
           <div className="flex items-center gap-6">
-            <div className="flex items-center gap-4">
-              {/* Time Widget */}
-              <div className="text-right hidden sm:block">
-                <div className="text-xs font-bold text-white">15 MAR 2024</div>
-                <div className="text-[10px] font-mono text-primary tracking-widest">14:32:45 UTC+7</div>
+
+            {/* Time Widget */}
+            <div className="text-right">
+              <div className="text-2xl font-mono font-bold text-slate-900 tracking-tight">
+                {formatTime(currentTime)}
               </div>
+              <div className="text-[10px] text-slate-500">
+                {formatDate(currentTime)}
+              </div>
+            </div>
 
-              <div className="h-8 w-px bg-border"></div>
+            <div className="h-10 w-px bg-slate-200"></div>
 
-              {/* Notifications */}
-              <button className="relative p-2 hover:bg-white/5 rounded-full text-foreground-muted hover:text-white transition-colors">
-                <Bell size={20} />
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-critical rounded-full border border-surface"></span>
-              </button>
+            {/* Notifications */}
+            <button className="relative p-2 hover:bg-slate-100 rounded-full text-slate-500 hover:text-slate-900 transition-colors">
+              <Bell size={22} />
+              <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white animate-pulse"></span>
+            </button>
+
+            {/* User Profile */}
+            <div className="flex items-center gap-3 pl-2 border-l border-slate-200">
+              <div className="text-right">
+                <p className="text-sm font-bold text-slate-900">Administrator</p>
+                <p className="text-[10px] text-slate-500">HSE Supervisor</p>
+              </div>
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-500 to-emerald-500 flex items-center justify-center text-white font-bold shadow-lg">
+                AD
+              </div>
             </div>
           </div>
         </header>
 
-        {/* TICKER BAR */}
-        <StatsTicker />
-
         {/* SCROLLABLE CONTENT AREA */}
-        <div className="flex-1 overflow-auto p-4 lg:p-6 scrollbar-hide">
+        <div className="flex-1 overflow-auto p-6 scrollbar-hide">
           {children}
         </div>
       </main>
