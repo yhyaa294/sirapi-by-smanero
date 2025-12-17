@@ -12,7 +12,7 @@ type Config struct {
 
 func Load() *Config {
 	return &Config{
-		DatabaseURL:    getEnv("DATABASE_URL", "../data/detections.db"),
+		DatabaseURL:    getEnv("DATABASE_URL", "../../data/smartapd.db"),
 		TelegramToken:  getEnv("TELEGRAM_BOT_TOKEN", ""),
 		TelegramChatID: getEnv("TELEGRAM_CHAT_ID", ""),
 		Port:           getEnv("PORT", "8080"),

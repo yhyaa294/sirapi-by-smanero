@@ -2,10 +2,63 @@ package middleware
 
 import (
 	"log"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
 )
+
+var jwtSecret = []byte("smartapd-secret-key-2024")
+
+// JWTAuth validates JWT token for protected routes
+func JWTAuth() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		// Skip auth routes
+		if c.Path() == "/api/v1/auth/login" || c.Path() == "/api/v1/auth/register" || c.Path() == "/health" {
+			return c.Next()
+		}
+
+		// Get token from header
+		authHeader := c.Get("Authorization")
+		if authHeader == "" {
+			return c.Status(401).JSON(fiber.Map{
+				"success": false,
+				"error":   "Missing authorization header",
+			})
+		}
+
+		// Extract token (Bearer <token>)
+		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+		if tokenString == authHeader {
+			return c.Status(401).JSON(fiber.Map{
+				"success": false,
+				"error":   "Invalid token format",
+			})
+		}
+
+		// Parse and validate token
+		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+			return jwtSecret, nil
+		})
+
+		if err != nil || !token.Valid {
+			return c.Status(401).JSON(fiber.Map{
+				"success": false,
+				"error":   "Invalid or expired token",
+			})
+		}
+
+		// Extract claims
+		if claims, ok := token.Claims.(jwt.MapClaims); ok {
+			c.Locals("user_id", uint(claims["user_id"].(float64)))
+			c.Locals("user_email", claims["email"].(string))
+			c.Locals("user_role", claims["role"].(string))
+		}
+
+		return c.Next()
+	}
+}
 
 // Logger logs all HTTP requests with timing
 func Logger() fiber.Handler {

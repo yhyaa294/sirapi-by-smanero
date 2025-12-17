@@ -1,17 +1,40 @@
-# 🦺 SmartAPD - AI-Powered PPE Detection System
+# 🛡️ SmartAPD - AI-Powered PPE Detection System
 
 <div align="center">
 
-![SmartAPD Logo](frontend/public/images/logo.jpg)
+<img src="frontend/public/images/logo.jpg" alt="SmartAPD Logo" width="200" style="border-radius: 20px; margin-bottom: 20px;"/>
 
-**Sistem Pemantauan Kepatuhan APD (Alat Pelindung Diri) Berbasis AI**
+### **Sistem Pemantauan Kepatuhan APD Berbasis Kecerdasan Buatan**
 
-[![Next.js](https://img.shields.io/badge/Frontend-Next.js%2014-black?logo=nextdotjs)](https://nextjs.org/)
-[![Go](https://img.shields.io/badge/Backend-Go%201.21-00ADD8?logo=go)](https://golang.org/)
-[![Python](https://img.shields.io/badge/AI-Python%203.10-3776AB?logo=python)](https://python.org/)
-[![YOLOv8](https://img.shields.io/badge/Model-YOLOv8-FF6F00)](https://ultralytics.com/)
+*Solusi Cerdas untuk Keselamatan Kerja di Era Modern*
 
-[Demo](#-demo) • [Instalasi](#-instalasi) • [Dokumentasi](#-dokumentasi) • [API](#-api-endpoints)
+[![Next.js](https://img.shields.io/badge/Frontend-Next.js%2014-black?style=for-the-badge&logo=nextdotjs)](https://nextjs.org/)
+[![Go](https://img.shields.io/badge/Backend-Go%201.21-00ADD8?style=for-the-badge&logo=go)](https://golang.org/)
+[![Python](https://img.shields.io/badge/AI-Python%203.10-3776AB?style=for-the-badge&logo=python)](https://python.org/)
+[![YOLOv8](https://img.shields.io/badge/Model-YOLOv8-FF6F00?style=for-the-badge)](https://ultralytics.com/)
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
+[![Safety Competition 2026](https://img.shields.io/badge/SC26-Essay%20Competition-orange?style=for-the-badge)](paduan_lomba/RENCANA_LOMBA_ESAI_SC26.md)
+
+---
+
+**[📖 Dokumentasi](#-dokumentasi)** • **[🚀 Instalasi](#-instalasi)** • **[📡 API](#-api-endpoints)** • **[🏆 Kompetisi](#-safety-competition-2026)**
+
+</div>
+
+---
+
+## 🖼️ Dashboard Preview
+
+<div align="center">
+
+### 📊 Analytics Dashboard
+
+<img src="frontend/public/images/analytics-dashboard.png" alt="Analytics Dashboard" width="80%" style="border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); margin: 20px 0;"/>
+
+### 🔍 Main Monitoring Dashboard  
+
+<img src="frontend/public/images/main-dashboard.png" alt="Main Dashboard" width="80%" style="border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); margin: 20px 0;"/>
 
 </div>
 
@@ -19,25 +42,28 @@
 
 ## 🎯 Tentang SmartAPD
 
-**SmartAPD** adalah sistem pemantauan keselamatan kerja berbasis AI yang mendeteksi penggunaan Alat Pelindung Diri (APD) secara real-time. Sistem ini dirancang untuk industri konstruksi, manufaktur, dan pertambangan.
+**SmartAPD** adalah sistem pemantauan keselamatan kerja berbasis **Kecerdasan Buatan (AI)** yang mendeteksi penggunaan Alat Pelindung Diri (APD) secara **real-time**. Sistem ini dirancang untuk industri konstruksi, manufaktur, dan pertambangan.
 
-### ✨ Fitur Utama
+> 💡 *"Menciptakan Lingkungan Kerja yang Sehat dan Nyaman sebagai Upaya Menumbuhkan Budaya K3 serta Meningkatkan Produktivitas di era Modern"*
+
+### ✨ Fitur Unggulan
 
 | Fitur | Deskripsi |
-|-------|-----------|
-| 🤖 **AI Detection** | Deteksi helm, rompi, sarung tangan, sepatu dalam < 2 detik |
+|:-----:|-----------|
+| 🤖 **AI Detection** | Deteksi helm, rompi, sarung tangan, sepatu dalam **< 2 detik** |
 | 📡 **Real-time Monitoring** | Pantau live dari webcam atau IP Camera (RTSP) |
 | 🔔 **Telegram Alerts** | Notifikasi instan saat pelanggaran terdeteksi |
 | 📊 **Dashboard Analytics** | Statistik kepatuhan harian, mingguan, bulanan |
-| 📹 **Multi-Camera** | Support hingga 50+ kamera simultan |
+| 📹 **Multi-Camera** | Support hingga **50+ kamera** simultan |
 | 💾 **Auto Reports** | Laporan otomatis jam 18:00 setiap hari |
-| 🔒 **Edge Computing** | Semua proses lokal, data tetap aman |
+| 🔒 **Edge Computing** | Semua proses lokal, **data tetap aman** |
 
 ---
 
 ## 🏗️ Arsitektur Sistem
 
 ```
+
 ┌─────────────────────────────────────────────────────────────────┐
 │                     SMARTAPD ARCHITECTURE                       │
 ├─────────────────────────────────────────────────────────────────┤
@@ -174,6 +200,7 @@ npm install
 ### Option A: Development Mode (Terpisah)
 
 **Terminal 1 - Backend:**
+
 ```bash
 cd backend
 ./smartapd-backend.exe
@@ -181,12 +208,14 @@ cd backend
 ```
 
 **Terminal 2 - Frontend:**
+
 ```bash
 cd frontend
 npm run dev
 ```
 
 **Terminal 3 - AI Engine:**
+
 ```bash
 cd ai-engine
 python detector_realtime.py --camera 0
@@ -202,9 +231,9 @@ python detector_realtime.py --camera 0
 
 | Service | URL |
 |---------|-----|
-| Frontend | http://localhost:3000 |
-| Backend API | http://localhost:8080 |
-| API Health | http://localhost:8080/health |
+| Frontend | <http://localhost:3000> |
+| Backend API | <http://localhost:8080> |
+| API Health | <http://localhost:8080/health> |
 | WebSocket | ws://localhost:8080/ws |
 
 ---
@@ -212,11 +241,13 @@ python detector_realtime.py --camera 0
 ## 📡 API Endpoints
 
 ### Health Check
+
 ```http
 GET /health
 ```
 
 ### Detections
+
 ```http
 GET    /api/v1/detections          # List semua deteksi
 GET    /api/v1/detections/:id      # Detail deteksi
@@ -225,6 +256,7 @@ GET    /api/v1/detections/stats    # Statistik deteksi
 ```
 
 ### Alerts
+
 ```http
 GET    /api/v1/alerts              # List semua alert
 POST   /api/v1/alerts              # Buat alert baru
@@ -232,6 +264,7 @@ PUT    /api/v1/alerts/:id/acknowledge  # Acknowledge alert
 ```
 
 ### Cameras
+
 ```http
 GET    /api/v1/cameras             # List kamera
 GET    /api/v1/cameras/:id         # Detail kamera
@@ -241,6 +274,7 @@ DELETE /api/v1/cameras/:id         # Hapus kamera
 ```
 
 ### Reports
+
 ```http
 GET    /api/v1/reports/daily       # Laporan harian
 GET    /api/v1/reports/weekly      # Laporan mingguan
@@ -248,6 +282,7 @@ GET    /api/v1/reports/export      # Export laporan
 ```
 
 ### WebSocket
+
 ```http
 WS     /ws                         # Real-time updates
 ```
@@ -345,18 +380,21 @@ database:
 ## 🧪 Testing
 
 ### Backend Test
+
 ```bash
 cd backend
 go test ./...
 ```
 
 ### Frontend Build Test
+
 ```bash
 cd frontend
 npm run build
 ```
 
 ### AI Engine Test
+
 ```bash
 cd ai-engine
 python -c "from detector_realtime import PPEDetector; print('OK')"
@@ -419,6 +457,25 @@ Developed by [@syarfddn_yhya](https://instagram.com/syarfddn_yhya)
 
 ---
 
+## 🏆 Safety Competition 2026
+
+<div align="center">
+
+> **Proyek ini dibuat untuk Lomba Esai Safety Competition 2026**
+>
+> 📋 [Lihat Rencana Lomba Lengkap](paduan_lomba/RENCANA_LOMBA_ESAI_SC26.md)
+
+</div>
+
+| Informasi | Detail |
+|-----------|--------|
+| **Penyelenggara** | HIMATEKK3 PPNS |
+| **Tema** | Menciptakan Lingkungan Kerja yang Sehat dan Nyaman |
+| **Subtema** | Industri & Teknologi |
+| **Contact** | 089526569307 (Nadya) |
+
+---
+
 <div align="center">
 
 **⚠️ Disclaimer**: Sistem ini dirancang sebagai alat bantu dan tidak menggantikan pengawasan manusia dalam skenario keselamatan kritis.
@@ -426,5 +483,9 @@ Developed by [@syarfddn_yhya](https://instagram.com/syarfddn_yhya)
 ---
 
 Made with ❤️ for workplace safety
+
+**© 2024 SmartAPD Team** | Developed by [@syarfddn_yhya](https://instagram.com/syarfddn_yhya)
+
+📞 [Contact via WhatsApp](https://wa.me/6282330919114)
 
 </div>

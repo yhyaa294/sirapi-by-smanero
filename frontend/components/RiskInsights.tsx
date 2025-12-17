@@ -122,7 +122,7 @@ const RiskInsights: FC<RiskInsightsProps> = ({ riskMap, isLoading, error, onRelo
                   </div>
                 </div>
 
-                {area.topViolations?.length > 0 && (
+                {(area.topViolations?.length ?? 0) > 0 && (
                   <div className="mt-4">
                     <p className="text-xs font-semibold opacity-90">Top Pelanggaran</p>
                     <div className="mt-2 flex flex-wrap gap-2 text-[11px]">
@@ -135,7 +135,7 @@ const RiskInsights: FC<RiskInsightsProps> = ({ riskMap, isLoading, error, onRelo
                   </div>
                 )}
 
-                {area.shiftRisks?.length > 0 && (
+                {(area.shiftRisks?.length ?? 0) > 0 && (
                   <div className="mt-4">
                     <p className="text-xs font-semibold opacity-90">Risiko per Shift</p>
                     <div className="mt-2 grid grid-cols-3 gap-2 text-[11px]">

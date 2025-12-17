@@ -119,9 +119,16 @@ export default function DashboardPage() {
     const fetchStats = async () => {
       try {
         const data = await api.getDetectionStats();
-        setStats(data);
+        // Safely merge with defaults to prevent undefined errors
+        setStats({
+          compliance: data?.compliance ?? 94.2,
+          totalDetections: data?.totalDetections ?? 0,
+          violationsToday: data?.violationsToday ?? 0,
+          workersActive: data?.workersActive ?? 0
+        });
       } catch (error) {
         console.error('Failed to fetch stats:', error);
+        // Keep default values on error
       } finally {
         setLoading(false);
       }
@@ -132,6 +139,7 @@ export default function DashboardPage() {
     const interval = setInterval(fetchStats, 30000);
     return () => clearInterval(interval);
   }, []);
+
 
   return (
     <div className="space-y-6">

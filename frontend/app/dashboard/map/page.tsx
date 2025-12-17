@@ -10,7 +10,7 @@ export default function MapPage() {
         { id: "D", name: "Loading Dock", risk: "high", compliance: 65, workers: 35, alerts: 15 },
     ];
 
-    const riskColors = {
+    const riskColors: Record<string, string> = {
         low: "bg-emerald-500",
         medium: "bg-amber-500",
         high: "bg-red-500",

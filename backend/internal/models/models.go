@@ -40,6 +40,18 @@ type Camera struct {
 	IsActive   bool   `json:"is_active" gorm:"default:true"`
 }
 
+// User represents a system user for authentication
+type User struct {
+	gorm.Model
+	Email        string     `json:"email" gorm:"unique;not null"`
+	PasswordHash string     `json:"-"` // Hidden from JSON
+	Name         string     `json:"name"`
+	Role         string     `json:"role"` // admin, supervisor, operator
+	AvatarURL    string     `json:"avatar_url"`
+	IsActive     bool       `json:"is_active" gorm:"default:true"`
+	LastLoginAt  *time.Time `json:"last_login_at"`
+}
+
 // DetectionStats for API response
 type DetectionStats struct {
 	TotalDetections int64            `json:"total_detections"`

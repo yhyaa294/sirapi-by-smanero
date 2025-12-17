@@ -29,6 +29,7 @@ func Connect(databaseURL string) error {
 		&models.Detection{},
 		&models.Alert{},
 		&models.Camera{},
+		&models.User{},
 	); err != nil {
 		return err
 	}
