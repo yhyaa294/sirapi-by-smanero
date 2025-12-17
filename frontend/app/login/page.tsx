@@ -121,10 +121,10 @@ export default function LoginPage() {
           {/* Header */}
           <div className="space-y-2">
             <h2 className="text-3xl font-bold text-white tracking-tight">
-              Welcome Back, Commander.
+              Selamat datang , Commander.
             </h2>
             <p className="text-slate-400 text-sm">
-              Enter your credentials to access the HSE Command Center.
+              Masukkan email dan password anda
             </p>
           </div>
 

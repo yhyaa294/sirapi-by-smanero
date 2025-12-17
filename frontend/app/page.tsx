@@ -47,22 +47,22 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 transition-all duration-500 
+    <nav className={`fixed left-1/2 -translate-x-1/2 z-50 transition-all duration-700 ease-out
       ${scrolled
-        ? "w-auto bg-white/5 backdrop-blur-3xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)] rounded-full py-2.5 px-6"
-        : "w-full max-w-7xl bg-transparent py-5 px-6"}`}
+        ? "top-3 w-auto bg-slate-900/80 backdrop-blur-2xl border border-white/10 shadow-2xl rounded-full py-2 px-5"
+        : "top-5 w-auto bg-slate-900/60 backdrop-blur-xl border border-white/5 rounded-full py-2.5 px-6"}`}
     >
-      <div className="flex items-center gap-8">
-        {/* Logo - shrink-0 biar ga kejepit */}
+      <div className="flex items-center gap-6">
+        {/* Logo */}
         <Link href="/" className="flex items-center gap-2 shrink-0">
-          <Image src="/images/logo.jpg" alt="Logo" width={36} height={36} className="rounded-full" />
-          <span className="text-lg font-bold text-white whitespace-nowrap">
+          <Image src="/images/logo.jpg" alt="Logo" width={32} height={32} className="rounded-full" />
+          <span className="text-base font-bold text-white whitespace-nowrap">
             Smart<span className="text-orange-500">APD</span>
           </span>
         </Link>
 
         {/* Center Nav Pills */}
-        <div className="hidden md:flex items-center gap-1 bg-white/5 backdrop-blur-2xl rounded-full px-2 py-1 border border-white/5">
+        <div className="hidden md:flex items-center gap-0.5 bg-white/5 rounded-full px-1 py-0.5">
           {navLinks.map((link) => (
             <Link key={link.name} href={link.href} className="px-4 py-1.5 text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-all whitespace-nowrap">
               {link.name}
@@ -70,12 +70,11 @@ const Navbar = () => {
           ))}
         </div>
 
-        {/* Right Actions - shrink-0 */}
-        <div className="hidden md:flex items-center gap-3 shrink-0">
-          <Link href="/login" className="text-sm text-white/70 hover:text-white transition-colors px-3 py-1.5 whitespace-nowrap">Masuk</Link>
-          <Link href="/dashboard">
-            <button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-red-600 text-white px-5 py-2 rounded-full text-sm font-bold transition-all shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40 flex items-center gap-2 whitespace-nowrap">
-              Dashboard <ArrowRight className="w-4 h-4" />
+        {/* CTA Button */}
+        <div className="hidden md:flex shrink-0">
+          <Link href="/login">
+            <button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-red-600 text-white px-4 py-1.5 rounded-full text-sm font-semibold transition-all shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 flex items-center gap-1.5">
+              Masuk <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </Link>
         </div>
@@ -194,6 +193,10 @@ const Hero = () => {
           25% { transform: translate(40px, -20px); }
           75% { transform: translate(-20px, 30px); }
         }
+        @keyframes floatWorker {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
+        }
       `}</style>
 
       <div className="container mx-auto px-6 relative z-10 pt-24">
@@ -218,9 +221,9 @@ const Hero = () => {
             </p>
 
             <div className="flex flex-wrap gap-4 pt-4">
-              <Link href="/dashboard">
+              <Link href="/login">
                 <button className="px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold text-lg transition-colors flex items-center gap-2">
-                  <Play className="w-5 h-5 fill-white" /> Coba Demo
+                  <Play className="w-5 h-5 fill-white" /> Coba Aplikasi
                 </button>
               </Link>
               <Link href="#how-it-works">
@@ -231,31 +234,30 @@ const Hero = () => {
             </div>
           </div>
 
-          {/* RIGHT: SLIDING WORKER CAROUSEL - ukuran dikecilkan */}
+          {/* RIGHT: WORKER CAROUSEL with FADE */}
           <div className="relative hidden lg:block h-[500px]">
             {/* Glow Effect */}
             <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[300px] h-24 bg-orange-500/30 rounded-full blur-[60px]"></div>
 
-            {/* Worker Slider Container */}
-            <div className="relative h-full w-full overflow-hidden">
-              {/* Sliding wrapper - transisi lebih smooth */}
-              <div
-                className="flex h-full transition-transform duration-1000 ease-[cubic-bezier(0.4,0,0.2,1)]"
-                style={{ transform: `translateX(-${currentWorker * 100}%)` }}
-              >
-                {workers.map((worker, index) => (
-                  <div key={index} className="flex-shrink-0 w-full h-full flex items-end justify-center">
-                    <Image
-                      src={worker}
-                      alt={`Safety Worker ${index + 1}`}
-                      width={320}
-                      height={450}
-                      className="object-contain drop-shadow-[0_0_20px_rgba(249,115,22,0.3)] max-h-[450px]"
-                      priority={index === 0}
-                    />
-                  </div>
-                ))}
-              </div>
+            {/* Worker Fade Container */}
+            <div className="relative h-full w-full">
+              {workers.map((worker, index) => (
+                <div
+                  key={index}
+                  className={`absolute inset-0 flex items-end justify-center transition-all duration-700 ease-out
+                    ${currentWorker === index ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
+                >
+                  <Image
+                    src={worker}
+                    alt={`Safety Worker ${index + 1}`}
+                    width={320}
+                    height={450}
+                    className="object-contain drop-shadow-[0_0_20px_rgba(249,115,22,0.3)] max-h-[450px]"
+                    style={{ animation: currentWorker === index ? 'floatWorker 3s ease-in-out infinite' : 'none' }}
+                    priority={index === 0}
+                  />
+                </div>
+              ))}
             </div>
 
             {/* Navigation Arrows */}
@@ -864,6 +866,9 @@ const FAQ = () => {
     { q: "Berapa kamera yang bisa dipantau?", a: "GPU entry-level: 4-8 kamera. GPU high-end: 50+ kamera." },
     { q: "Apakah mendukung RTSP?", a: "Ya, mendukung berbagai merek IP Camera (Hikvision, Dahua, dll)." },
     { q: "Bagaimana cara notifikasi?", a: "Via Telegram Bot. WhatsApp & Email sedang dikembangkan." },
+    { q: "Bagaimana cara notifikasi?", a: "Via Telegram Bot. WhatsApp & Email sedang dikembangkan." },
+    { q: "Apa Saja Tech Stack yang digunakan dalam Pengembangan SoftWare ini", a: "Tech stack yang digunakan Dalam Pembuatan software ini adalah  1.Frontend menggunakan React , Next.js . tailwindcss  2.Backend menggunakan Golang  3.AI menggunakan Yolo v8" },
+    { q: "Siapa Yang Mengembangkan Software ini ?", a: "Software ini di kembangkan oleh Muhammad Syarifuddin Yahya dan Nur Jannah favela A.Q. dari SMAN Ngoro Jombang untuk Lomba essay K3 dari PPNS . Serta didukung Oleh GenZ AI Berdampak" },
   ];
 
   return (
@@ -938,14 +943,9 @@ const CTA = () => (
 
         {/* CTA Buttons */}
         <div className="flex flex-wrap justify-center gap-4">
-          <Link href="/dashboard">
-            <button className="px-10 py-5 bg-white text-orange-600 rounded-xl font-bold text-lg hover:bg-amber-50 transition-colors shadow-xl shadow-black/20 flex items-center gap-2">
-              <Play className="w-5 h-5" /> Coba Demo Gratis
-            </button>
-          </Link>
           <Link href="/login">
-            <button className="px-10 py-5 border-2 border-white text-white rounded-xl font-bold text-lg hover:bg-white/10 transition-colors flex items-center gap-2">
-              Login Dashboard <ArrowRight className="w-5 h-5" />
+            <button className="px-10 py-5 bg-white text-orange-600 rounded-xl font-bold text-lg hover:bg-amber-50 transition-colors shadow-xl shadow-black/20 flex items-center gap-2">
+              <Play className="w-5 h-5" /> Coba Sekarang
             </button>
           </Link>
         </div>
@@ -1018,7 +1018,7 @@ const Footer = () => (
           <ul className="space-y-3 text-sm text-slate-600">
             <li className="flex items-start gap-2">
               <span>📍</span>
-              <span>Jakarta, Indonesia</span>
+              <span>Jombang, Indonesia</span>
             </li>
             <li className="flex items-start gap-2">
               <span>📧</span>
@@ -1026,7 +1026,7 @@ const Footer = () => (
             </li>
             <li className="flex items-start gap-2">
               <span>📞</span>
-              <span>+62 21 1234 5678</span>
+              <span>+62 851 8310 4294</span>
             </li>
           </ul>
           <div className="mt-6 p-4 rounded-xl bg-gradient-to-r from-orange-50 to-emerald-50 border border-orange-200">
@@ -1041,7 +1041,7 @@ const Footer = () => (
     {/* Bottom Bar */}
     <div className="border-t border-slate-200 py-6 bg-slate-50">
       <div className="container mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-        <p className="text-slate-500 text-sm">© 2024 SmartAPD. Built for Zero Harm Culture.</p>
+        <p className="text-slate-500 text-sm">© 2025  SmartAPD. Dari SMANERO untuk Keselamatan Kerja indonesia.</p>
         <div className="flex gap-6">
           <Link href="/privacy" className="text-slate-500 hover:text-orange-500 text-sm transition-colors">Kebijakan Privasi</Link>
           <Link href="/terms" className="text-slate-500 hover:text-orange-500 text-sm transition-colors">Syarat & Ketentuan</Link>
