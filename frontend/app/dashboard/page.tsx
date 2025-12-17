@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
-import { ShieldCheck, AlertTriangle, UserCheck, TrendingUp, Eye, Maximize2, Volume2, VolumeX } from "lucide-react";
+import { ShieldCheck, AlertTriangle, UserCheck, TrendingUp, Eye, Maximize2, Volume2, VolumeX, Loader2 } from "lucide-react";
+import { api, Stats } from "@/services/api";
 
 // Camera data
 const cameras = [
@@ -105,6 +106,33 @@ const CameraCard = ({ camera }: { camera: typeof cameras[0] }) => {
 };
 
 export default function DashboardPage() {
+  const [stats, setStats] = useState<Stats>({
+    compliance: 94.2,
+    totalDetections: 1247,
+    violationsToday: 12,
+    workersActive: 248
+  });
+  const [loading, setLoading] = useState(true);
+
+  // Fetch stats from API
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const data = await api.getDetectionStats();
+        setStats(data);
+      } catch (error) {
+        console.error('Failed to fetch stats:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchStats, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="space-y-6">
 
@@ -132,7 +160,7 @@ export default function DashboardPage() {
               className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors"
             >
               <span className={`w-2 h-2 rounded-full ${cam.statusColor === "emerald" ? "bg-emerald-500" :
-                  cam.statusColor === "amber" ? "bg-amber-500" : "bg-red-500"
+                cam.statusColor === "amber" ? "bg-amber-500" : "bg-red-500"
                 }`}></span>
               TITIK {cam.id}
             </button>
@@ -147,7 +175,7 @@ export default function DashboardPage() {
           <div>
             <h3 className="text-[11px] uppercase tracking-widest text-slate-500 font-bold mb-1">REAL-TIME COMPLIANCE</h3>
             <div className="flex items-baseline gap-2">
-              <span className="text-5xl font-black text-slate-900 font-mono">94.2</span>
+              <span className="text-5xl font-black text-slate-900 font-mono">{stats.compliance.toFixed(1)}</span>
               <span className="text-2xl font-bold text-emerald-600">%</span>
             </div>
             <div className="flex items-center gap-2 mt-2 text-sm text-emerald-600">
@@ -168,7 +196,7 @@ export default function DashboardPage() {
             </div>
             <span className="text-[10px] font-bold text-red-600 bg-red-100 px-2.5 py-1 rounded-full">PRIORITAS</span>
           </div>
-          <div className="text-3xl font-black text-slate-900 font-mono">12</div>
+          <div className="text-3xl font-black text-slate-900 font-mono">{stats.violationsToday}</div>
           <div className="text-[11px] uppercase tracking-widest text-slate-500 font-bold mt-1">Pelanggaran Hari Ini</div>
         </div>
 
@@ -180,7 +208,7 @@ export default function DashboardPage() {
             </div>
             <span className="text-[10px] font-bold text-emerald-600 bg-emerald-100 px-2.5 py-1 rounded-full">AKTIF</span>
           </div>
-          <div className="text-3xl font-black text-slate-900 font-mono">248</div>
+          <div className="text-3xl font-black text-slate-900 font-mono">{stats.workersActive}</div>
           <div className="text-[11px] uppercase tracking-widest text-slate-500 font-bold mt-1">Pekerja di Lokasi</div>
         </div>
       </div>
@@ -215,8 +243,8 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-slate-900">{alert.type}</span>
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${alert.severity === "BAHAYA"
-                      ? "bg-red-500 text-white"
-                      : "bg-amber-500 text-white"
+                    ? "bg-red-500 text-white"
+                    : "bg-amber-500 text-white"
                     }`}>{alert.severity}</span>
                 </div>
                 <p className="text-sm text-slate-500">{alert.location}</p>

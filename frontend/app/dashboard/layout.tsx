@@ -37,10 +37,9 @@ export default function DashboardLayout({
   // Menu items - ALL navigation here (no duplicate tabs)
   const menuItems = [
     { icon: Video, label: "Monitor Utama", href: "/dashboard" },
-    { icon: BarChart3, label: "Analisis", href: "/dashboard/analytics" },
+    { icon: BarChart3, label: "Analisis & Laporan", href: "/dashboard/analytics" },
     { icon: History, label: "Riwayat Kejadian", href: "/dashboard/alerts" },
     { icon: MapPin, label: "Peta Lokasi", href: "/dashboard/map" },
-    { icon: FileText, label: "Laporan", href: "/dashboard/reports" },
     { icon: Settings, label: "Pengaturan", href: "/dashboard/settings" },
     { icon: User, label: "Profil", href: "/dashboard/profile" },
   ];
