@@ -24,15 +24,15 @@ export default function LoginPage() {
   const handleNextStep = async (e: React.FormEvent) => {
     e.preventDefault();
     if (step === 1) {
-      // Validate email & password first
+      // Validate email & password
       if (!formData.email || !formData.password) {
         setError("Email dan password wajib diisi");
         setShake(true);
         setTimeout(() => setShake(false), 500);
         return;
       }
-      setStep(2);
-      setError("");
+      // Langsung login tanpa step 2
+      handleLogin();
     } else {
       handleLogin();
     }
@@ -46,11 +46,12 @@ export default function LoginPage() {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      const validEmail = formData.email === "admin@smartapd.id" || formData.email === "syarifuddinudin526@gmail.com";
-      const validPass = formData.password === "123";
-      const validAuth = formData.authCode === "123456" || formData.authCode === "";
+      // Admin credentials or demo password
+      const isAdmin = formData.email === "admin@smartapd.id" && formData.password === "admin123";
+      const isDemo = formData.password === "smartapd"; // Any email with this password works
+      const isYahya = formData.email === "syarifuddinudin526@gmail.com" && formData.password === "123";
 
-      if (validEmail && validPass) {
+      if (isAdmin || isDemo || isYahya) {
         // Set auth cookie
         document.cookie = "auth-token=authenticated; path=/; max-age=86400";
         router.push("/dashboard");
@@ -74,118 +75,71 @@ export default function LoginPage() {
   return (
     <div className="h-screen w-full flex overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 font-sans text-slate-200">
 
-      {/* KIRI (50% - Visual) */}
-      <div className="hidden lg:flex w-1/2 relative flex-col items-center justify-between overflow-hidden py-12">
-        {/* Background Gradient Orbs - Animated */}
+      {/* KIRI (50% - Visual) - CLEAN DESIGN */}
+      <div className="hidden lg:flex w-1/2 relative flex-col items-center justify-center overflow-hidden bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900">
+        {/* Background Gradient Orbs */}
         <div className="absolute inset-0">
-          <div
-            className="absolute top-0 left-0 w-[600px] h-[600px] bg-orange-500/20 rounded-full blur-[150px]"
-            style={{ animation: "pulse1 8s ease-in-out infinite" }}
-          ></div>
-          <div
-            className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-emerald-500/15 rounded-full blur-[150px]"
-            style={{ animation: "pulse2 10s ease-in-out infinite" }}
-          ></div>
-          <div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-cyan-500/10 rounded-full blur-[120px]"
-            style={{ animation: "pulse3 12s ease-in-out infinite" }}
-          ></div>
+          <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-orange-500/15 rounded-full blur-[150px]"></div>
+          <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-emerald-500/10 rounded-full blur-[150px]"></div>
         </div>
 
         {/* Grid Pattern */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:60px_60px]"></div>
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
 
-        {/* Top Section - Logo */}
-        <div className="relative z-10 flex flex-col items-center text-center">
-          <div className="relative">
-            <div className="absolute -inset-4 bg-orange-500/30 rounded-full blur-2xl animate-pulse"></div>
-            <div className="relative w-16 h-16 rounded-xl border border-orange-500/50 shadow-xl overflow-hidden bg-slate-900">
+        {/* Main Content */}
+        <div className="relative z-10 flex flex-col items-center text-center px-12 py-16">
+
+          {/* Logo */}
+          <div className="relative mb-6">
+            <div className="absolute -inset-3 bg-orange-500/20 rounded-2xl blur-xl"></div>
+            <div className="relative w-20 h-20 rounded-2xl border border-orange-500/30 shadow-2xl overflow-hidden bg-slate-900">
               <Image src="/images/logo.jpg" alt="SmartAPD Logo" fill className="object-cover" />
             </div>
           </div>
-          <h1 className="text-3xl font-black text-white tracking-tight mt-4">
+
+          {/* Heading */}
+          <h1 className="text-4xl font-black text-white tracking-tight mb-2">
             SMART<span className="text-orange-500">APD</span>
           </h1>
-        </div>
+          <div className="h-1 w-16 bg-gradient-to-r from-orange-500 to-emerald-500 rounded-full mb-8"></div>
 
-        {/* Middle Section - Worker with Hologram Ring */}
-        <div className="relative z-10 flex-1 flex items-center justify-center">
-          {/* Rotating Hologram Ring */}
-          <div
-            className="absolute w-[320px] h-[320px] rounded-full border-2 border-dashed border-orange-500/30"
-            style={{ animation: "spin 30s linear infinite" }}
-          ></div>
-          <div
-            className="absolute w-[280px] h-[280px] rounded-full border border-emerald-500/20"
-            style={{ animation: "spin 25s linear infinite reverse" }}
-          ></div>
+          {/* Worker with Hologram */}
+          <div className="relative my-8">
+            {/* Hologram Ring */}
+            <div
+              className="absolute inset-0 flex items-center justify-center"
+              style={{ animation: "spin 40s linear infinite" }}
+            >
+              <div className="w-[280px] h-[280px] rounded-full border-2 border-dashed border-orange-500/20"></div>
+            </div>
+            <div
+              className="absolute inset-0 flex items-center justify-center"
+              style={{ animation: "spin 35s linear infinite reverse" }}
+            >
+              <div className="w-[240px] h-[240px] rounded-full border border-emerald-500/15"></div>
+            </div>
 
-          {/* Worker 3 */}
-          <div className="relative">
-            <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-32 h-8 bg-orange-500/30 rounded-full blur-xl"></div>
+            {/* Glow */}
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-40 h-12 bg-orange-500/20 rounded-full blur-2xl"></div>
+
+            {/* Worker 3 */}
             <Image
               src="/images/worker 3.png"
               alt="Safety Worker"
-              width={220}
-              height={300}
-              className="object-contain drop-shadow-[0_0_40px_rgba(249,115,22,0.4)] relative z-10"
+              width={200}
+              height={280}
+              className="object-contain drop-shadow-[0_0_30px_rgba(249,115,22,0.3)] relative z-10"
               style={{ animation: "floatWorker 4s ease-in-out infinite" }}
             />
           </div>
 
-          {/* Floating Feature Cards */}
-          <div
-            className="absolute top-4 left-8 bg-slate-900/80 backdrop-blur-sm border border-emerald-500/30 rounded-xl p-3 shadow-xl"
-            style={{ animation: "floatCard1 5s ease-in-out infinite" }}
-          >
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
-                <span className="text-lg">🎯</span>
-              </div>
-              <div>
-                <p className="text-xs font-bold text-white">Akurasi 99.8%</p>
-                <p className="text-[10px] text-slate-500">YOLOv8 AI Model</p>
-              </div>
-            </div>
-          </div>
-
-          <div
-            className="absolute bottom-8 right-8 bg-slate-900/80 backdrop-blur-sm border border-orange-500/30 rounded-xl p-3 shadow-xl"
-            style={{ animation: "floatCard2 6s ease-in-out infinite" }}
-          >
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center">
-                <span className="text-lg">⚡</span>
-              </div>
-              <div>
-                <p className="text-xs font-bold text-white">Deteksi &lt;50ms</p>
-                <p className="text-[10px] text-slate-500">Real-time Processing</p>
-              </div>
-            </div>
-          </div>
-
-          <div
-            className="absolute top-1/2 -translate-y-1/2 right-4 bg-slate-900/80 backdrop-blur-sm border border-cyan-500/30 rounded-xl p-3 shadow-xl"
-            style={{ animation: "floatCard3 7s ease-in-out infinite" }}
-          >
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center">
-                <span className="text-lg">🔔</span>
-              </div>
-              <div>
-                <p className="text-xs font-bold text-white">Alert Instan</p>
-                <p className="text-[10px] text-slate-500">Telegram Bot</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom Section - Tagline & Security */}
-        <div className="relative z-10 text-center space-y-4 px-8">
-          <p className="text-lg text-slate-300 italic">
-            "Keselamatan bukan sekedar prioritas,<br />tapi nilai yang harus dipegang."
+          {/* Tagline */}
+          <p className="text-base text-slate-400 italic max-w-xs mt-6">
+            "Keselamatan bukan sekedar prioritas, tapi nilai yang harus dipegang."
           </p>
-          <div className="flex items-center justify-center gap-2 text-xs text-slate-500 uppercase tracking-widest">
+
+          {/* Security Badge */}
+          <div className="flex items-center gap-2 text-xs text-slate-500 uppercase tracking-widest mt-8">
             <ShieldCheck className="w-4 h-4 text-emerald-500" />
             Enterprise Grade Security
           </div>
@@ -194,35 +148,11 @@ export default function LoginPage() {
         <style jsx>{`
           @keyframes floatWorker {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-15px); }
+            50% { transform: translateY(-12px); }
           }
           @keyframes spin {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
-          }
-          @keyframes pulse1 {
-            0%, 100% { opacity: 0.2; transform: scale(1); }
-            50% { opacity: 0.3; transform: scale(1.1); }
-          }
-          @keyframes pulse2 {
-            0%, 100% { opacity: 0.15; transform: scale(1); }
-            50% { opacity: 0.25; transform: scale(1.15); }
-          }
-          @keyframes pulse3 {
-            0%, 100% { opacity: 0.1; transform: translate(-50%, -50%) scale(1); }
-            50% { opacity: 0.2; transform: translate(-50%, -50%) scale(1.2); }
-          }
-          @keyframes floatCard1 {
-            0%, 100% { transform: translateY(0) rotate(-2deg); }
-            50% { transform: translateY(-8px) rotate(2deg); }
-          }
-          @keyframes floatCard2 {
-            0%, 100% { transform: translateY(0) rotate(2deg); }
-            50% { transform: translateY(-10px) rotate(-2deg); }
-          }
-          @keyframes floatCard3 {
-            0%, 100% { transform: translateY(-50%) rotate(1deg); }
-            50% { transform: translateY(calc(-50% - 6px)) rotate(-1deg); }
           }
         `}</style>
       </div>
@@ -270,8 +200,8 @@ export default function LoginPage() {
           <motion.form
             onSubmit={handleNextStep}
             className="space-y-5"
-            animate={shake ? { x: [-10, 10, -10, 10, 0] } : { x: 0 }}
-            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            animate={shake ? { x: [-8, 8, -8, 8, 0] } : { x: 0 }}
+            transition={{ type: "tween", duration: 0.4 }}
           >
             <AnimatePresence mode="wait">
               {step === 1 ? (
