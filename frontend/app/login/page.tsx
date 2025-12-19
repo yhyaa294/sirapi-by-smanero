@@ -43,26 +43,58 @@ export default function LoginPage() {
     setError("");
     setShake(false);
 
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
 
-      // Admin credentials or demo password
+    try {
+      // Try API auth first
+      const response = await fetch(`${API_BASE}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Store JWT token
+        if (data.token) {
+          localStorage.setItem('auth-token', data.token);
+          document.cookie = `auth-token=${data.token}; path=/; max-age=86400`;
+        } else {
+          document.cookie = "auth-token=authenticated; path=/; max-age=86400";
+        }
+        router.push("/dashboard");
+        return;
+      }
+
+      // API failed, fallback to demo credentials
       const isAdmin = formData.email === "admin@smartapd.id" && formData.password === "admin123";
-      const isDemo = formData.password === "smartapd"; // Any email with this password works
+      const isDemo = formData.password === "smartapd";
       const isYahya = formData.email === "syarifuddinudin526@gmail.com" && formData.password === "123";
 
       if (isAdmin || isDemo || isYahya) {
-        // Set auth cookie
         document.cookie = "auth-token=authenticated; path=/; max-age=86400";
         router.push("/dashboard");
       } else {
         throw new Error("Invalid credentials");
       }
     } catch (err) {
-      setError("Akses Ditolak: Email atau Password salah.");
-      setIsLoading(false);
-      setShake(true);
-      setTimeout(() => setShake(false), 500);
+      // Final fallback check for demo credentials
+      const isAdmin = formData.email === "admin@smartapd.id" && formData.password === "admin123";
+      const isDemo = formData.password === "smartapd";
+      const isYahya = formData.email === "syarifuddinudin526@gmail.com" && formData.password === "123";
+
+      if (isAdmin || isDemo || isYahya) {
+        document.cookie = "auth-token=authenticated; path=/; max-age=86400";
+        router.push("/dashboard");
+      } else {
+        setError("Akses Ditolak: Email atau Password salah.");
+        setIsLoading(false);
+        setShake(true);
+        setTimeout(() => setShake(false), 500);
+      }
     }
   };
 

@@ -109,6 +109,12 @@ func main() {
 	reports.Get("/weekly", handlers.GetWeeklyReport)
 	reports.Get("/export", handlers.ExportReport)
 
+	// Auth routes
+	auth := api.Group("/auth")
+	auth.Post("/login", handlers.Login)
+	auth.Post("/register", handlers.Register)
+	auth.Get("/me", middleware.JWTAuth(), handlers.GetMe)
+
 	// WebSocket for real-time updates
 	app.Get("/ws", handlers.WebSocketHandler)
 

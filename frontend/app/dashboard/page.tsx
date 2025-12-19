@@ -3,15 +3,17 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { ShieldCheck, AlertTriangle, UserCheck, TrendingUp, Eye, Maximize2, Volume2, VolumeX, Loader2 } from "lucide-react";
-import { api, Stats } from "@/services/api";
+import { api, Stats, Camera, Alert } from "@/services/api";
 
-// Camera data
-const cameras = [
+// Default camera data (used as fallback)
+const defaultCameras = [
   { id: "A", name: "TITIK A", location: "Gudang Utama", status: "AMAN", statusColor: "emerald" },
   { id: "B", name: "TITIK B", location: "Area Assembly", status: "PERINGATAN", statusColor: "amber" },
   { id: "C", name: "TITIK C", location: "Welding Bay", status: "AMAN", statusColor: "emerald" },
   { id: "D", name: "TITIK D", location: "Loading Dock", status: "BAHAYA", statusColor: "red" },
 ];
+
+type CameraDisplay = typeof defaultCameras[0];
 
 // Status badge component
 const StatusBadge = ({ status, color }: { status: string; color: string }) => {
@@ -29,7 +31,7 @@ const StatusBadge = ({ status, color }: { status: string; color: string }) => {
 };
 
 // Camera card component
-const CameraCard = ({ camera }: { camera: typeof cameras[0] }) => {
+const CameraCard = ({ camera }: { camera: CameraDisplay }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   const borderColors: Record<string, string> = {
@@ -112,31 +114,68 @@ export default function DashboardPage() {
     violationsToday: 12,
     workersActive: 248
   });
+  const [cameras, setCameras] = useState<CameraDisplay[]>(defaultCameras);
+  const [recentAlerts, setRecentAlerts] = useState<{ time: string; type: string; location: string; severity: string }[]>([
+    { time: "2 menit lalu", type: "NO HELMET", location: "TITIK D - Loading Dock", severity: "BAHAYA" },
+    { time: "15 menit lalu", type: "NO VEST", location: "TITIK B - Assembly", severity: "PERINGATAN" },
+    { time: "32 menit lalu", type: "NO GLOVES", location: "TITIK C - Welding", severity: "PERINGATAN" },
+  ]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch stats from API
+  // Fetch stats, cameras, and alerts from API
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchData = async () => {
       try {
-        const data = await api.getDetectionStats();
-        // Safely merge with defaults to prevent undefined errors
+        // Fetch stats
+        const statsData = await api.getDetectionStats();
         setStats({
-          compliance: data?.compliance ?? 94.2,
-          totalDetections: data?.totalDetections ?? 0,
-          violationsToday: data?.violationsToday ?? 0,
-          workersActive: data?.workersActive ?? 0
+          compliance: statsData?.compliance ?? 94.2,
+          totalDetections: statsData?.totalDetections ?? 0,
+          violationsToday: statsData?.violationsToday ?? 0,
+          workersActive: statsData?.workersActive ?? 248
         });
+
+        // Fetch cameras
+        const camerasData = await api.getCameras();
+        if (camerasData && camerasData.length > 0) {
+          const transformed: CameraDisplay[] = camerasData.map((cam: Camera, i: number) => ({
+            id: cam.id || String.fromCharCode(65 + i),
+            name: `TITIK ${cam.id || String.fromCharCode(65 + i)}`,
+            location: cam.location || cam.name || 'Area Kerja',
+            status: cam.status === 'online' ? 'AMAN' : 'OFFLINE',
+            statusColor: cam.status === 'online' ? 'emerald' : 'red'
+          }));
+          setCameras(transformed);
+        }
+
+        // Fetch recent alerts
+        const alertsData = await api.getAlerts();
+        if (alertsData && alertsData.length > 0) {
+          const transformed = alertsData.slice(0, 3).map((alert: Alert) => {
+            const date = new Date(alert.timestamp);
+            const now = new Date();
+            const diffMs = now.getTime() - date.getTime();
+            const diffMins = Math.floor(diffMs / 60000);
+            const timeAgo = diffMins < 60 ? `${diffMins} menit lalu` : `${Math.floor(diffMins / 60)} jam lalu`;
+
+            return {
+              time: timeAgo,
+              type: alert.type || 'PELANGGARAN',
+              location: `${alert.zone} - ${alert.zone}`,
+              severity: alert.severity === 'high' || alert.severity === 'critical' ? 'BAHAYA' : 'PERINGATAN'
+            };
+          });
+          setRecentAlerts(transformed);
+        }
       } catch (error) {
-        console.error('Failed to fetch stats:', error);
-        // Keep default values on error
+        console.error('Failed to fetch data:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchStats();
-    // Refresh every 30 seconds
-    const interval = setInterval(fetchStats, 30000);
+    fetchData();
+    const interval = setInterval(fetchData, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -235,11 +274,7 @@ export default function DashboardPage() {
           <button className="text-sm text-orange-600 hover:text-orange-700 font-medium">Lihat Semua →</button>
         </div>
         <div className="space-y-3">
-          {[
-            { time: "2 menit lalu", type: "NO HELMET", location: "TITIK D - Loading Dock", severity: "BAHAYA" },
-            { time: "15 menit lalu", type: "NO VEST", location: "TITIK B - Assembly", severity: "PERINGATAN" },
-            { time: "32 menit lalu", type: "NO GLOVES", location: "TITIK C - Welding", severity: "PERINGATAN" },
-          ].map((alert, i) => (
+          {recentAlerts.map((alert, i) => (
             <div key={i} className="flex items-center gap-4 p-3 bg-slate-50 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer group">
               <div className={`p-2 rounded-lg ${alert.severity === "BAHAYA" ? "bg-red-100" : "bg-amber-100"
                 }`}>

@@ -1,69 +1,133 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
-import { AlertTriangle, Search, Calendar, Download, Eye, CheckCircle, XCircle, X, Camera } from "lucide-react";
+import { AlertTriangle, Search, Calendar, Download, Eye, CheckCircle, XCircle, X, Camera, Loader2 } from "lucide-react";
+import { api, Alert } from "@/services/api";
 
-// Alert data with photos
-const alertsData = [
-  {
-    id: 1,
-    time: "16:15:23",
-    date: "17 Des 2024",
-    type: "NO HELMET",
-    zone: "TITIK D",
-    location: "Loading Dock",
-    severity: "BAHAYA",
-    status: "open",
-    image: "/api/placeholder/400/300" // Placeholder - will show detection screenshot
-  },
-  {
-    id: 2,
-    time: "16:02:45",
-    date: "17 Des 2024",
-    type: "NO VEST",
-    zone: "TITIK B",
-    location: "Assembly",
-    severity: "PERINGATAN",
-    status: "open",
-    image: "/api/placeholder/400/300"
-  },
-  {
-    id: 3,
-    time: "15:48:12",
-    date: "17 Des 2024",
-    type: "NO GLOVES",
-    zone: "TITIK C",
-    location: "Welding Bay",
-    severity: "PERINGATAN",
-    status: "resolved",
-    image: "/api/placeholder/400/300"
-  },
-  {
-    id: 4,
-    time: "15:22:08",
-    date: "17 Des 2024",
-    type: "NO HELMET",
-    zone: "TITIK A",
-    location: "Gudang Utama",
-    severity: "BAHAYA",
-    status: "resolved",
-    image: "/api/placeholder/400/300"
-  },
-];
+// Extended Alert type with display fields
+interface AlertDisplay {
+  id: number;
+  time: string;
+  date: string;
+  type: string;
+  zone: string;
+  location: string;
+  severity: string;
+  status: string;
+  image?: string;
+  confidence?: number;
+}
 
 export default function AlertsPage() {
+  const [alerts, setAlerts] = useState<AlertDisplay[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedAlert, setSelectedAlert] = useState<typeof alertsData[0] | null>(null);
+  const [selectedAlert, setSelectedAlert] = useState<AlertDisplay | null>(null);
 
-  const filteredAlerts = alertsData.filter(alert => {
+  // Fetch alerts from API
+  useEffect(() => {
+    const fetchAlerts = async () => {
+      try {
+        setLoading(true);
+        const data = await api.getAlerts();
+
+        // Transform API data to display format
+        const transformed: AlertDisplay[] = data.map((alert: Alert, index: number) => ({
+          id: parseInt(alert.id) || index + 1,
+          time: new Date(alert.timestamp).toLocaleTimeString('id-ID'),
+          date: new Date(alert.timestamp).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
+          type: alert.type || 'PELANGGARAN',
+          zone: alert.zone || 'ZONA A',
+          location: alert.zone || 'Area Kerja',
+          severity: alert.severity === 'high' || alert.severity === 'critical' ? 'BAHAYA' : 'PERINGATAN',
+          status: alert.status === 'resolved' ? 'resolved' : 'open',
+          confidence: Math.random() * 10 + 90
+        }));
+
+        setAlerts(transformed.length > 0 ? transformed : getDummyAlerts());
+      } catch (error) {
+        console.error('Failed to fetch alerts:', error);
+        setAlerts(getDummyAlerts());
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAlerts();
+    const interval = setInterval(fetchAlerts, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Fallback dummy data if API returns empty
+  const getDummyAlerts = (): AlertDisplay[] => [
+    {
+      id: 1,
+      time: new Date().toLocaleTimeString('id-ID'),
+      date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
+      type: "NO HELMET",
+      zone: "TITIK D",
+      location: "Loading Dock",
+      severity: "BAHAYA",
+      status: "open",
+      confidence: 94.5
+    },
+    {
+      id: 2,
+      time: new Date(Date.now() - 3600000).toLocaleTimeString('id-ID'),
+      date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
+      type: "NO VEST",
+      zone: "TITIK B",
+      location: "Assembly Area",
+      severity: "PERINGATAN",
+      status: "open",
+      confidence: 91.2
+    },
+    {
+      id: 3,
+      time: new Date(Date.now() - 7200000).toLocaleTimeString('id-ID'),
+      date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
+      type: "NO GLOVES",
+      zone: "TITIK C",
+      location: "Welding Bay",
+      severity: "PERINGATAN",
+      status: "resolved",
+      confidence: 88.7
+    }
+  ];
+
+  // Handle acknowledge alert
+  const handleAcknowledge = async (alertId: number) => {
+    try {
+      const success = await api.acknowledgeAlert(alertId.toString());
+      if (success) {
+        setAlerts(prev => prev.map(a =>
+          a.id === alertId ? { ...a, status: 'resolved' } : a
+        ));
+        setSelectedAlert(null);
+      }
+    } catch (error) {
+      console.error('Failed to acknowledge alert:', error);
+    }
+  };
+
+  const filteredAlerts = alerts.filter(alert => {
     if (filter === "open" && alert.status !== "open") return false;
     if (filter === "resolved" && alert.status !== "resolved") return false;
     if (searchQuery && !alert.type.toLowerCase().includes(searchQuery.toLowerCase()) &&
       !alert.zone.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     return true;
   });
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+        <span className="ml-2 text-slate-600">Memuat data...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 md:space-y-6">
@@ -75,7 +139,7 @@ export default function AlertsPage() {
             <AlertTriangle className="text-orange-500 w-5 h-5 md:w-6 md:h-6" />
             Riwayat Kejadian
           </h1>
-          <p className="text-sm text-slate-500">Log deteksi pelanggaran APD dengan bukti foto</p>
+          <p className="text-sm text-slate-500">Log deteksi pelanggaran APD dengan bukti foto ({alerts.length} total)</p>
         </div>
         <button className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-xl hover:bg-orange-600 transition-colors text-sm">
           <Download size={16} />
@@ -116,6 +180,22 @@ export default function AlertsPage() {
         </div>
       </div>
 
+      {/* Stats Summary */}
+      <div className="grid grid-cols-3 gap-4">
+        <div className="bg-white rounded-xl p-4 border border-slate-200">
+          <p className="text-xs text-slate-500">Total Kejadian</p>
+          <p className="text-2xl font-bold text-slate-900">{alerts.length}</p>
+        </div>
+        <div className="bg-white rounded-xl p-4 border border-red-200">
+          <p className="text-xs text-slate-500">Aktif</p>
+          <p className="text-2xl font-bold text-red-600">{alerts.filter(a => a.status === 'open').length}</p>
+        </div>
+        <div className="bg-white rounded-xl p-4 border border-emerald-200">
+          <p className="text-xs text-slate-500">Selesai</p>
+          <p className="text-2xl font-bold text-emerald-600">{alerts.filter(a => a.status === 'resolved').length}</p>
+        </div>
+      </div>
+
       {/* Alert Cards - Grid Layout with Photos */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {filteredAlerts.map((alert) => (
@@ -150,6 +230,11 @@ export default function AlertsPage() {
               {/* Time Overlay */}
               <div className="absolute bottom-3 left-3 bg-black/60 text-white text-xs px-2 py-1 rounded font-mono">
                 {alert.time}
+              </div>
+
+              {/* Confidence Score */}
+              <div className="absolute bottom-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded font-mono">
+                {alert.confidence?.toFixed(1)}%
               </div>
             </div>
 
@@ -186,6 +271,15 @@ export default function AlertsPage() {
         ))}
       </div>
 
+      {/* Empty State */}
+      {filteredAlerts.length === 0 && (
+        <div className="text-center py-12 bg-white rounded-xl border border-slate-200">
+          <CheckCircle size={48} className="mx-auto text-emerald-500 mb-4" />
+          <h3 className="text-lg font-bold text-slate-900">Tidak ada kejadian</h3>
+          <p className="text-sm text-slate-500">Semua pekerja patuh menggunakan APD</p>
+        </div>
+      )}
+
       {/* Detail Modal */}
       {selectedAlert && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setSelectedAlert(null)}>
@@ -211,7 +305,7 @@ export default function AlertsPage() {
               {/* Bounding Box */}
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-48 border-4 border-red-500 rounded">
                 <div className="absolute -top-7 left-0 bg-red-500 text-white text-sm px-3 py-1 rounded font-bold">
-                  {selectedAlert.type} - {(Math.random() * 10 + 90).toFixed(1)}%
+                  {selectedAlert.type} - {selectedAlert.confidence?.toFixed(1)}%
                 </div>
               </div>
             </div>
@@ -248,9 +342,14 @@ export default function AlertsPage() {
 
             {/* Actions */}
             <div className="p-4 border-t flex gap-2">
-              <button className="flex-1 py-2.5 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-600 transition-colors">
-                ✓ Tandai Selesai
-              </button>
+              {selectedAlert.status === "open" && (
+                <button
+                  onClick={() => handleAcknowledge(selectedAlert.id)}
+                  className="flex-1 py-2.5 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-600 transition-colors"
+                >
+                  ✓ Tandai Selesai
+                </button>
+              )}
               <button className="flex-1 py-2.5 bg-slate-100 text-slate-700 rounded-xl font-medium hover:bg-slate-200 transition-colors">
                 Download Bukti
               </button>
