@@ -24,6 +24,8 @@ import {
   ExternalLink,
   Trash2,
 } from "lucide-react";
+import { useDemoMode, DemoDetection } from "@/hooks/useDemoMode";
+import { api } from "@/services/api";
 
 // Types
 interface Incident {
@@ -40,134 +42,61 @@ interface Incident {
   imageUrl?: string;
 }
 
-// Mock Data - Combined from notifications and alerts
-const mockIncidents: Incident[] = [
-  {
-    id: "INC-001",
-    timestamp: new Date(Date.now() - 2 * 60 * 1000), // 2 mins ago
-    type: "no_helmet",
-    severity: "critical",
-    location: "Zona A - Gudang Utama",
-    cameraId: "A",
-    description: "Pekerja tidak memakai helm saat memasuki area gudang. AI Confidence: 98.5%",
-    status: "open",
-    read: false,
-    confidence: 98.5,
-  },
-  {
-    id: "INC-002",
-    timestamp: new Date(Date.now() - 8 * 60 * 1000), // 8 mins ago
-    type: "danger_zone",
-    severity: "critical",
-    location: "Zona D - Loading Dock",
-    cameraId: "D",
-    description: "Pekerja memasuki zona merah tanpa izin akses yang valid.",
-    status: "open",
-    read: false,
-    confidence: 96.2,
-  },
-  {
-    id: "INC-003",
-    timestamp: new Date(Date.now() - 15 * 60 * 1000), // 15 mins ago
-    type: "no_gloves",
-    severity: "high",
-    location: "Zona C - Welding Bay",
-    cameraId: "C",
-    description: "Sarung tangan tidak terdeteksi saat pekerja mengoperasikan mesin las.",
-    status: "open",
-    read: false,
-    confidence: 94.8,
-  },
-  {
-    id: "INC-004",
-    timestamp: new Date(Date.now() - 32 * 60 * 1000), // 32 mins ago
-    type: "no_vest",
-    severity: "medium",
-    location: "Zona B - Area Assembly",
-    cameraId: "B",
-    description: "Rompi keselamatan tidak terlihat pada pekerja di jalur assembly.",
-    status: "investigating",
-    read: true,
-    confidence: 89.3,
-  },
-  {
-    id: "INC-005",
-    timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000), // 1 hour ago
-    type: "no_helmet",
-    severity: "high",
-    location: "Zona A - Gudang Utama",
-    cameraId: "A",
-    description: "Helm tidak terdeteksi pada 2 pekerja area loading.",
-    status: "resolved",
-    read: true,
-    confidence: 97.1,
-  },
-  {
-    id: "INC-006",
-    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-    type: "system",
-    severity: "info",
-    location: "System",
-    cameraId: "-",
-    description: "Semua 4 kamera CCTV telah terhubung dan berfungsi normal.",
-    status: "resolved",
-    read: true,
-  },
-  {
-    id: "INC-007",
-    timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000), // 3 hours ago
-    type: "no_boots",
-    severity: "medium",
-    location: "Zona C - Welding Bay",
-    cameraId: "C",
-    description: "Sepatu safety tidak terdeteksi pada pekerja shift pagi.",
-    status: "resolved",
-    read: true,
-    confidence: 85.6,
-  },
-  {
-    id: "INC-008",
-    timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
-    type: "no_vest",
-    severity: "medium",
-    location: "Zona D - Loading Dock",
-    cameraId: "D",
-    description: "Rompi reflektif tidak terlihat pada operator forklift.",
-    status: "resolved",
-    read: true,
-    confidence: 91.2,
-  },
-  {
-    id: "INC-009",
-    timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000), // 5 hours ago
-    type: "system",
-    severity: "info",
-    location: "System",
-    cameraId: "-",
-    description: "Model deteksi YOLOv8 telah diperbarui ke versi terbaru.",
-    status: "resolved",
-    read: true,
-  },
-  {
-    id: "INC-010",
-    timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
-    type: "no_gloves",
-    severity: "high",
-    location: "Zona B - Area Assembly",
-    cameraId: "B",
-    description: "Sarung tangan pelindung tidak digunakan saat assembly komponen tajam.",
-    status: "resolved",
-    read: true,
-    confidence: 93.4,
-  },
-];
-
+// Initial empty data - will be populated by Demo Mode or Backend
 export default function UnifiedAlertsPage() {
-  const [incidents, setIncidents] = useState<Incident[]>(mockIncidents);
+  const [incidents, setIncidents] = useState<Incident[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "open" | "investigating" | "resolved">("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [showFilters, setShowFilters] = useState(false);
+
+  // Demo Mode integration
+  const { isDemo, violations } = useDemoMode();
+
+  // Convert demo detections to incidents
+  useEffect(() => {
+    if (isDemo && violations.length > 0) {
+      const demoIncidents: Incident[] = violations.map((det, idx) => ({
+        id: `DEM-${det.id}`,
+        timestamp: det.timestamp,
+        type: det.type as Incident["type"],
+        severity: det.severity as Incident["severity"],
+        location: `${det.camera} - ${det.location}`,
+        cameraId: det.cameraId,
+        description: `AI Detection: ${det.type.replace("_", " ")} di ${det.location}. Confidence: ${det.confidence.toFixed(1)}%`,
+        status: idx < 3 ? "open" : "resolved",
+        read: idx >= 3,
+        confidence: det.confidence,
+      }));
+      setIncidents(demoIncidents);
+    }
+  }, [isDemo, violations]);
+
+  // Fetch from backend if not in demo mode
+  useEffect(() => {
+    if (!isDemo) {
+      api.getDetections(50).then(detections => {
+        if (detections.length > 0) {
+          const backendIncidents: Incident[] = detections.map((det, idx) => ({
+            id: det.id,
+            timestamp: new Date(det.timestamp),
+            type: det.type.toLowerCase().replace(" ", "_") as Incident["type"],
+            severity: det.severity === "BAHAYA" ? "critical" : det.severity === "PERINGATAN" ? "high" : "medium",
+            location: `Camera ${det.cameraId}`,
+            cameraId: det.cameraId,
+            description: `Detection: ${det.type}`,
+            status: det.acknowledged ? "resolved" : "open",
+            read: det.acknowledged,
+            confidence: 90,
+          }));
+          setIncidents(backendIncidents);
+        }
+      }).catch(() => {
+        // Backend not available, use empty
+        console.log("Backend not available for alerts");
+      });
+    }
+  }, [isDemo]);
 
   // Stats
   const totalToday = incidents.length;
@@ -349,17 +278,17 @@ export default function UnifiedAlertsPage() {
               <div
                 key={alert.id}
                 className={`bg-slate-900/80 border rounded-2xl p-4 transition-all ${alert.severity === "critical"
-                    ? "border-red-500 shadow-lg shadow-red-500/10"
-                    : alert.severity === "high"
-                      ? "border-orange-500/50"
-                      : "border-slate-800"
+                  ? "border-red-500 shadow-lg shadow-red-500/10"
+                  : alert.severity === "high"
+                    ? "border-orange-500/50"
+                    : "border-slate-800"
                   } ${!alert.read ? "ring-1 ring-orange-500/30" : ""}`}
               >
                 <div className="flex items-start gap-4">
                   {/* Icon */}
                   <div className={`p-3 rounded-xl flex-shrink-0 ${alert.severity === "critical" ? "bg-red-500/20 text-red-400" :
-                      alert.severity === "high" ? "bg-orange-500/20 text-orange-400" :
-                        "bg-slate-700 text-slate-400"
+                    alert.severity === "high" ? "bg-orange-500/20 text-orange-400" :
+                      "bg-slate-700 text-slate-400"
                     }`}>
                     {getTypeIcon(alert.type)}
                   </div>
@@ -522,9 +451,9 @@ export default function UnifiedAlertsPage() {
                 <div className="md:col-span-3">
                   <div className="flex items-center gap-2">
                     <div className={`p-1.5 rounded-lg ${incident.severity === "critical" ? "bg-red-500/20 text-red-400" :
-                        incident.severity === "high" ? "bg-orange-500/20 text-orange-400" :
-                          incident.severity === "medium" ? "bg-amber-500/20 text-amber-400" :
-                            "bg-slate-700 text-slate-400"
+                      incident.severity === "high" ? "bg-orange-500/20 text-orange-400" :
+                        incident.severity === "medium" ? "bg-amber-500/20 text-amber-400" :
+                          "bg-slate-700 text-slate-400"
                       }`}>
                       {getTypeIcon(incident.type)}
                     </div>

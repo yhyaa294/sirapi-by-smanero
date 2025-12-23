@@ -192,6 +192,135 @@ export const api = {
       return null;
     }
   },
+
+  // Create Detection (for Demo Mode)
+  async createDetection(detection: {
+    camera_id: number;
+    violation_type: string;
+    confidence: number;
+    image_path?: string;
+    location: string;
+    is_violation: boolean;
+  }): Promise<boolean> {
+    try {
+      const res = await fetch(`${API_BASE}/detections`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...detection,
+          detected_at: new Date().toISOString(),
+        }),
+      });
+      return res.ok;
+    } catch (error) {
+      console.error('API Error:', error);
+      return false;
+    }
+  },
+
+  // Create Alert
+  async createAlert(alert: {
+    detection_id: number;
+    severity: string;
+    message: string;
+    status?: string;
+  }): Promise<boolean> {
+    try {
+      const res = await fetch(`${API_BASE}/alerts`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...alert,
+          status: alert.status || 'pending',
+        }),
+      });
+      return res.ok;
+    } catch (error) {
+      console.error('API Error:', error);
+      return false;
+    }
+  },
+
+  // Telegram Settings (via backend config endpoint)
+  async updateTelegramSettings(settings: {
+    bot_token: string;
+    chat_id: string;
+  }): Promise<boolean> {
+    try {
+      const res = await fetch(`${API_BASE}/settings/telegram`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings),
+      });
+      return res.ok;
+    } catch (error) {
+      console.error('API Error:', error);
+      return false;
+    }
+  },
+
+  // Test Telegram Connection
+  async testTelegram(settings: {
+    bot_token: string;
+    chat_id: string;
+  }): Promise<{ success: boolean; message: string }> {
+    try {
+      const res = await fetch(`${API_BASE}/settings/telegram/test`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings),
+      });
+      const data = await res.json();
+      return { success: res.ok, message: data.message || (res.ok ? 'Connected!' : 'Failed') };
+    } catch (error) {
+      console.error('API Error:', error);
+      return { success: false, message: 'Connection failed' };
+    }
+  },
+
+  // Send Telegram Notification
+  async sendTelegramNotification(notification: {
+    type: 'violation' | 'daily_summary' | 'system';
+    data: Record<string, unknown>;
+  }): Promise<boolean> {
+    try {
+      const res = await fetch(`${API_BASE}/notifications/telegram`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(notification),
+      });
+      return res.ok;
+    } catch (error) {
+      console.error('API Error:', error);
+      return false;
+    }
+  },
+
+  // Create Camera
+  async createCamera(camera: {
+    name: string;
+    location: string;
+    rtsp_url?: string;
+    status?: string;
+    resolution?: string;
+  }): Promise<boolean> {
+    try {
+      const res = await fetch(`${API_BASE}/cameras`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...camera,
+          status: camera.status || 'online',
+          resolution: camera.resolution || '1920x1080',
+          is_active: true,
+        }),
+      });
+      return res.ok;
+    } catch (error) {
+      console.error('API Error:', error);
+      return false;
+    }
+  },
 };
 
 // WebSocket Connection for Real-time Updates

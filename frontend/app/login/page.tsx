@@ -73,8 +73,9 @@ export default function LoginPage() {
       const isAdmin = formData.email === "admin@smartapd.id" && formData.password === "admin123";
       const isDemo = formData.password === "smartapd";
       const isYahya = formData.email === "syarifuddinudin526@gmail.com" && formData.password === "123";
+      const isNewAdmin = formData.email === "admin" && formData.password === "smartapd2024";
 
-      if (isAdmin || isDemo || isYahya) {
+      if (isAdmin || isDemo || isYahya || isNewAdmin) {
         document.cookie = "auth-token=authenticated; path=/; max-age=86400";
         router.push("/dashboard");
       } else {
@@ -85,8 +86,9 @@ export default function LoginPage() {
       const isAdmin = formData.email === "admin@smartapd.id" && formData.password === "admin123";
       const isDemo = formData.password === "smartapd";
       const isYahya = formData.email === "syarifuddinudin526@gmail.com" && formData.password === "123";
+      const isNewAdmin = formData.email === "admin" && formData.password === "smartapd2024";
 
-      if (isAdmin || isDemo || isYahya) {
+      if (isAdmin || isDemo || isYahya || isNewAdmin) {
         document.cookie = "auth-token=authenticated; path=/; max-age=86400";
         router.push("/dashboard");
       } else {
@@ -177,7 +179,8 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <style jsx>{`
+        <style dangerouslySetInnerHTML={{
+          __html: `
           @keyframes floatWorker {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-12px); }
@@ -186,7 +189,7 @@ export default function LoginPage() {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
           }
-        `}</style>
+        `}} />
       </div>
 
       {/* KANAN (50% - Form) */}

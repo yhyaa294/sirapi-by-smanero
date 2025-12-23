@@ -1,9 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import dynamic from "next/dynamic";
+
+// Dynamic import WebcamViewer (no SSR)
+const WebcamViewer = dynamic(() => import("@/components/WebcamViewer"), {
+    ssr: false,
+    loading: () => (
+        <div className="w-full aspect-video bg-slate-800 flex items-center justify-center">
+            <span className="text-slate-400">Loading webcam...</span>
+        </div>
+    ),
+});
 import {
     ArrowLeft,
     Camera,
@@ -179,8 +190,8 @@ export default function SingleCameraPage() {
                                     key={id}
                                     href={`/dashboard/monitor/${id.toLowerCase()}`}
                                     className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-all whitespace-nowrap ${isActive
-                                            ? "bg-white text-slate-900 shadow-lg font-bold"
-                                            : "bg-slate-800/50 text-slate-400 hover:bg-slate-700 hover:text-white"
+                                        ? "bg-white text-slate-900 shadow-lg font-bold"
+                                        : "bg-slate-800/50 text-slate-400 hover:bg-slate-700 hover:text-white"
                                         }`}
                                 >
                                     <span className={`w-2 h-2 rounded-full ${isActive ? "bg-slate-900" : dotColor}`}></span>
@@ -222,14 +233,18 @@ export default function SingleCameraPage() {
 
                         {/* Camera Feed with AI Overlay */}
                         <div className="relative aspect-video bg-black">
-                            {/* Camera Image */}
-                            <Image
-                                src={camera.image}
-                                alt={`Camera ${cameraId} Feed`}
-                                fill
-                                className="object-contain"
-                                priority
-                            />
+                            {/* Camera Feed - Webcam for TITIK A, Image for others */}
+                            {cameraId === "A" ? (
+                                <WebcamViewer className="w-full h-full" showControls={true} />
+                            ) : (
+                                <Image
+                                    src={camera.image}
+                                    alt={`Camera ${cameraId} Feed`}
+                                    fill
+                                    className="object-contain"
+                                    priority
+                                />
+                            )}
 
                             {/* AI Detection Bounding Boxes */}
                             {detectionResults.map((detection) => (

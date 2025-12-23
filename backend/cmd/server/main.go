@@ -115,6 +115,16 @@ func main() {
 	auth.Post("/register", handlers.Register)
 	auth.Get("/me", middleware.JWTAuth(), handlers.GetMe)
 
+	// Settings routes (for Telegram configuration from website)
+	settings := api.Group("/settings")
+	settings.Get("/telegram", handlers.GetTelegramSettings)
+	settings.Put("/telegram", handlers.UpdateTelegramSettings)
+	settings.Post("/telegram/test", handlers.TestTelegramConnection)
+
+	// Notifications routes
+	notifications := api.Group("/notifications")
+	notifications.Post("/telegram", handlers.SendTelegramNotification)
+
 	// WebSocket for real-time updates
 	app.Get("/ws", handlers.WebSocketHandler)
 

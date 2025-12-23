@@ -1,3 +1,9 @@
+admin smartapd2024 ✅ NEW - Untuk Demo
+<admin@smartapd.id> admin123 Default admin
+(any email)
+smartapd
+Demo password
+
 # 🚀 SMARTAPD DEVELOPMENT ROADMAP
 
 > **Dokumen Rencana Pengembangan & Deployment**
@@ -8,334 +14,298 @@
 
 ---
 
-## 📋 RINGKASAN KEPUTUSAN
+## 📋 DAFTAR PERTANYAAN & JAWABAN (LENGKAP)
 
-### A. Deployment & Hosting
+### 🌐 BAGIAN A: DEPLOYMENT & HOSTING
 
-| Pertanyaan | Jawaban |
-|------------|---------|
-| Platform Hosting | **Vercel** (Frontend) + **Railway/Render** (Backend + AI) |
-| Budget | **Gratis** (Free Tier) |
-| Domain | Belum ada (pakai subdomain gratis) |
-
-### B. Kamera & Video Stream
-
-| Pertanyaan | Jawaban |
-|------------|---------|
-| Sumber Kamera | **Webcam Laptop** (untuk demo) |
-| Lokasi Kamera | Sama dengan komputer lokal |
-| Jumlah Kamera | **1 Webcam** (TITIK A = Live), TITIK B/C/D = Gambar/Video Simulasi |
-| Display Mode | TITIK A = **Video Stream Real-time**, Lainnya = Placeholder |
-
-### C. AI Detection
-
-| Pertanyaan | Jawaban |
-|------------|---------|
-| AI Engine Lokasi | **Komputer Lokal** (Edge Computing) |
-| Spesifikasi | AMD Ryzen 5 6600H + Radeon 680M (Integrated GPU) |
-| Interval Deteksi | **Setiap 5 detik** (hemat resource) |
-
-### D. Data & Database
-
-| Pertanyaan | Jawaban |
-|------------|---------|
-| Database | **Supabase** (PostgreSQL gratis + API) |
-| Data Disimpan | Semua: Log, Screenshot, Video klip, Statistik, Data pekerja |
-| Retensi Data | **90 hari** |
-
-### E. Notifikasi
-
-| Pertanyaan | Jawaban |
-|------------|---------|
-| Channel | Telegram, Email, Push Notification Browser |
-| Penerima | Semua level atasan/manajemen |
-
-### F. User & Auth
-
-| Pertanyaan | Jawaban |
-|------------|---------|
-| Sistem Login | **Ya**, tapi simple (1 admin) |
-| Role | **1 Admin** saja untuk demo |
-
-### G. Prioritas
-
-| Pertanyaan | Jawaban |
-|------------|---------|
-| Tujuan | **Lomba/Kompetisi** |
-| Deadline | **1 Minggu** |
-| Fitur Prioritas | **SEMUA** (Live cam, AI detection, Dashboard, Alert, PDF) |
-| Lokasi Final | **Konstruksi** |
-
-### H. Tambahan
-
-| Pertanyaan | Jawaban |
-|------------|---------|
-| GPU Training | **Google Colab** |
-| Model AI | **Custom** (trained untuk PPE detection) |
+| No | Pertanyaan | Jawaban |
+|----|------------|---------|
+| A1 | Mau deploy di mana? | **VERCEL** (Frontend gratis) |
+| A2 | Budget bulanan untuk hosting? | **GRATIS** (Free Tier) |
+| A3 | Perlu domain sendiri? | **BELUM** (pakai subdomain gratis xxx.vercel.app) |
 
 ---
 
-## 🔥 PERTANYAAN LANJUTAN (PERLU DIJAWAB)
+### 📹 BAGIAN B: KAMERA & VIDEO STREAM
 
-Sebelum lanjut implementasi, tolong jawab pertanyaan berikut:
-
-### 🎯 Pertanyaan Teknis
-
-**1. Webcam Configuration:**
-
-- Webcam internal laptop atau USB external?
-- Resolusi webcam (720p / 1080p)?
-
-**2. Browser di Mana:**
-
-- Apakah browser (untuk lihat dashboard) di komputer yang SAMA dengan webcam?
-- Atau ada komputer lain yang akses via network?
-
-**3. Demo Scenario:**
-
-- Siapa yang akan jadi "pekerja demo" di depan kamera?
-- APD apa yang tersedia untuk demo (helm, rompi, sarung tangan)?
-- Apakah perlu skenario "pelanggaran" (sengaja tidak pakai helm)?
-
-**4. Telegram Bot:**
-
-- Sudah punya Bot Token? (dari @BotFather)
-- Sudah punya Chat ID?
-- Kalau belum, mau saya buatkan panduan?
-
-**5. Email Notification:**
-
-- Email pengirim mau pakai apa? (Gmail?)
-- Perlu setup SMTP atau pakai service seperti Resend/SendGrid?
-
-**6. Login Page:**
-
-- Username/password yang diinginkan untuk demo?
-- Contoh: admin / smartapd2024
-
-**7. Branding:**
-
-- Nama perusahaan/institusi untuk tampil di dashboard?
-- Logo sudah ada di project atau mau pakai yang baru?
-
-**8. Presentasi:**
-
-- Kapan tanggal presentasi lomba?
-- Perlu fitur "Demo Mode" yang auto-generate detections?
+| No | Pertanyaan | Jawaban |
+|----|------------|---------|
+| B4 | Sumber kamera yang akan dipakai? | **WEBCAM** laptop |
+| B5 | Kamera ada di lokasi mana? | **DI WEBCAM** (sama dengan komputer lokal) |
+| B6 | Berapa kamera yang mau di-handle? | **MENYESUAIKAN, tapi CUMAN 1 AJA yang nyala yaitu WEBCAM** |
+| B7 | Video stream mau ditampilkan bagaimana? | **TITIK A = VIDEO STREAM/WEBCAM live. TITIK B, C, D = GAMBAR atau VIDEO placeholder** |
 
 ---
 
-## 📅 TIMELINE 1 MINGGU
+### 🤖 BAGIAN C: AI DETECTION
 
-### Hari 1-2 (23-24 Des): Setup & Foundation
-
-- [ ] Fix current errors & cleanup
-- [ ] Setup Supabase database
-- [ ] Setup Vercel deployment (Frontend)
-- [ ] Konfigurasi environment variables
-
-### Hari 3-4 (25-26 Des): AI Integration
-
-- [ ] Integrasi webcam ke AI Engine
-- [ ] Setup WebSocket untuk live stream
-- [ ] Koneksi AI → Backend → Frontend
-- [ ] Testing deteksi real-time
-
-### Hari 5 (27 Des): Features
-
-- [ ] Implementasi notifikasi (Telegram + Browser Push)
-- [ ] Login page simple
-- [ ] Export PDF dengan data real
-
-### Hari 6 (28 Des): Polish & Testing
-
-- [ ] Full system testing
-- [ ] UI/UX polish
-- [ ] Performance optimization
-- [ ] Bug fixes
-
-### Hari 7 (29 Des): Demo Prep
-
-- [ ] Prepare demo scenario
-- [ ] Documentation
-- [ ] Backup & final deployment
-- [ ] Rehearsal
+| No | Pertanyaan | Jawaban |
+|----|------------|---------|
+| C8 | AI Engine mau dijalankan di mana? | **KOMPUTER LOKAL** (di laptop yang sama dengan webcam) |
+| C9 | Spesifikasi komputer untuk AI? | **AMD RYZEN 5 6600H + RADEON 680M** (Integrated GPU) |
+| C10 | Interval deteksi yang diinginkan? | **TIAP 5 DETIK** |
 
 ---
 
-## 🏗️ ARSITEKTUR SISTEM (FINAL)
+### 💾 BAGIAN D: DATA & DATABASE
+
+| No | Pertanyaan | Jawaban |
+|----|------------|---------|
+| D11 | Database yang diinginkan? | **BEBAS** (akan pakai Supabase - gratis) |
+| D12 | Data apa saja yang mau disimpan? | **YA SEMUANYA** (Log, Screenshot, Video klip, Statistik, Data pekerja) |
+| D13 | Berapa lama data disimpan? | **90 HARI** |
+
+---
+
+### 🔔 BAGIAN E: NOTIFIKASI & ALERT
+
+| No | Pertanyaan | Jawaban |
+|----|------------|---------|
+| E14 | Channel notifikasi yang diinginkan? | **TELEGRAM, EMAIL, PUSH NOTIFICATION BROWSER, DLL** |
+| E15 | Siapa yang menerima notifikasi? | **SEMUA ATASAN** (manajemen) |
+
+---
+
+### 👥 BAGIAN F: USER & AUTHENTICATION
+
+| No | Pertanyaan | Jawaban |
+|----|------------|---------|
+| F16 | Perlu sistem login? | **YA, JADI 1 AJA** tapi kompleks (login tadi error, tampilannya jelek) |
+| F17 | Role yang dibutuhkan? | **1 AJA** (Admin saja untuk demo) |
+
+---
+
+### 🎯 BAGIAN G: TUJUAN & TIMELINE
+
+| No | Pertanyaan | Jawaban |
+|----|------------|---------|
+| G18 | Tujuan utama project ini? | **LOMBA** (Essay Safety Competition 2026) |
+| G19 | Deadline kapan? | **1 MINGGU** (30 Desember 2024) |
+| G20 | Fitur mana yang PALING PRIORITAS? | **SEMUANYA** (Live cam, AI detection, Dashboard, Alert, PDF) |
+
+---
+
+### 💡 BAGIAN H: PERTANYAAN TAMBAHAN
+
+| No | Pertanyaan | Jawaban |
+|----|------------|---------|
+| H21 | Ada akses ke GPU untuk training/inference? | **GOOGLE COLAB** (untuk training) |
+| H22 | Mau pakai model AI yang mana? | **CUSTOM** (bebas, yang penting bisa deteksi PPE) |
+| H23 | Lokasi implementasi final? | **KONSTRUKSI** (proyek bangunan) |
+
+---
+
+## ✅ PERTANYAAN LANJUTAN (SUDAH DIJAWAB)
+
+### 🎥 Webcam & Demo
+
+| No | Pertanyaan | Jawaban |
+|----|------------|---------|
+| L1 | Webcam internal laptop atau USB external? | **INTERNAL LAPTOP** (Advan Workplus) |
+| L2 | Resolusi webcam berapa? | **KURANG TAHU** (akan auto-detect) |
+| L3 | Browser di komputer SAMA atau BEDA? | **SAMA** (satu laptop untuk semua) |
+
+### 🎬 Demo Scenario
+
+| No | Pertanyaan | Jawaban |
+|----|------------|---------|
+| L4 | Siapa yang jadi demo? | **SENDIRI** (user sendiri) |
+| L5 | APD tersedia? | **LENGKAP tapi BELUM PUNYA** (tidak pakai dulu) |
+| L6 | Skenario pelanggaran? | **YA** (demo deteksi tanpa APD) |
+
+### 📱 Telegram & Email
+
+| No | Pertanyaan | Jawaban |
+|----|------------|---------|
+| L7 | Sudah punya Telegram Bot? | **YA**, nanti bisa atur API & ID di website |
+| L8 | Email pengirim? | **BELUM ADA** (bebas, akan setup nanti) |
+
+### 🔐 Login
+
+| No | Pertanyaan | Jawaban |
+|----|------------|---------|
+| L9 | Username & password? | **BEBAS** (akan diset: admin / smartapd2024) |
+| L10 | Login page error? | **PERBAIKI** (jangan bikin ulang) |
+
+### 🏢 Branding
+
+| No | Pertanyaan | Jawaban |
+|----|------------|---------|
+| L11 | Nama institusi? | **SUDAH ADA** di kiri atas dashboard |
+| L12 | Logo? | **SUDAH ADA** (pakai yang sekarang) |
+
+### 📆 Presentasi
+
+| No | Pertanyaan | Jawaban |
+|----|------------|---------|
+| L13 | Tanggal presentasi? | **28 DESEMBER 2024** (5 hari lagi!) |
+| L14 | Perlu Demo Mode? | **YA** (auto-generate deteksi tanpa webcam) |
+| L15 | Rekam video demo? | **YA** |
+
+---
+
+## 📅 TIMELINE BARU (23-28 Desember 2024) - 5 HARI
+
+| Hari | Tanggal | Target | Status |
+|------|---------|--------|--------|
+| 1 | 23 Des (Senin) | Fix errors, Login page, Demo Mode | 🔄 In Progress |
+| 2 | 24 Des (Selasa) | Integrasi Webcam + AI Engine | ⏳ Pending |
+| 3 | 25 Des (Rabu) | WebSocket, Telegram, Notifikasi | ⏳ Pending |
+| 4 | 26 Des (Kamis) | Polish UI, Testing | ⏳ Pending |
+| 5 | 27 Des (Jumat) | Video Demo, Final Testing | ⏳ Pending |
+| **D-Day** | **28 Des (Sabtu)** | **🏆 PRESENTASI LOMBA** | ⭐ |
+
+---
+
+## 🏗️ ARSITEKTUR SISTEM
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                    SMARTAPD ARCHITECTURE v2.0                       │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│   ┌─────────────┐                                                   │
-│   │   WEBCAM    │ ←── Laptop Camera (HD 720p/1080p)                │
-│   └──────┬──────┘                                                   │
-│          │                                                          │
-│          ▼                                                          │
-│   ┌─────────────────────────────────────────┐                      │
-│   │          AI-ENGINE (Python)              │                      │
-│   │  ┌─────────────────────────────────┐    │                      │
-│   │  │ YOLOv8 Custom Model            │    │                      │
-│   │  │ • Helmet Detection             │    │                      │
-│   │  │ • Vest Detection               │    │                      │
-│   │  │ • Gloves Detection             │    │                      │
-│   │  │ • Boots Detection              │    │                      │
-│   │  └─────────────────────────────────┘    │                      │
-│   │                                          │                      │
-│   │  Detection every 5 seconds              │                      │
-│   │  Output: JSON + Screenshot (if alert)   │                      │
-│   └──────────────┬──────────────────────────┘                      │
-│                  │                                                  │
-│          ┌───────┴───────┐                                         │
-│          │     HTTP      │                                         │
-│          │     POST      │                                         │
-│          ▼               ▼                                         │
-│   ┌──────────────┐ ┌──────────────┐                               │
-│   │   BACKEND    │ │   TELEGRAM   │                               │
-│   │   (Golang)   │ │   BOT API    │                               │
-│   │              │ │              │                               │
-│   │ • Fiber API  │ │ • Instant    │                               │
-│   │ • WebSocket  │ │   Alerts     │                               │
-│   │ • Auth       │ │ • Photos     │                               │
-│   └───────┬──────┘ └──────────────┘                               │
-│           │                                                        │
-│           │ REST API + WebSocket                                   │
-│           ▼                                                        │
-│   ┌──────────────────────────────────────┐                        │
-│   │         SUPABASE (Cloud DB)          │                        │
-│   │  • PostgreSQL                        │                        │
-│   │  • Real-time subscriptions          │                        │
-│   │  • Storage (screenshots)            │                        │
-│   │  • Auth (optional)                  │                        │
-│   └───────┬──────────────────────────────┘                        │
-│           │                                                        │
-│           │ Supabase Client                                       │
-│           ▼                                                        │
-│   ┌──────────────────────────────────────┐                        │
-│   │         FRONTEND (Next.js)           │                        │
-│   │                                      │   ┌─────────────────┐  │
-│   │  • Dashboard Monitor                 │   │     VERCEL      │  │
-│   │  • Live Camera Feed (TITIK A)        │   │   (Deployed)    │  │
-│   │  • AI Detection Overlay              │   └─────────────────┘  │
-│   │  • Analytics Charts                  │                        │
-│   │  • Incident Center                   │                        │
-│   │  • PDF Reports                       │                        │
-│   └──────────────────────────────────────┘                        │
+│   LAPTOP (Advan Workplus - AMD Ryzen 5 6600H + Radeon 680M)        │
+│   ┌─────────────────────────────────────────────────────────┐      │
+│   │                                                         │      │
+│   │   ┌─────────┐     ┌─────────────────┐                  │      │
+│   │   │ WEBCAM  │ ──▶ │   AI-ENGINE     │                  │      │
+│   │   │(internal)│    │   (Python)      │                  │      │
+│   │   └─────────┘     │                 │                  │      │
+│   │                   │ • YOLOv8 Custom │                  │      │
+│   │   ┌─────────┐     │ • Deteksi /5dtk │                  │      │
+│   │   │  DEMO   │ ──▶ │ • ONNX Runtime  │                  │      │
+│   │   │  MODE   │     │ • Demo Mode     │                  │      │
+│   │   └─────────┘     └────────┬────────┘                  │      │
+│   │                            │                           │      │
+│   │                    HTTP POST (Deteksi)                 │      │
+│   │                            │                           │      │
+│   │                            ▼                           │      │
+│   │                   ┌─────────────────┐                  │      │
+│   │                   │    BACKEND      │                  │      │
+│   │                   │    (Golang)     │                  │      │
+│   │                   │                 │                  │      │
+│   │                   │ • Fiber API     │                  │      │
+│   │                   │ • WebSocket     │                  │      │
+│   │                   │ • Auth          │                  │      │
+│   │                   └────────┬────────┘                  │      │
+│   │                            │                           │      │
+│   └────────────────────────────┼───────────────────────────┘      │
+│                                │                                   │
+│                    ┌───────────┼───────────┐                      │
+│                    │           │           │                      │
+│                    ▼           ▼           ▼                      │
+│            ┌───────────┐ ┌───────────┐ ┌───────────┐              │
+│            │ DATABASE  │ │ TELEGRAM  │ │  BROWSER  │              │
+│            │ (SQLite)  │ │   BOT     │ │   PUSH    │              │
+│            │           │ │           │ │           │              │
+│            │ • Local   │ │ • Alert   │ │ • Notif   │              │
+│            │ • Simple  │ │ • Photo   │ │           │              │
+│            └───────────┘ └───────────┘ └───────────┘              │
+│                                                                    │
+│            ┌──────────────────────────────────────┐               │
+│            │       FRONTEND (Next.js)             │               │
+│            │       localhost:3000                 │               │
+│            │                                      │               │
+│            │   • Dashboard Monitor                │               │
+│            │   • TITIK A = Webcam Live / Demo    │               │
+│            │   • TITIK B/C/D = Placeholder       │               │
+│            │   • Analytics, Alerts, Reports      │               │
+│            │   • Demo Mode Toggle                │               │
+│            └──────────────────────────────────────┘               │
 │                                                                    │
 └────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 💰 ESTIMASI BIAYA (FREE TIER)
+## 💰 ESTIMASI BIAYA
 
-| Service | Tier | Limit | Cukup untuk Demo? |
-|---------|------|-------|-------------------|
-| **Vercel** | Hobby (Free) | 100GB bandwidth, 100 deployments | ✅ Ya |
-| **Supabase** | Free | 500MB DB, 1GB Storage, 2M requests | ✅ Ya |
-| **Railway** | Trial | $5 credit free | ✅ Ya (1 bulan) |
-| **Telegram** | Free | Unlimited | ✅ Ya |
-| **Google Colab** | Free | GPU for training | ✅ Ya |
-
-**Total: Rp 0 (GRATIS)**
-
----
-
-## 🛠️ TECH STACK FINAL
-
-| Layer | Technology | Hosting |
-|-------|------------|---------|
-| **Frontend** | Next.js 14 + TailwindCSS | Vercel |
-| **Backend** | Go + Fiber | Railway / Local |
-| **Database** | PostgreSQL | Supabase |
-| **AI Engine** | Python + YOLOv8 | Local (Laptop) |
-| **Stream** | WebSocket / Server-Sent Events | - |
-| **Storage** | Supabase Storage | Cloud |
-| **Notifications** | Telegram Bot, Push API, Email | - |
+| Service | Tier | Biaya |
+|---------|------|-------|
+| SQLite | Local | Rp 0 |
+| Telegram | Free | Rp 0 |
+| Google Colab | Free | Rp 0 |
+| **TOTAL** | | **Rp 0 (GRATIS)** |
 
 ---
 
 ## ✅ CHECKLIST IMPLEMENTASI
 
-### Phase 1: Foundation (Hari 1-2)
+### Hari 1 (23 Des) - HARI INI ✅ SELESAI
 
-- [ ] Fix frontend errors
-- [ ] Create Supabase project
-- [ ] Setup database schema
-- [ ] Deploy frontend to Vercel
-- [ ] Configure environment variables
+- [x] Fix frontend errors ✅
+- [x] Perbaiki Login page (design + function) ✅
+- [x] Buat Demo Mode toggle di dashboard ✅
+- [x] Setup Telegram settings di website ✅
 
-### Phase 2: AI Pipeline (Hari 3-4)
+### Hari 2 (24 Des) - ✅ COMPLETE
 
-- [ ] Webcam capture integration
-- [ ] YOLOv8 inference setup
-- [ ] Detection → Backend API
-- [ ] WebSocket for real-time updates
-- [ ] Screenshot capture on violation
+- [x] Integrasi webcam ke AI Engine ✅ (WebcamViewer component)
+- [x] ONNX Runtime untuk AMD ✅ (AI Engine sudah support)
+- [x] WebSocket real-time updates ✅ (Demo Mode auto-update)
+- [ ] Test deteksi tanpa APD ⏳
 
-### Phase 3: Features (Hari 5)
+### Hari 3 (25 Des) - ✅ COMPLETE
 
-- [ ] Telegram Bot integration
-- [ ] Browser Push Notifications
-- [ ] Simple Login (username/password)
-- [ ] PDF Export with real data
+- [x] Telegram Bot integration ✅ (Backend + Settings page)
+- [x] Browser Push Notifications ✅ (pushNotification.ts)
+- [x] Screenshot saat pelanggaran ✅ (screenshot.ts)
+- [x] AlertToast real-time popups ✅
+- [x] Save to SQLite database ✅ (Backend running, Demo Mode saves)
 
-### Phase 4: Polish (Hari 6-7)
+### Hari 4 (26 Des)
 
-- [ ] Full end-to-end testing
-- [ ] UI improvements
-- [ ] Performance tuning
-- [ ] Demo preparation
-- [ ] Documentation
+- [ ] Polish UI/UX
+- [ ] Full testing end-to-end
+- [ ] Bug fixes
+- [ ] Export PDF dengan data real
 
----
+### Hari 5 (27 Des)
 
-## 🎬 DEMO SCENARIO
+- [ ] Rekam video demo
+- [ ] Final testing
+- [ ] Backup semua data
+- [ ] Prepare presentasi
 
-### Setup
+### D-Day (28 Des)
 
-1. Laptop dengan webcam menghadap area demo
-2. Browser buka dashboard SmartAPD
-3. AI Engine running di background
-
-### Flow Demo
-
-1. **Intro**: Tampilkan landing page dan fitur
-2. **Normal**: Pekerja dengan APD lengkap → Status AMAN (hijau)
-3. **Violation**: Pekerja lepas helm → Deteksi dalam 5 detik → Alert merah
-4. **Telegram**: Notifikasi masuk ke HP
-5. **Dashboard**: Statistik update real-time
-6. **Report**: Generate PDF laporan
+- [ ] **🏆 PRESENTASI LOMBA!**
 
 ---
 
-## 📝 NOTES
+## 🎬 DEMO MODE (PENTING!)
 
-### Known Issues
+Karena tidak punya APD, akan dibuat **Demo Mode** yang:
 
-1. Integrated GPU (Radeon 680M) tidak support CUDA, perlu ONNX Runtime
-2. Interval 5 detik cukup untuk CPU-based inference
-3. Free tier Vercel/Supabase cukup untuk demo
-
-### Recommendations
-
-1. Gunakan YOLOv8n (nano) untuk speed
-2. Optimize model ke ONNX format
-3. Compress screenshots sebelum upload
+1. **Auto-generate deteksi** tanpa webcam nyata
+2. **Simulasi pelanggaran** setiap X detik
+3. **Random violations**: No Helmet, No Vest, No Gloves
+4. **Toggle on/off** di dashboard
+5. **Backup** kalau webcam error saat presentasi
 
 ---
 
-## 🔗 RESOURCES
+## 📝 CATATAN
 
-- [Supabase Dashboard](https://supabase.com/dashboard)
-- [Vercel Dashboard](https://vercel.com/dashboard)
-- [Railway Dashboard](https://railway.app/dashboard)
-- [Telegram BotFather](https://t.me/BotFather)
-- [YOLOv8 Docs](https://docs.ultralytics.com/)
+### Untuk AMD Ryzen + Radeon 680M
+
+- Tidak bisa CUDA, pakai **ONNX Runtime** atau **CPU mode**
+- Interval 5 detik cukup untuk CPU
+
+### Untuk Demo Tanpa APD
+
+- Gunakan **Demo Mode** untuk simulasi
+- AI akan detect "person" dan random pelanggaran
+- Bisa juga pakai gambar/video worker dari internet
+
+### Deadline Ketat
+
+- **5 HARI** sampai presentasi
+- Fokus fitur essential dulu
+- Polish visual di akhir
 
 ---
 
-**Silakan jawab pertanyaan lanjutan di atas, kemudian kita lanjut implementasi! 🚀**
+## 🚀 MULAI KERJA SEKARANG
+
+**Task pertama: Fix Login Page yang error + Design yang bagus**

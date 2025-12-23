@@ -4,8 +4,9 @@ import { useState, useEffect, useMemo, memo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, AlertTriangle, UserCheck, TrendingUp, Eye, Maximize2, Volume2 } from "lucide-react";
+import { ShieldCheck, AlertTriangle, UserCheck, TrendingUp, Eye, Maximize2, Volume2, Zap } from "lucide-react";
 import { api, Stats, Camera, Alert } from "@/services/api";
+import { useDemoMode } from "@/hooks/useDemoMode";
 
 // Default camera data (used as fallback)
 const defaultCameras = [
@@ -93,19 +94,28 @@ const CameraCard = memo(function CameraCard({ camera, isFirst }: { camera: Camer
           </span>
         </div>
 
-        {/* Hover Controls - Only Expand button navigates */}
+        {/* Hover Controls - With loading animation */}
         {isHovered && (
           <div className="absolute inset-0 bg-black/50 flex items-center justify-center gap-3 transition-opacity">
-            {/* EXPAND BUTTON - Navigates to detail page */}
+            {/* EXPAND BUTTON - Shows loading then navigates */}
             <button
-              onClick={() => router.push(`/dashboard/monitor/${camera.id.toLowerCase()}`)}
-              className="p-3 bg-orange-500/80 hover:bg-orange-500 rounded-full transition-all hover:scale-110 shadow-lg shadow-orange-500/30 cursor-pointer"
+              onClick={() => {
+                // Add loading class to button
+                const btn = document.activeElement as HTMLButtonElement;
+                if (btn) btn.classList.add('animate-spin');
+
+                // Small delay for visual feedback then navigate
+                setTimeout(() => {
+                  router.push(`/dashboard/monitor/${camera.id.toLowerCase()}`);
+                }, 300);
+              }}
+              className="p-3 bg-orange-500/80 hover:bg-orange-500 rounded-full transition-all hover:scale-110 shadow-lg shadow-orange-500/30 cursor-pointer active:scale-95"
               title="Lihat Detail Kamera"
             >
               <Maximize2 size={20} className="text-white" />
             </button>
             {/* Volume button - no navigation */}
-            <button className="p-3 bg-white/25 hover:bg-white/35 rounded-full transition-colors">
+            <button className="p-3 bg-white/25 hover:bg-white/35 rounded-full transition-colors active:scale-95">
               <Volume2 size={20} className="text-white" />
             </button>
           </div>
@@ -140,6 +150,56 @@ export default function DashboardPage() {
     { time: "32 menit lalu", type: "NO GLOVES", location: "TITIK C - Welding", severity: "PERINGATAN" },
   ]);
   const [loading, setLoading] = useState(true);
+
+  // Demo Mode integration
+  const { isDemo, detections, violations, stats: demoStats } = useDemoMode();
+
+  // Update stats and alerts when demo mode generates new detections
+  useEffect(() => {
+    if (!isDemo || detections.length === 0) return;
+
+    // Update stats with demo data
+    setStats(prev => ({
+      ...prev,
+      compliance: demoStats.compliance,
+      violationsToday: violations.length,
+    }));
+
+    // Update recent alerts with demo detections
+    const demoAlerts = violations.slice(0, 5).map((detection) => {
+      const now = new Date();
+      const diffMs = now.getTime() - detection.timestamp.getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffSecs = Math.floor(diffMs / 1000);
+      const timeAgo = diffMins > 0 ? `${diffMins} menit lalu` : `${diffSecs} detik lalu`;
+
+      return {
+        time: timeAgo,
+        type: detection.type.replace('_', ' ').toUpperCase(),
+        location: `${detection.camera} - ${detection.location}`,
+        severity: detection.severity === 'critical' || detection.severity === 'high' ? 'BAHAYA' : 'PERINGATAN',
+      };
+    });
+
+    if (demoAlerts.length > 0) {
+      setRecentAlerts(demoAlerts);
+    }
+
+    // Update camera statuses based on demo detections
+    setCameras(prev => prev.map(cam => {
+      const camViolations = violations.filter(v => v.cameraId === cam.id);
+      if (camViolations.length > 0) {
+        const severity = camViolations[0].severity;
+        return {
+          ...cam,
+          status: severity === 'critical' ? 'BAHAYA' : severity === 'high' ? 'PERINGATAN' : 'AMAN',
+          statusColor: severity === 'critical' ? 'red' : severity === 'high' ? 'amber' : 'emerald',
+        };
+      }
+      return { ...cam, status: 'AMAN', statusColor: 'emerald' };
+    }));
+
+  }, [isDemo, detections, violations, demoStats]);
 
   // Fetch stats, cameras, and alerts from API
   useEffect(() => {
@@ -209,7 +269,14 @@ export default function DashboardPage() {
             <ShieldCheck className="w-6 h-6 text-emerald-500" />
           </div>
           <div>
-            <h3 className="text-xl font-bold text-slate-900">Global Overview</h3>
+            <div className="flex items-center gap-2">
+              <h3 className="text-xl font-bold text-slate-900">Global Overview</h3>
+              {isDemo && (
+                <span className="px-2 py-1 bg-orange-500 text-white text-[10px] font-bold rounded animate-pulse flex items-center gap-1">
+                  <Zap size={10} /> DEMO
+                </span>
+              )}
+            </div>
             <p className="text-sm text-slate-500">Semua zona dalam pantauan</p>
           </div>
         </div>
