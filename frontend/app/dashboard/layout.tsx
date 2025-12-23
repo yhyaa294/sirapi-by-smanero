@@ -25,11 +25,14 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const [collapsed, setCollapsed] = useState(false);
-  const [currentTime, setCurrentTime] = useState(new Date());
+  const [currentTime, setCurrentTime] = useState<Date | null>(null);
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
 
-  // Update time every second
+  // Set mounted to true on client side and update time
   useEffect(() => {
+    setMounted(true);
+    setCurrentTime(new Date());
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
@@ -184,23 +187,31 @@ export default function DashboardLayout({
             {/* Time Widget */}
             <div className="text-right">
               <div className="text-2xl font-mono font-bold text-slate-900 tracking-tight">
-                {formatTime(currentTime)}
+                {mounted && currentTime ? formatTime(currentTime) : "--:--:--"}
               </div>
               <div className="text-[10px] text-slate-500">
-                {formatDate(currentTime)}
+                {mounted && currentTime ? formatDate(currentTime) : "Loading..."}
               </div>
             </div>
 
             <div className="h-10 w-px bg-slate-200"></div>
 
-            {/* Notifications */}
-            <button className="relative p-2 hover:bg-slate-100 rounded-full text-slate-500 hover:text-slate-900 transition-colors">
+            {/* Notifications - Linked to Alerts (Unified Incident Center) */}
+            <Link
+              href="/dashboard/alerts"
+              className="relative p-2 hover:bg-slate-100 rounded-full text-slate-500 hover:text-slate-900 transition-colors"
+            >
               <Bell size={22} />
-              <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white animate-pulse"></span>
-            </button>
+              <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-red-500 rounded-full text-[10px] text-white font-bold flex items-center justify-center border-2 border-white animate-pulse">
+                3
+              </span>
+            </Link>
 
-            {/* User Profile */}
-            <div className="flex items-center gap-3 pl-2 border-l border-slate-200">
+            {/* User Profile - Linked */}
+            <Link
+              href="/dashboard/profile"
+              className="flex items-center gap-3 pl-2 border-l border-slate-200 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer p-2 -m-2"
+            >
               <div className="text-right">
                 <p className="text-sm font-bold text-slate-900">Administrator</p>
                 <p className="text-[10px] text-slate-500">HSE Supervisor</p>
@@ -208,7 +219,7 @@ export default function DashboardLayout({
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-500 to-emerald-500 flex items-center justify-center text-white font-bold shadow-lg">
                 AD
               </div>
-            </div>
+            </Link>
           </div>
         </header>
 

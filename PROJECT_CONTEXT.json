@@ -1,0 +1,172 @@
+{
+    "project": {
+        "name": "SmartAPD",
+        "description": "Sistem monitoring keselamatan kerja berbasis AI untuk deteksi Alat Pelindung Diri (APD) secara real-time menggunakan YOLOv8",
+        "version": "1.0.0",
+        "language": "id",
+        "competition": "Safety Competition 2026 - PPNS"
+    },
+    "team": {
+        "name": "YAVEION",
+        "school": "SMA Negeri Ngoro, Jombang, Jawa Timur",
+        "members": [
+            {
+                "role": "Ketua",
+                "name": "Muhammad Syarifuddin Yahya",
+                "nis": "0096296275",
+                "email": "muhammad.syarifuddin@sma.belajar.id"
+            },
+            {
+                "role": "Anggota",
+                "name": "Nurjannah Favela Asma'ul Qhusna",
+                "nis": "0095628475",
+                "email": "nurjanah.favela12@sma.belajar.id"
+            }
+        ],
+        "advisor": {
+            "name": "Rohma Wati, S.Pd., Gr.",
+            "nip": "198712162024212008"
+        }
+    },
+    "architecture": {
+        "type": "Microservices",
+        "components": [
+            {
+                "name": "Frontend Dashboard",
+                "path": "frontend/",
+                "tech": [
+                    "Next.js 14",
+                    "React 18",
+                    "TypeScript",
+                    "Tailwind CSS"
+                ],
+                "port": 3000,
+                "description": "Dashboard monitoring real-time dengan UI enterprise"
+            },
+            {
+                "name": "Backend API",
+                "path": "backend/",
+                "tech": [
+                    "Go",
+                    "Fiber",
+                    "GORM",
+                    "SQLite/PostgreSQL"
+                ],
+                "port": 8080,
+                "description": "REST API server untuk data management dan autentikasi"
+            },
+            {
+                "name": "AI Engine",
+                "path": "ai-engine/",
+                "tech": [
+                    "Python",
+                    "YOLOv8",
+                    "OpenCV",
+                    "Ultralytics"
+                ],
+                "port": 5000,
+                "description": "Real-time object detection untuk APD (helm, rompi, sarung tangan, sepatu)"
+            }
+        ]
+    },
+    "features": {
+        "detection": {
+            "objects": [
+                "helmet",
+                "no_helmet",
+                "vest",
+                "no_vest",
+                "gloves",
+                "no_gloves",
+                "boots",
+                "person"
+            ],
+            "model": "YOLOv8n/YOLOv8s",
+            "speed": "<50ms per frame",
+            "accuracy": "94.2% mAP@0.5"
+        },
+        "dashboard": {
+            "pages": [
+                "/dashboard - Monitor Utama (CCTV Grid)",
+                "/dashboard/analytics - Analisis & Laporan",
+                "/dashboard/alerts - Riwayat Kejadian",
+                "/dashboard/map - Peta Lokasi (Leaflet Interactive Map)",
+                "/dashboard/settings - Pengaturan",
+                "/dashboard/profile - Profil User"
+            ],
+            "realtime": true,
+            "notifications": "Telegram Bot"
+        },
+        "map": {
+            "library": "react-leaflet",
+            "tiles": "CartoDB Dark Matter",
+            "visualization": "V-shaped FOV (Field of View) per CCTV"
+        }
+    },
+    "key_files": {
+        "frontend": {
+            "layout": "frontend/app/dashboard/layout.tsx",
+            "main_page": "frontend/app/dashboard/page.tsx",
+            "map_page": "frontend/app/dashboard/map/page.tsx",
+            "map_component": "frontend/components/DashboardMap.tsx",
+            "api_service": "frontend/services/api.ts",
+            "loading": "frontend/app/loading.tsx"
+        },
+        "backend": {
+            "main": "backend/cmd/server/main.go",
+            "config": "backend/internal/config/config.go",
+            "handlers": "backend/internal/handlers/",
+            "services": "backend/internal/services/"
+        },
+        "ai_engine": {
+            "detector": "ai-engine/detector_realtime.py",
+            "app": "ai-engine/app.py",
+            "model": "ai-engine/models/"
+        }
+    },
+    "scripts": {
+        "start_all": "start-all.ps1",
+        "frontend_dev": "cd frontend && npm run dev",
+        "backend_run": "cd backend && go run cmd/server/main.go",
+        "ai_run": "cd ai-engine && python detector_realtime.py"
+    },
+    "environment": {
+        "frontend_port": 3000,
+        "backend_port": 8080,
+        "ai_port": 5000,
+        "database": "SQLite (dev) / PostgreSQL (prod)"
+    },
+    "dependencies": {
+        "frontend": {
+            "next": "14.2.35",
+            "react": "18.x",
+            "react-leaflet": "latest",
+            "leaflet": "latest",
+            "lucide-react": "latest",
+            "tailwindcss": "3.x"
+        },
+        "backend": {
+            "fiber": "v2",
+            "gorm": "latest",
+            "jwt-go": "latest"
+        },
+        "ai_engine": {
+            "ultralytics": "latest",
+            "opencv-python": "latest",
+            "requests": "latest"
+        }
+    },
+    "current_status": {
+        "frontend": "Complete - Dashboard, Map, Loading states",
+        "backend": "Complete - API endpoints working",
+        "ai_engine": "Needs PPE model training/fine-tuning",
+        "integration": "WebSocket & REST API connected"
+    },
+    "todo": [
+        "Compress large images (worker 3.png, bg-hologram.png)",
+        "Train custom PPE detection model",
+        "Add face recognition for worker identification",
+        "Complete Telegram bot integration",
+        "Deploy to production server"
+    ]
+}

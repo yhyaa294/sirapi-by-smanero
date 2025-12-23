@@ -164,8 +164,9 @@ const Hero = () => {
             alt="Hologram"
             width={650}
             height={650}
+            quality={60}
             className="object-contain opacity-70"
-            priority
+            loading="eager"
           />
         </div>
       </div>
@@ -252,9 +253,12 @@ const Hero = () => {
                     alt={`Safety Worker ${index + 1}`}
                     width={320}
                     height={450}
+                    quality={70}
+                    sizes="(max-width: 768px) 100vw, 320px"
                     className="object-contain drop-shadow-[0_0_20px_rgba(249,115,22,0.3)] max-h-[450px]"
                     style={{ animation: currentWorker === index ? 'floatWorker 3s ease-in-out infinite' : 'none' }}
                     priority={index === 0}
+                    loading={index === 0 ? "eager" : "lazy"}
                   />
                 </div>
               ))}
@@ -483,6 +487,9 @@ const SolusiSection = () => (
             alt="SmartAPD Dashboard"
             width={600}
             height={400}
+            quality={75}
+            sizes="(max-width: 768px) 100vw, 600px"
+            loading="lazy"
             className="relative rounded-2xl border border-slate-200 shadow-2xl"
           />
           <div className="absolute -bottom-4 -left-4 bg-emerald-500 text-white px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 shadow-lg">
@@ -502,7 +509,7 @@ const CCTVSection = () => (
     <div className="container mx-auto px-6">
       <div className="grid lg:grid-cols-2 gap-12 items-center">
         <div className="relative">
-          <Image src="/images/cctv.png" alt="CCTV Integration" width={600} height={400} className="rounded-2xl border border-white/10 shadow-2xl" />
+          <Image src="/images/cctv.png" alt="CCTV Integration" width={600} height={400} quality={75} sizes="(max-width: 768px) 100vw, 600px" loading="lazy" className="rounded-2xl border border-white/10 shadow-2xl" />
           <div className="absolute -bottom-4 -right-4 bg-orange-500 text-white px-4 py-2 rounded-lg font-bold text-sm">Integrasi CCTV</div>
         </div>
 
@@ -545,7 +552,7 @@ const Features = () => {
           {features.map((f, i) => (
             <div key={i} className="group rounded-2xl bg-slate-900 border border-white/5 overflow-hidden hover:border-orange-500/30 transition-colors">
               <div className="h-48 relative overflow-hidden">
-                <Image src={f.image} alt={f.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                <Image src={f.image} alt={f.title} fill quality={75} sizes="(max-width: 768px) 100vw, 400px" loading="lazy" className="object-cover group-hover:scale-105 transition-transform duration-500" />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent"></div>
               </div>
               <div className="p-6">
@@ -602,7 +609,7 @@ const APDEducation = () => {
             <div key={i} className="p-6 rounded-2xl bg-slate-800/50 border border-white/5 hover:border-orange-500/30 transition-all text-center">
               {apd.image ? (
                 <div className="w-20 h-20 mx-auto rounded-2xl overflow-hidden bg-slate-700 mb-4">
-                  <Image src={apd.image} alt={apd.name} width={80} height={80} className="object-cover w-full h-full" />
+                  <Image src={apd.image} alt={apd.name} width={80} height={80} quality={75} loading="lazy" className="object-cover w-full h-full" />
                 </div>
               ) : (
                 <div className="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center mb-4">
@@ -684,6 +691,9 @@ const WorkflowSection = () => {
                   alt="System Workflow"
                   width={500}
                   height={300}
+                  quality={75}
+                  sizes="(max-width: 768px) 100vw, 500px"
+                  loading="lazy"
                   className="w-full rounded-lg"
                 />
               </div>

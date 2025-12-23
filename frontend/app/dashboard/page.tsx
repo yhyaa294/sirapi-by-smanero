@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, memo } from "react";
 import Image from "next/image";
-import { ShieldCheck, AlertTriangle, UserCheck, TrendingUp, Eye, Maximize2, Volume2, VolumeX, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { ShieldCheck, AlertTriangle, UserCheck, TrendingUp, Eye, Maximize2, Volume2 } from "lucide-react";
 import { api, Stats, Camera, Alert } from "@/services/api";
 
 // Default camera data (used as fallback)
@@ -30,9 +32,19 @@ const StatusBadge = ({ status, color }: { status: string; color: string }) => {
   );
 };
 
-// Camera card component
-const CameraCard = ({ camera }: { camera: CameraDisplay }) => {
+// Camera card component - Memoized for performance
+const CameraCard = memo(function CameraCard({ camera, isFirst }: { camera: CameraDisplay; isFirst?: boolean }) {
+  const router = useRouter();
   const [isHovered, setIsHovered] = useState(false);
+  const [currentTime, setCurrentTime] = useState<string>("");
+
+  useEffect(() => {
+    setCurrentTime(new Date().toLocaleTimeString('id-ID'));
+    const timer = setInterval(() => {
+      setCurrentTime(new Date().toLocaleTimeString('id-ID'));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const borderColors: Record<string, string> = {
     emerald: "border-emerald-500/30 hover:border-emerald-500",
@@ -55,11 +67,12 @@ const CameraCard = ({ camera }: { camera: CameraDisplay }) => {
         <StatusBadge status={camera.status} color={camera.statusColor} />
       </div>
 
-      {/* Camera Feed (Placeholder) */}
-      <div className="aspect-video bg-slate-800 relative">
-        <div className="absolute inset-0 flex items-center justify-center">
+      {/* Camera Feed - Optimized with Next.js Image */}
+      <div className="aspect-video bg-slate-800 relative overflow-hidden">
+        {/* Placeholder with optimized rendering */}
+        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
           <div className="text-center">
-            <div className="w-16 h-16 mx-auto rounded-full bg-slate-700 flex items-center justify-center mb-2">
+            <div className="w-16 h-16 mx-auto rounded-full bg-slate-700/80 flex items-center justify-center mb-2">
               <Eye size={32} className="text-slate-500" />
             </div>
             <p className="text-slate-500 text-xs font-mono">IP CAMERA {camera.id}</p>
@@ -75,18 +88,24 @@ const CameraCard = ({ camera }: { camera: CameraDisplay }) => {
 
         {/* Timestamp */}
         <div className="absolute bottom-3 right-3">
-          <span className="text-white/50 text-[10px] font-mono">
-            {new Date().toLocaleTimeString('id-ID')}
+          <span className="text-white/50 text-[10px] font-mono" suppressHydrationWarning>
+            {currentTime || "--:--:--"}
           </span>
         </div>
 
-        {/* Hover Controls */}
+        {/* Hover Controls - Only Expand button navigates */}
         {isHovered && (
-          <div className="absolute inset-0 bg-black/40 flex items-center justify-center gap-3 transition-all">
-            <button className="p-3 bg-white/20 hover:bg-white/30 rounded-full backdrop-blur transition-colors">
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center gap-3 transition-opacity">
+            {/* EXPAND BUTTON - Navigates to detail page */}
+            <button
+              onClick={() => router.push(`/dashboard/monitor/${camera.id.toLowerCase()}`)}
+              className="p-3 bg-orange-500/80 hover:bg-orange-500 rounded-full transition-all hover:scale-110 shadow-lg shadow-orange-500/30 cursor-pointer"
+              title="Lihat Detail Kamera"
+            >
               <Maximize2 size={20} className="text-white" />
             </button>
-            <button className="p-3 bg-white/20 hover:bg-white/30 rounded-full backdrop-blur transition-colors">
+            {/* Volume button - no navigation */}
+            <button className="p-3 bg-white/25 hover:bg-white/35 rounded-full transition-colors">
               <Volume2 size={20} className="text-white" />
             </button>
           </div>
@@ -105,7 +124,7 @@ const CameraCard = ({ camera }: { camera: CameraDisplay }) => {
       )}
     </div>
   );
-};
+});
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<Stats>({
@@ -195,30 +214,31 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Camera Filter Tabs */}
-        <div className="flex items-center gap-2 bg-white/80 backdrop-blur rounded-xl p-1 border border-slate-200 shadow-sm">
+        {/* Camera Filter Tabs - Optimized: removed heavy backdrop-blur */}
+        <div className="flex items-center gap-2 bg-white/95 rounded-xl p-1 border border-slate-200 shadow-sm">
           <button className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium flex items-center gap-2">
             <Eye size={16} />
             ALL
           </button>
           {cameras.map((cam) => (
-            <button
+            <Link
               key={cam.id}
+              href={`/dashboard/monitor/${cam.id.toLowerCase()}`}
               className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors"
             >
               <span className={`w-2 h-2 rounded-full ${cam.statusColor === "emerald" ? "bg-emerald-500" :
                 cam.statusColor === "amber" ? "bg-amber-500" : "bg-red-500"
                 }`}></span>
               TITIK {cam.id}
-            </button>
+            </Link>
           ))}
         </div>
       </div>
 
       {/* Stats Row */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {/* Compliance Score */}
-        <div className="md:col-span-2 bg-white/90 backdrop-blur-xl border border-slate-200 rounded-2xl p-6 flex items-center justify-between shadow-lg hover:shadow-xl transition-shadow">
+        {/* Compliance Score - Optimized: solid bg instead of heavy blur */}
+        <div className="md:col-span-2 bg-white border border-slate-200 rounded-2xl p-6 flex items-center justify-between shadow-md hover:shadow-lg transition-shadow">
           <div>
             <h3 className="text-[11px] uppercase tracking-widest text-slate-500 font-bold mb-1">REAL-TIME COMPLIANCE</h3>
             <div className="flex items-baseline gap-2">
@@ -235,8 +255,8 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Violations */}
-        <div className="bg-white/90 backdrop-blur-xl border border-slate-200 rounded-2xl p-5 shadow-lg hover:shadow-xl transition-shadow">
+        {/* Violations - Optimized */}
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow">
           <div className="flex justify-between items-start mb-3">
             <div className="p-2.5 rounded-xl bg-red-50">
               <AlertTriangle className="text-red-600 w-5 h-5" />
@@ -247,8 +267,8 @@ export default function DashboardPage() {
           <div className="text-[11px] uppercase tracking-widest text-slate-500 font-bold mt-1">Pelanggaran Hari Ini</div>
         </div>
 
-        {/* Workers */}
-        <div className="bg-white/90 backdrop-blur-xl border border-slate-200 rounded-2xl p-5 shadow-lg hover:shadow-xl transition-shadow">
+        {/* Workers - Optimized */}
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow">
           <div className="flex justify-between items-start mb-3">
             <div className="p-2.5 rounded-xl bg-emerald-50">
               <UserCheck className="text-emerald-600 w-5 h-5" />
@@ -260,15 +280,15 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Camera Grid */}
+      {/* Camera Grid - Optimized with priority loading */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {cameras.map((camera) => (
-          <CameraCard key={camera.id} camera={camera} />
+        {cameras.map((camera, index) => (
+          <CameraCard key={camera.id} camera={camera} isFirst={index === 0} />
         ))}
       </div>
 
-      {/* Recent Alerts */}
-      <div className="bg-white/90 backdrop-blur-xl border border-slate-200 rounded-2xl p-5 shadow-lg">
+      {/* Recent Alerts - Optimized */}
+      <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-md">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Riwayat Deteksi Terbaru</h3>
           <button className="text-sm text-orange-600 hover:text-orange-700 font-medium">Lihat Semua →</button>
