@@ -124,6 +124,14 @@ func main() {
 	// Notifications routes
 	notifications := api.Group("/notifications")
 	notifications.Post("/telegram", handlers.SendTelegramNotification)
+	notifications.Post("/email", handlers.SendEmailNotification)
+
+	// Email settings routes
+	email := api.Group("/email")
+	email.Get("/settings", handlers.GetEmailSettings)
+	email.Put("/settings", handlers.UpdateEmailSettings)
+	email.Post("/test", handlers.TestEmailConnection)
+	email.Get("/help", handlers.GetEmailHelp)
 
 	// WebSocket for real-time updates
 	app.Get("/ws", handlers.WebSocketHandler)

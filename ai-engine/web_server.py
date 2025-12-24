@@ -496,178 +496,16 @@ async def get_realtime_stats():
     }
 
 
-@app.get("/api/telegram/settings")
-async def get_telegram_settings():
-    """Get current Telegram bot settings"""
-    try:
-        from telegram_bot import load_settings
-        settings = load_settings()
-        return settings
-    except Exception as e:
-        return {"error": str(e)}
-
-
-@app.post("/api/telegram/settings")
-async def save_telegram_settings(request: dict):
-    """Save Telegram bot settings and restart bot"""
-    try:
-        from telegram_bot import save_settings, start_bot, stop_bot, load_settings
-        
-        # Merge with existing settings
-        current = load_settings()
-        current.update(request)
-        save_settings(current)
-        
-        # Restart bot if token and chat_id are provided
-        if current.get("bot_token") and current.get("chat_id"):
-            try:
-                stop_bot()
-            except:
-                pass
-            start_bot(current["bot_token"], current["chat_id"])
-            return {"success": True, "message": "Settings saved and bot restarted"}
-        
-        return {"success": True, "message": "Settings saved"}
-    except Exception as e:
-        return {"success": False, "error": str(e)}
-
-
-@app.post("/api/telegram/test")
-async def test_telegram_connection(request: dict):
-    """Proxy Telegram API test to avoid CORS issues"""
-    try:
-        bot_token = request.get("bot_token")
-        chat_id = request.get("chat_id")
-        
-        if not bot_token or not chat_id:
-            return {"ok": False, "description": "Token dan Chat ID harus diisi!"}
-        
-        # Send test message via requests (no CORS issues)
-        response = requests.post(
-            f"https://api.telegram.org/bot{bot_token}/sendMessage",
-            json={
-                "chat_id": chat_id,
-                "text": "🔔 *SmartAPD Test Connection*\n\n✅ Koneksi Telegram berhasil!\n\nSistem notifikasi siap digunakan.",
-                "parse_mode": "Markdown"
-            },
-            timeout=10
-        )
-        
-        data = response.json()
-        return data
-        
-    except requests.exceptions.Timeout:
-        return {"ok": False, "description": "Koneksi timeout. Cek internet Anda."}
-    except Exception as e:
-        return {"ok": False, "description": str(e)}
-
-
-@app.post("/api/email/send")
-async def send_email(request: dict):
-    """Send email report (requires SMTP configuration)"""
-    try:
-        import smtplib
-        from email.mime.text import MIMEText
-        from email.mime.multipart import MIMEMultipart
-        
-        recipient = request.get("recipient")
-        subject = request.get("subject", "SmartAPD - Laporan Harian")
-        body = request.get("body", "")
-        
-        if not recipient:
-            return {"success": False, "error": "Email penerima harus diisi"}
-        
-        # Load SMTP settings from environment or config
-        smtp_host = request.get("smtp_host", "smtp.gmail.com")
-        smtp_port = int(request.get("smtp_port", 587))
-        smtp_user = request.get("smtp_user", "")
-        smtp_pass = request.get("smtp_pass", "")
-        
-        if not smtp_user or not smtp_pass:
-            return {
-                "success": False, 
-                "error": "SMTP belum dikonfigurasi. Masukkan email pengirim dan password aplikasi.",
-                "help": "Untuk Gmail, buat App Password di: https://myaccount.google.com/apppasswords"
-            }
-        
-        # Create email
-        msg = MIMEMultipart()
-        msg['From'] = smtp_user
-        msg['To'] = recipient
-        msg['Subject'] = subject
-        
-        # Create HTML body
-        html_body = f"""
-        <html>
-        <body style="font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px;">
-            <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 10px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <h1 style="color: #f97316; margin: 0;">🛡️ SmartAPD</h1>
-                    <p style="color: #64748b;">HSE Command Center</p>
-                </div>
-                <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
-                <div style="color: #334155;">
-                    {body}
-                </div>
-                <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
-                <p style="color: #94a3b8; font-size: 12px; text-align: center;">
-                    Laporan ini dikirim otomatis oleh sistem SmartAPD.<br>
-                    Waktu: {datetime.now().strftime('%d %B %Y, %H:%M WIB')}
-                </p>
-            </div>
-        </body>
-        </html>
-        """
-        
-        msg.attach(MIMEText(html_body, 'html'))
-        
-        # Send email
-        server = smtplib.SMTP(smtp_host, smtp_port)
-        server.starttls()
-        server.login(smtp_user, smtp_pass)
-        server.send_message(msg)
-        server.quit()
-        
-        return {"success": True, "message": f"Email berhasil dikirim ke {recipient}"}
-        
-    except smtplib.SMTPAuthenticationError:
-        return {"success": False, "error": "Login SMTP gagal. Cek email dan password aplikasi."}
-    except Exception as e:
-        return {"success": False, "error": str(e)}
-
-
-@app.get("/api/email/settings")
-async def get_email_settings():
-    """Get email settings info"""
-    return {
-        "configured": False,
-        "help": "Untuk menggunakan email, Anda perlu:",
-        "steps": [
-            "1. Gunakan Gmail dengan App Password",
-            "2. Buat App Password di: https://myaccount.google.com/apppasswords",
-            "3. Masukkan email dan App Password di pengaturan"
-        ]
-    }
-
+# =============================================================================
+# STARTUP/SHUTDOWN
+# =============================================================================
 
 @app.on_event("startup")
 async def startup_event():
-    """Start camera thread and Telegram bot on server startup"""
-    # Start camera
+    """Start camera thread on server startup"""
     thread = Thread(target=camera_thread, args=(0,), daemon=True)
     thread.start()
-    
-    # Start Telegram bot
-    try:
-        from telegram_bot import start_bot, load_settings
-        settings = load_settings()
-        if settings.get("bot_token") and settings.get("chat_id"):
-            start_bot(settings["bot_token"], settings["chat_id"])
-            print("📱 Telegram bot started!")
-        else:
-            print("⚠️ Telegram bot not configured - set token in settings")
-    except Exception as e:
-        print(f"⚠️ Telegram bot failed to start: {e}")
+    print("📷 Camera thread started")
 
 
 @app.on_event("shutdown")
@@ -683,10 +521,14 @@ async def shutdown_event():
 
 if __name__ == "__main__":
     print("\n" + "="*60)
-    print("       🚀 SMARTAPD AI WEB SERVER STARTING")
+    print("       🚀 SMARTAPD AI ENGINE STARTING")
     print("="*60)
     print(f"📹 Video stream: http://localhost:8000/video_feed")
     print(f"📊 Status: http://localhost:8000/status")
+    print(f"📈 Real-time Stats: http://localhost:8000/api/realtime-stats")
+    print("="*60)
+    print("NOTE: Telegram/Email handled by Go Backend (port 8080)")
     print("="*60 + "\n")
     
     uvicorn.run(app, host="0.0.0.0", port=8000)
+

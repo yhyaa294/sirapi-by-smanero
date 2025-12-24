@@ -438,26 +438,38 @@ export default function SettingsPage() {
         setIsSaving(true);
         setSaveStatus("idle");
 
+
         try {
             localStorage.setItem("smartapd-notification-settings", JSON.stringify(notifSettings));
 
-            // Save Telegram settings to AI Engine
+            // Save Telegram settings to Go Backend
             try {
-                await fetch("http://localhost:8000/api/telegram/settings", {
-                    method: "POST",
+                await fetch("http://localhost:8080/api/v1/settings/telegram", {
+                    method: "PUT",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         bot_token: notifSettings.telegramBotToken,
                         chat_id: notifSettings.telegramChatId,
-                        send_screenshots: notifSettings.sendScreenshotsWithNotifications,
-                        notification_types: notifSettings.notificationType,
-                        scheduled_report_enabled: notifSettings.scheduledReportEnabled,
-                        scheduled_report_time: notifSettings.scheduledReportTime,
-                        scheduled_report_days: notifSettings.scheduledReportDays,
                     }),
                 });
             } catch {
-                // AI Engine not available, that's OK
+                // Backend not available, settings saved locally
+            }
+
+            // Save Email settings to Go Backend
+            if (notifSettings.enableEmail && notifSettings.emailRecipient) {
+                try {
+                    await fetch("http://localhost:8080/api/v1/email/settings", {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            recipients: [notifSettings.emailRecipient],
+                            enabled: notifSettings.enableEmail,
+                        }),
+                    });
+                } catch {
+                    // Backend not available
+                }
             }
 
             setSaveStatus("success");
@@ -478,13 +490,14 @@ export default function SettingsPage() {
             return;
         }
 
+
         setTestStatus("loading");
         setTestMessage("");
 
         try {
-            // Use AI Engine proxy to avoid CORS issues
+            // Use Go Backend for Telegram API
             const response = await fetch(
-                "http://localhost:8000/api/telegram/test",
+                "http://localhost:8080/api/v1/settings/telegram/test",
                 {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -497,16 +510,16 @@ export default function SettingsPage() {
 
             const data = await response.json();
 
-            if (data.ok) {
+            if (data.success) {
                 setTestStatus("success");
-                setTestMessage("Pesan terkirim! Cek Telegram Anda.");
+                setTestMessage(data.message || "Pesan terkirim! Cek Telegram Anda.");
             } else {
                 setTestStatus("error");
-                setTestMessage(data.description || "Gagal mengirim pesan");
+                setTestMessage(data.message || data.error || "Gagal mengirim pesan");
             }
         } catch (error) {
             setTestStatus("error");
-            setTestMessage("AI Engine tidak aktif. Jalankan python web_server.py terlebih dahulu.");
+            setTestMessage("Backend tidak aktif. Jalankan smartapd-backend.exe terlebih dahulu.");
         }
     };
 
