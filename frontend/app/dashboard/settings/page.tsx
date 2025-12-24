@@ -482,15 +482,15 @@ export default function SettingsPage() {
         setTestMessage("");
 
         try {
+            // Use AI Engine proxy to avoid CORS issues
             const response = await fetch(
-                `https://api.telegram.org/bot${notifSettings.telegramBotToken}/sendMessage`,
+                "http://localhost:8000/api/telegram/test",
                 {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
+                        bot_token: notifSettings.telegramBotToken,
                         chat_id: notifSettings.telegramChatId,
-                        text: "🔔 *SmartAPD Test Connection*\n\n✅ Koneksi Telegram berhasil!\n\nSistem notifikasi siap digunakan.",
-                        parse_mode: "Markdown",
                     }),
                 }
             );
@@ -506,7 +506,7 @@ export default function SettingsPage() {
             }
         } catch (error) {
             setTestStatus("error");
-            setTestMessage("Gagal terhubung ke Telegram API");
+            setTestMessage("AI Engine tidak aktif. Jalankan python web_server.py terlebih dahulu.");
         }
     };
 
@@ -802,17 +802,36 @@ export default function SettingsPage() {
                             </div>
 
                             {notifSettings.enableEmail && (
-                                <div className="mt-4 pt-4 border-t border-amber-100">
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                                        Email Tujuan
-                                    </label>
-                                    <input
-                                        type="email"
-                                        value={notifSettings.emailRecipient}
-                                        onChange={(e) => updateSetting("emailRecipient", e.target.value)}
-                                        placeholder="hse@company.com"
-                                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none transition-all"
-                                    />
+                                <div className="mt-4 pt-4 border-t border-amber-100 space-y-4">
+                                    {/* Info Box */}
+                                    <div className="p-3 bg-amber-100 rounded-lg border border-amber-200">
+                                        <p className="text-sm text-amber-800 font-medium">📧 Cara menggunakan Email:</p>
+                                        <ol className="text-xs text-amber-700 mt-2 list-decimal list-inside space-y-1">
+                                            <li>Gunakan akun Gmail</li>
+                                            <li>Buat App Password di: <a href="https://myaccount.google.com/apppasswords" target="_blank" className="underline">Google App Passwords</a></li>
+                                            <li>Masukkan email dan App Password di bawah</li>
+                                        </ol>
+                                    </div>
+
+                                    {/* Email Recipient */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                                            Email Penerima Laporan
+                                        </label>
+                                        <input
+                                            type="email"
+                                            value={notifSettings.emailRecipient}
+                                            onChange={(e) => updateSetting("emailRecipient", e.target.value)}
+                                            placeholder="hse@company.com"
+                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none transition-all"
+                                        />
+                                    </div>
+
+                                    {/* Note about future feature */}
+                                    <p className="text-xs text-slate-500 italic">
+                                        * Fitur email akan mengirim laporan harian/mingguan secara otomatis ke alamat di atas.
+                                        Konfigurasi SMTP akan ditambahkan di versi selanjutnya.
+                                    </p>
                                 </div>
                             )}
                         </div>
