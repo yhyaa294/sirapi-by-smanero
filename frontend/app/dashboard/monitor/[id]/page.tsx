@@ -239,43 +239,49 @@ export default function SingleCameraPage() {
                                     src="http://localhost:8000/video_feed"
                                     alt="Live AI Feed"
                                     className="w-full h-full object-contain"
+                                    onError={(e) => {
+                                        const target = e.target as HTMLImageElement;
+                                        target.style.display = 'none';
+                                    }}
                                 />
                             ) : (
-                                <Image
-                                    src={camera.image}
-                                    alt={`Camera ${cameraId} Feed`}
-                                    fill
-                                    className="object-contain"
-                                    priority
-                                />
-                            )}
+                                <>
+                                    <Image
+                                        src={camera.image}
+                                        alt={`Camera ${cameraId} Feed`}
+                                        fill
+                                        className="object-contain"
+                                        priority
+                                    />
 
-                            {/* AI Detection Bounding Boxes */}
-                            {detectionResults.map((detection) => (
-                                <div
-                                    key={detection.id}
-                                    className={`absolute border-2 rounded transition-all ${detection.color === "emerald"
-                                        ? "border-emerald-500 shadow-lg shadow-emerald-500/20"
-                                        : "border-red-500 shadow-lg shadow-red-500/20 animate-pulse"
-                                        }`}
-                                    style={{
-                                        left: detection.x,
-                                        top: detection.y,
-                                        width: detection.w,
-                                        height: detection.h,
-                                    }}
-                                >
-                                    {/* Label */}
-                                    <div
-                                        className={`absolute -top-6 left-0 px-2 py-0.5 rounded text-[10px] font-bold whitespace-nowrap ${detection.color === "emerald"
-                                            ? "bg-emerald-500 text-white"
-                                            : "bg-red-500 text-white"
-                                            }`}
-                                    >
-                                        {detection.status === "detected" ? "✓" : "✗"} {detection.label}: {detection.confidence}%
-                                    </div>
-                                </div>
-                            ))}
+                                    {/* AI Detection Bounding Boxes - Only for non-AI cameras */}
+                                    {detectionResults.map((detection) => (
+                                        <div
+                                            key={detection.id}
+                                            className={`absolute border-2 rounded transition-all ${detection.color === "emerald"
+                                                ? "border-emerald-500 shadow-lg shadow-emerald-500/20"
+                                                : "border-red-500 shadow-lg shadow-red-500/20 animate-pulse"
+                                                }`}
+                                            style={{
+                                                left: detection.x,
+                                                top: detection.y,
+                                                width: detection.w,
+                                                height: detection.h,
+                                            }}
+                                        >
+                                            {/* Label */}
+                                            <div
+                                                className={`absolute -top-6 left-0 px-2 py-0.5 rounded text-[10px] font-bold whitespace-nowrap ${detection.color === "emerald"
+                                                    ? "bg-emerald-500 text-white"
+                                                    : "bg-red-500 text-white"
+                                                    }`}
+                                            >
+                                                {detection.status === "detected" ? "✓" : "✗"} {detection.label}: {detection.confidence}%
+                                            </div>
+                                        </div>
+                                    ))}
+                                </>
+                            )}
 
                             {/* Timestamp Overlay */}
                             <div className="absolute bottom-4 left-4 px-3 py-1.5 bg-black/70 rounded-lg">

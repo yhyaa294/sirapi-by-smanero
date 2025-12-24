@@ -21,12 +21,12 @@ interface CCTVData {
 }
 
 // CCTV Data - 4 cameras spread across a simulated industrial area
-// Using Jombang, East Java coordinates as reference (around SMAN Ngoro area)
+// Using Mojoagung, Jombang, East Java coordinates
 const cctvData: CCTVData[] = [
     {
         id: "CAM-01",
         name: "Kamera Gudang Utama",
-        position: [-7.5685, 112.4125],
+        position: [-7.5595, 112.4353], // Mojoagung center
         angle: 135, // Facing Southeast
         fovAngle: 60,
         fovRange: 80,
@@ -37,7 +37,7 @@ const cctvData: CCTVData[] = [
     {
         id: "CAM-02",
         name: "Kamera Area Assembly",
-        position: [-7.5668, 112.4148],
+        position: [-7.5578, 112.4376], // Mojoagung north
         angle: 225, // Facing Southwest
         fovAngle: 75,
         fovRange: 100,
@@ -48,7 +48,7 @@ const cctvData: CCTVData[] = [
     {
         id: "CAM-03",
         name: "Kamera Welding Bay",
-        position: [-7.5702, 112.4112],
+        position: [-7.5612, 112.4340], // Mojoagung south
         angle: 45, // Facing Northeast
         fovAngle: 55,
         fovRange: 70,
@@ -59,7 +59,7 @@ const cctvData: CCTVData[] = [
     {
         id: "CAM-04",
         name: "Kamera Loading Dock",
-        position: [-7.5695, 112.4165],
+        position: [-7.5605, 112.4393], // Mojoagung east
         angle: 315, // Facing Northwest
         fovAngle: 90,
         fovRange: 120,

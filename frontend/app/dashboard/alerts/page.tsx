@@ -303,17 +303,6 @@ export default function UnifiedAlertsPage() {
           </h1>
           <p className="text-slate-400 mt-1">Unified Incident Center • Real-time Monitoring</p>
         </div>
-
-        <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-white text-sm transition-colors">
-            <Download className="w-4 h-4" />
-            Export CSV
-          </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-500 rounded-xl text-white text-sm font-medium transition-colors">
-            <FileText className="w-4 h-4" />
-            Export PDF
-          </button>
-        </div>
       </div>
 
       {/* Stats Cards */}

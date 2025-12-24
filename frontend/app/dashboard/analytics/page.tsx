@@ -115,22 +115,40 @@ export default function AnalyticsPage() {
         const doc = new jsPDF();
         const now = new Date();
         const dateStr = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 
-        // Header with gradient
+        // ========== HEADER ==========
+        // Orange header bar
         doc.setFillColor(249, 115, 22);
-        doc.rect(0, 0, 210, 35, 'F');
+        doc.rect(0, 0, 210, 32, 'F');
 
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(22);
-        doc.text("SMARTAPD", 14, 18);
+        // Logo circle placeholder (orange on white)
+        doc.setFillColor(255, 255, 255);
+        doc.circle(22, 16, 8, 'F');
+        doc.setFillColor(249, 115, 22);
         doc.setFontSize(12);
-        doc.text("HSE Command Center - AI Safety Report", 14, 26);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(249, 115, 22);
+        doc.text("S", 19.5, 19);
 
-        // Report Type Badge
-        const typeLabels = { daily: 'LAPORAN HARIAN', weekly: 'LAPORAN MINGGUAN', monthly: 'LAPORAN BULANAN' };
+        // Title
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(20);
+        doc.setFont('helvetica', 'bold');
+        doc.text("SmartAPD", 35, 14);
         doc.setFontSize(10);
-        doc.text(typeLabels[type], 196, 18, { align: 'right' });
-        doc.text(dateStr, 196, 26, { align: 'right' });
+        doc.setFont('helvetica', 'normal');
+        doc.text("HSE Command Center | Laporan Kepatuhan APD", 35, 22);
+
+        // Report type badge
+        const typeLabels = { daily: 'LAPORAN HARIAN', weekly: 'LAPORAN MINGGUAN', monthly: 'LAPORAN BULANAN' };
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        doc.text(typeLabels[type], 196, 12, { align: 'right' });
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.text(dateStr, 196, 18, { align: 'right' });
+        doc.text(`Dibuat: ${timeStr} WIB`, 196, 24, { align: 'right' });
 
         // Reset colors
         doc.setTextColor(0, 0, 0);
