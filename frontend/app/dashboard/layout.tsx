@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   ShieldAlert,
   Video,
+  VideoOff,
   FileText,
   Settings,
   Menu,
@@ -18,9 +19,7 @@ import {
   MapPin,
   User,
   Zap,
-  ZapOff,
-  Play,
-  Pause
+  ZapOff
 } from "lucide-react";
 import { AlertToastContainer } from "@/components/AlertToast";
 
@@ -32,7 +31,7 @@ export default function DashboardLayout({
   const [collapsed, setCollapsed] = useState(false);
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const [mounted, setMounted] = useState(false);
-  const [demoMode, setDemoMode] = useState(false);
+  const [cameraEnabled, setCameraEnabled] = useState(true);
   const pathname = usePathname();
 
   // Set mounted to true on client side and update time
@@ -41,23 +40,23 @@ export default function DashboardLayout({
     setCurrentTime(new Date());
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
 
-    // Load demo mode from localStorage
-    const savedDemoMode = localStorage.getItem('smartapd-demo-mode');
-    if (savedDemoMode === 'true') {
-      setDemoMode(true);
+    // Load camera state from localStorage
+    const savedCameraState = localStorage.getItem('smartapd-camera-enabled');
+    if (savedCameraState === 'false') {
+      setCameraEnabled(false);
     }
 
     return () => clearInterval(timer);
   }, []);
 
-  // Save demo mode to localStorage
-  const toggleDemoMode = () => {
-    const newValue = !demoMode;
-    setDemoMode(newValue);
-    localStorage.setItem('smartapd-demo-mode', String(newValue));
+  // Toggle camera on/off
+  const toggleCamera = () => {
+    const newValue = !cameraEnabled;
+    setCameraEnabled(newValue);
+    localStorage.setItem('smartapd-camera-enabled', String(newValue));
 
     // Trigger custom event for other components
-    window.dispatchEvent(new CustomEvent('demo-mode-change', { detail: newValue }));
+    window.dispatchEvent(new CustomEvent('camera-toggle', { detail: newValue }));
   };
 
   // Menu items - ALL navigation here (no duplicate tabs)
@@ -194,8 +193,8 @@ export default function DashboardLayout({
         {/* MAIN CONTENT */}
         <main className="flex-1 flex flex-col relative overflow-hidden">
 
-          {/* TOP HEADER - Clean, no duplicate tabs */}
-          <header className="h-16 bg-white/80 backdrop-blur-xl border-b border-slate-200 flex items-center justify-between px-6 z-10 shrink-0 shadow-sm">
+          {/* TOP HEADER - Clean, optimized for performance */}
+          <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-10 shrink-0 shadow-sm">
 
             {/* Left - Page Title */}
             <div className="flex items-center gap-3">
@@ -205,27 +204,28 @@ export default function DashboardLayout({
               </h2>
             </div>
 
-            {/* Right - Demo Mode & Time & User */}
+            {/* Right - Camera Toggle & Time & User */}
             <div className="flex items-center gap-6">
 
-              {/* Demo Mode Toggle */}
+              {/* Camera Toggle */}
               <button
-                onClick={toggleDemoMode}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-all ${demoMode
-                  ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-500/30 animate-pulse'
+                onClick={toggleCamera}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-all ${cameraEnabled
+                  ? 'bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg shadow-emerald-500/30'
                   : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
                   }`}
               >
-                {demoMode ? (
+                {cameraEnabled ? (
                   <>
-                    <Play className="w-4 h-4" />
-                    <span>DEMO MODE</span>
+                    <Video className="w-4 h-4" />
+                    <span>AI CAMERA</span>
                     <span className="ml-1 px-1.5 py-0.5 bg-white/20 rounded text-[10px]">ON</span>
                   </>
                 ) : (
                   <>
-                    <Pause className="w-4 h-4" />
-                    <span>Demo</span>
+                    <VideoOff className="w-4 h-4" />
+                    <span>Camera</span>
+                    <span className="ml-1 px-1.5 py-0.5 bg-red-500/20 text-red-600 rounded text-[10px]">OFF</span>
                   </>
                 )}
               </button>

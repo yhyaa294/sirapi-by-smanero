@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { triggerViolationAlert } from "@/components/AlertToast";
 import { api } from "@/services/api";
 
@@ -178,8 +178,8 @@ export function useDemoMode() {
         setStats((prev) => ({ ...prev, totalDetections: 0, violations: 0 }));
     }, []);
 
-    // Get violations only
-    const violations = detections.filter((d) => d.status === "missing");
+    // Get violations only - memoized to prevent infinite re-renders
+    const violations = useMemo(() => detections.filter((d) => d.status === "missing"), [detections]);
 
     // Get detections by camera
     const getDetectionsByCamera = useCallback(

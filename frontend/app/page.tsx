@@ -46,6 +46,15 @@ const Navbar = () => {
     { name: "FAQ", href: "#faq" },
   ];
 
+  const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault();
+    const targetId = href.replace('#', '');
+    const element = document.getElementById(targetId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   return (
     <nav className={`fixed left-1/2 -translate-x-1/2 z-50 transition-all duration-700 ease-out
       ${scrolled
@@ -64,9 +73,14 @@ const Navbar = () => {
         {/* Center Nav Pills */}
         <div className="hidden md:flex items-center gap-0.5 bg-white/5 rounded-full px-1 py-0.5">
           {navLinks.map((link) => (
-            <Link key={link.name} href={link.href} className="px-4 py-1.5 text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-all whitespace-nowrap">
+            <a
+              key={link.name}
+              href={link.href}
+              onClick={(e) => handleSmoothScroll(e, link.href)}
+              className="px-4 py-1.5 text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-all whitespace-nowrap cursor-pointer"
+            >
               {link.name}
-            </Link>
+            </a>
           ))}
         </div>
 
@@ -87,9 +101,17 @@ const Navbar = () => {
       {mobileMenuOpen && (
         <div className="md:hidden mt-4 pt-4 border-t border-white/10">
           {navLinks.map((link) => (
-            <Link key={link.name} href={link.href} className="block py-3 text-slate-200 hover:text-orange-400" onClick={() => setMobileMenuOpen(false)}>
+            <a
+              key={link.name}
+              href={link.href}
+              className="block py-3 text-slate-200 hover:text-orange-400 cursor-pointer"
+              onClick={(e) => {
+                handleSmoothScroll(e, link.href);
+                setMobileMenuOpen(false);
+              }}
+            >
               {link.name}
-            </Link>
+            </a>
           ))}
           <Link href="/dashboard">
             <button className="w-full mt-4 bg-gradient-to-r from-orange-500 to-red-500 text-white py-3 rounded-xl font-bold">Dashboard</button>
@@ -227,11 +249,17 @@ const Hero = () => {
                   <Play className="w-5 h-5 fill-white" /> Coba Aplikasi
                 </button>
               </Link>
-              <Link href="#how-it-works">
-                <button className="px-8 py-4 border border-white/20 text-white rounded-xl font-bold text-lg hover:bg-white/5 transition-colors">
-                  Lihat Cara Kerja
-                </button>
-              </Link>
+              <button
+                onClick={() => {
+                  const element = document.getElementById('how-it-works');
+                  if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }
+                }}
+                className="px-8 py-4 border border-white/20 text-white rounded-xl font-bold text-lg hover:bg-white/5 transition-colors"
+              >
+                Lihat Cara Kerja
+              </button>
             </div>
           </div>
 

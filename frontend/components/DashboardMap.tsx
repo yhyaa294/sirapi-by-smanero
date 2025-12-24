@@ -144,44 +144,8 @@ const MapComponentInner = memo(function MapComponentInner() {
         });
     }, []);
 
-    if (!L || !ReactLeaflet) {
-        return (
-            <div className="h-full flex items-center justify-center bg-slate-900">
-                <div className="text-center">
-                    <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                    <p className="text-slate-400">Memuat peta...</p>
-                </div>
-            </div>
-        );
-    }
-
-    const { MapContainer, TileLayer, Polygon, Marker, Popup, Tooltip } = ReactLeaflet;
-
-    // Memoize camera icon creator to prevent recreation on every render
-    const createCameraIcon = useCallback((status: string) => {
-        const color = status === "alert" ? "#EF4444" : status === "offline" ? "#94A3B8" : "#10B981";
-        const pulseClass = status !== "offline" ? "animate-pulse" : "";
-
-        return L.divIcon({
-            className: "custom-camera-marker",
-            html: `
-        <div class="relative">
-          <div class="absolute -inset-2 rounded-full ${pulseClass}" style="background: ${color}33; animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
-          <div class="w-8 h-8 rounded-full flex items-center justify-center shadow-lg" style="background: ${color};">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
-              <circle cx="12" cy="13" r="3"/>
-            </svg>
-          </div>
-        </div>
-      `,
-            iconSize: [32, 32],
-            iconAnchor: [16, 16],
-            popupAnchor: [0, -20],
-        });
-    }, [L]);
-
     // Memoize map center calculation - only calculate once
+    // MUST be called before any early returns to maintain hooks order
     const mapCenter = useMemo<[number, number]>(() => [
         cctvData.reduce((sum, c) => sum + c.position[0], 0) / cctvData.length,
         cctvData.reduce((sum, c) => sum + c.position[1], 0) / cctvData.length,
@@ -199,6 +163,46 @@ const MapComponentInner = memo(function MapComponentInner() {
         ),
         colors: getFOVColor(cctv.status)
     })), []);
+
+    // Memoize camera icon creator - must be called before early return
+    const createCameraIcon = useCallback((status: string, leaflet: typeof import("leaflet") | null) => {
+        if (!leaflet) return null;
+
+        const color = status === "alert" ? "#EF4444" : status === "offline" ? "#94A3B8" : "#10B981";
+        const pulseClass = status !== "offline" ? "animate-pulse" : "";
+
+        return leaflet.divIcon({
+            className: "custom-camera-marker",
+            html: `
+        <div class="relative">
+          <div class="absolute -inset-2 rounded-full ${pulseClass}" style="background: ${color}33; animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
+          <div class="w-8 h-8 rounded-full flex items-center justify-center shadow-lg" style="background: ${color};">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+              <circle cx="12" cy="13" r="3"/>
+            </svg>
+          </div>
+        </div>
+      `,
+            iconSize: [32, 32],
+            iconAnchor: [16, 16],
+            popupAnchor: [0, -20],
+        });
+    }, []);
+
+    // Loading state - after all hooks
+    if (!L || !ReactLeaflet) {
+        return (
+            <div className="h-full flex items-center justify-center bg-slate-900">
+                <div className="text-center">
+                    <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-slate-400">Memuat peta...</p>
+                </div>
+            </div>
+        );
+    }
+
+    const { MapContainer, TileLayer, Polygon, Marker, Popup, Tooltip } = ReactLeaflet;
 
     return (
         <MapContainer
@@ -252,7 +256,7 @@ const MapComponentInner = memo(function MapComponentInner() {
                     <Marker
                         key={`marker-${cctv.id}`}
                         position={cctv.position}
-                        icon={createCameraIcon(cctv.status)}
+                        icon={createCameraIcon(cctv.status, L) || undefined}
                         eventHandlers={{
                             click: () => setSelectedCCTV(isSelected ? null : cctv.id),
                         }}

@@ -107,27 +107,34 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="h-screen w-full flex overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 font-sans text-slate-200">
+    <div className="min-h-screen w-full flex bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 font-sans text-slate-200">
 
       {/* KIRI (50% - Visual) - CLEAN DESIGN */}
-      <div className="hidden lg:flex w-1/2 relative flex-col items-center justify-center overflow-hidden bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900">
+      <div className="hidden lg:flex w-1/2 relative flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 overflow-y-auto">
         {/* Background Gradient Orbs */}
-        <div className="absolute inset-0">
+        <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-orange-500/15 rounded-full blur-[150px]"></div>
           <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-emerald-500/10 rounded-full blur-[150px]"></div>
         </div>
 
         {/* Grid Pattern */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:50px_50px] pointer-events-none"></div>
 
-        {/* Main Content */}
-        <div className="relative z-10 flex flex-col items-center text-center px-12 py-16">
+        {/* Main Content - Added safe padding */}
+        <div className="relative z-10 flex flex-col items-center text-center px-12 py-20 my-auto">
 
-          {/* Logo */}
-          <div className="relative mb-6">
-            <div className="absolute -inset-3 bg-orange-500/20 rounded-2xl blur-xl"></div>
-            <div className="relative w-20 h-20 rounded-2xl border border-orange-500/30 shadow-2xl overflow-hidden bg-slate-900">
-              <Image src="/images/logo.jpg" alt="SmartAPD Logo" fill className="object-cover" />
+          {/* Logo - Fixed clipping issue with larger container */}
+          <div className="relative mb-10">
+            <div className="absolute -inset-6 bg-orange-500/25 rounded-[2rem] blur-2xl"></div>
+            <div className="relative w-40 h-40 rounded-3xl border-2 border-orange-500/40 shadow-2xl overflow-hidden bg-slate-900/80 flex items-center justify-center p-3">
+              <Image
+                src="/images/logo.jpg"
+                alt="SmartAPD Logo"
+                width={150}
+                height={150}
+                className="object-contain rounded-xl"
+                priority
+              />
             </div>
           </div>
 
@@ -193,25 +200,26 @@ export default function LoginPage() {
       </div>
 
       {/* KANAN (50% - Form) */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 relative">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-16 relative min-h-screen">
 
         {/* Decorative glow */}
         <div className="absolute top-0 right-0 w-80 h-80 bg-orange-500/10 blur-[120px] rounded-full pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 w-60 h-60 bg-emerald-500/10 blur-[100px] rounded-full pointer-events-none"></div>
 
         {/* Back to Home */}
         <Link
           href="/"
-          className="absolute top-6 left-6 flex items-center gap-2 text-slate-500 hover:text-white transition-colors"
+          className="absolute top-8 left-8 flex items-center gap-2 text-slate-500 hover:text-white transition-colors group"
         >
-          <ArrowLeft className="w-4 h-4" />
-          <span className="text-sm">Kembali</span>
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+          <span className="text-sm font-medium">Kembali</span>
         </Link>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="w-full max-w-md space-y-8"
+          className="w-full max-w-md space-y-6 bg-slate-900/60 backdrop-blur-xl p-8 sm:p-12 rounded-3xl border border-white/10 shadow-2xl"
         >
           {/* Header */}
           <div className="space-y-2">

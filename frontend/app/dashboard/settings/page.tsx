@@ -33,6 +33,375 @@ const defaultNotificationSettings: NotificationSettings = {
     cooldownSeconds: 60,
 };
 
+// Camera Configuration
+interface CameraConfig {
+    id: string;
+    name: string;
+    location: string;
+    sourceType: "webcam" | "rtsp" | "ip" | "mjpeg";
+    sourceUrl: string;
+    webcamId?: number;
+    enabled: boolean;
+    aiEnabled: boolean;
+}
+
+const defaultCameras: CameraConfig[] = [
+    { id: "A", name: "TITIK A", location: "Gudang Utama", sourceType: "webcam", sourceUrl: "0", webcamId: 0, enabled: true, aiEnabled: true },
+    { id: "B", name: "TITIK B", location: "Area Assembly", sourceType: "rtsp", sourceUrl: "rtsp://192.168.1.102:554/stream", enabled: false, aiEnabled: false },
+    { id: "C", name: "TITIK C", location: "Welding Bay", sourceType: "rtsp", sourceUrl: "rtsp://192.168.1.103:554/stream", enabled: false, aiEnabled: false },
+    { id: "D", name: "TITIK D", location: "Loading Dock", sourceType: "rtsp", sourceUrl: "rtsp://192.168.1.104:554/stream", enabled: false, aiEnabled: false },
+];
+
+// Camera Settings Tab Component
+import { Edit2, Trash2, Plus, Video, ExternalLink, Webcam, Power, Cpu } from "lucide-react";
+
+function CameraSettingsTab() {
+    const [cameras, setCameras] = useState<CameraConfig[]>([]);
+    const [editingCamera, setEditingCamera] = useState<CameraConfig | null>(null);
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [testingCamera, setTestingCamera] = useState<string | null>(null);
+
+    // Load cameras from localStorage
+    useEffect(() => {
+        const saved = localStorage.getItem("smartapd-cameras");
+        if (saved) {
+            try {
+                setCameras(JSON.parse(saved));
+            } catch {
+                setCameras(defaultCameras);
+            }
+        } else {
+            setCameras(defaultCameras);
+        }
+    }, []);
+
+    // Save cameras to localStorage
+    const saveCameras = (newCameras: CameraConfig[]) => {
+        setCameras(newCameras);
+        localStorage.setItem("smartapd-cameras", JSON.stringify(newCameras));
+    };
+
+    // Add new camera
+    const addCamera = () => {
+        const nextId = String.fromCharCode(65 + cameras.length); // A, B, C, D, E...
+        const newCamera: CameraConfig = {
+            id: nextId,
+            name: `TITIK ${nextId}`,
+            location: "Area Baru",
+            sourceType: "webcam",
+            sourceUrl: "0",
+            webcamId: 0,
+            enabled: false,
+            aiEnabled: false,
+        };
+        saveCameras([...cameras, newCamera]);
+        setEditingCamera(newCamera);
+    };
+
+    // Update camera
+    const updateCamera = (updated: CameraConfig) => {
+        const newCameras = cameras.map(c => c.id === updated.id ? updated : c);
+        saveCameras(newCameras);
+        setEditingCamera(null);
+    };
+
+    // Delete camera
+    const deleteCamera = (id: string) => {
+        if (confirm(`Hapus kamera ${id}?`)) {
+            saveCameras(cameras.filter(c => c.id !== id));
+        }
+    };
+
+    // Toggle camera enabled
+    const toggleCamera = (id: string) => {
+        const newCameras = cameras.map(c =>
+            c.id === id ? { ...c, enabled: !c.enabled } : c
+        );
+        saveCameras(newCameras);
+    };
+
+    // Toggle AI for camera
+    const toggleAI = (id: string) => {
+        const newCameras = cameras.map(c =>
+            c.id === id ? { ...c, aiEnabled: !c.aiEnabled } : c
+        );
+        saveCameras(newCameras);
+    };
+
+    // Test camera connection
+    const testCamera = async (camera: CameraConfig) => {
+        setTestingCamera(camera.id);
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        setTestingCamera(null);
+        alert(`Kamera ${camera.name} ${camera.enabled ? 'terhubung!' : 'dimatikan'}`);
+    };
+
+    const sourceTypeLabels: Record<string, string> = {
+        webcam: "Webcam USB",
+        rtsp: "RTSP Stream",
+        ip: "IP Camera",
+        mjpeg: "MJPEG Stream",
+    };
+
+    return (
+        <div className="space-y-6">
+            <div className="flex items-center justify-between">
+                <div>
+                    <h3 className="text-lg font-bold text-slate-900">Konfigurasi Kamera</h3>
+                    <p className="text-sm text-slate-500">Kelola sumber video untuk deteksi AI</p>
+                </div>
+                <button
+                    onClick={addCamera}
+                    className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-medium transition-colors"
+                >
+                    <Plus size={18} />
+                    Tambah Kamera
+                </button>
+            </div>
+
+            {/* Camera List */}
+            <div className="grid gap-4">
+                {cameras.map((cam) => (
+                    <div
+                        key={cam.id}
+                        className={`p-4 rounded-xl border transition-all ${cam.enabled
+                                ? "bg-white border-emerald-200 shadow-sm"
+                                : "bg-slate-50 border-slate-200 opacity-75"
+                            }`}
+                    >
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${cam.enabled ? "bg-slate-900" : "bg-slate-300"
+                                    }`}>
+                                    {cam.sourceType === "webcam" ? (
+                                        <Video className="text-white" size={24} />
+                                    ) : (
+                                        <Camera className="text-white" size={24} />
+                                    )}
+                                </div>
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <p className="font-bold text-slate-900">{cam.name}</p>
+                                        {cam.aiEnabled && (
+                                            <span className="px-2 py-0.5 bg-orange-100 text-orange-600 rounded text-xs font-bold">
+                                                AI ON
+                                            </span>
+                                        )}
+                                    </div>
+                                    <p className="text-sm text-slate-500">{cam.location}</p>
+                                    <p className="text-xs text-slate-400 font-mono mt-1">
+                                        {sourceTypeLabels[cam.sourceType]}: {cam.sourceType === "webcam" ? `Device ${cam.webcamId || 0}` : cam.sourceUrl}
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                {/* Status Indicator */}
+                                <div className="flex items-center gap-2 mr-4">
+                                    {cam.enabled ? (
+                                        <>
+                                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                            <span className="text-emerald-600 text-sm font-medium">Online</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <span className="w-2 h-2 rounded-full bg-slate-400"></span>
+                                            <span className="text-slate-500 text-sm">Offline</span>
+                                        </>
+                                    )}
+                                </div>
+
+                                {/* AI Toggle */}
+                                <button
+                                    onClick={() => toggleAI(cam.id)}
+                                    title={cam.aiEnabled ? "Matikan AI" : "Aktifkan AI"}
+                                    className={`p-2 rounded-lg transition-colors ${cam.aiEnabled
+                                            ? "bg-orange-100 text-orange-600 hover:bg-orange-200"
+                                            : "bg-slate-100 text-slate-400 hover:bg-slate-200"
+                                        }`}
+                                >
+                                    <Cpu size={18} />
+                                </button>
+
+                                {/* Power Toggle */}
+                                <button
+                                    onClick={() => toggleCamera(cam.id)}
+                                    title={cam.enabled ? "Matikan" : "Nyalakan"}
+                                    className={`p-2 rounded-lg transition-colors ${cam.enabled
+                                            ? "bg-emerald-100 text-emerald-600 hover:bg-emerald-200"
+                                            : "bg-slate-100 text-slate-400 hover:bg-slate-200"
+                                        }`}
+                                >
+                                    <Power size={18} />
+                                </button>
+
+                                {/* Test Button */}
+                                <button
+                                    onClick={() => testCamera(cam)}
+                                    disabled={testingCamera === cam.id}
+                                    className="p-2 bg-blue-100 text-blue-600 hover:bg-blue-200 rounded-lg transition-colors disabled:opacity-50"
+                                    title="Test Koneksi"
+                                >
+                                    {testingCamera === cam.id ? (
+                                        <Loader2 size={18} className="animate-spin" />
+                                    ) : (
+                                        <ExternalLink size={18} />
+                                    )}
+                                </button>
+
+                                {/* Edit Button */}
+                                <button
+                                    onClick={() => setEditingCamera(cam)}
+                                    className="p-2 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-lg transition-colors"
+                                >
+                                    <Edit2 size={18} />
+                                </button>
+
+                                {/* Delete Button */}
+                                <button
+                                    onClick={() => deleteCamera(cam.id)}
+                                    className="p-2 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg transition-colors"
+                                >
+                                    <Trash2 size={18} />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {cameras.length === 0 && (
+                <div className="text-center py-12 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200">
+                    <Camera className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                    <p className="text-slate-500">Belum ada kamera dikonfigurasi</p>
+                    <button
+                        onClick={addCamera}
+                        className="mt-4 px-4 py-2 bg-orange-500 text-white rounded-lg font-medium"
+                    >
+                        Tambah Kamera Pertama
+                    </button>
+                </div>
+            )}
+
+            {/* Edit Modal */}
+            {editingCamera && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl p-6 w-full max-w-lg mx-4 shadow-2xl">
+                        <h3 className="text-lg font-bold text-slate-900 mb-6">
+                            {cameras.find(c => c.id === editingCamera.id) ? "Edit Kamera" : "Tambah Kamera"}
+                        </h3>
+
+                        <div className="space-y-4">
+                            {/* Name */}
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Nama Kamera</label>
+                                <input
+                                    type="text"
+                                    value={editingCamera.name}
+                                    onChange={(e) => setEditingCamera({ ...editingCamera, name: e.target.value })}
+                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none"
+                                />
+                            </div>
+
+                            {/* Location */}
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Lokasi</label>
+                                <input
+                                    type="text"
+                                    value={editingCamera.location}
+                                    onChange={(e) => setEditingCamera({ ...editingCamera, location: e.target.value })}
+                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none"
+                                />
+                            </div>
+
+                            {/* Source Type */}
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Jenis Sumber</label>
+                                <select
+                                    value={editingCamera.sourceType}
+                                    onChange={(e) => setEditingCamera({ ...editingCamera, sourceType: e.target.value as CameraConfig["sourceType"] })}
+                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none"
+                                >
+                                    <option value="webcam">Webcam USB (Device ID)</option>
+                                    <option value="rtsp">RTSP Stream (IP Camera)</option>
+                                    <option value="ip">HTTP IP Camera</option>
+                                    <option value="mjpeg">MJPEG Stream</option>
+                                </select>
+                            </div>
+
+                            {/* Source URL / Webcam ID */}
+                            {editingCamera.sourceType === "webcam" ? (
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">Webcam Device ID</label>
+                                    <select
+                                        value={editingCamera.webcamId || 0}
+                                        onChange={(e) => setEditingCamera({ ...editingCamera, webcamId: Number(e.target.value), sourceUrl: e.target.value })}
+                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none"
+                                    >
+                                        <option value={0}>Device 0 (Default Webcam)</option>
+                                        <option value={1}>Device 1</option>
+                                        <option value={2}>Device 2</option>
+                                        <option value={3}>Device 3</option>
+                                    </select>
+                                    <p className="mt-1 text-xs text-slate-500">Pilih webcam yang terpasang di komputer</p>
+                                </div>
+                            ) : (
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                                        {editingCamera.sourceType === "rtsp" ? "RTSP URL" :
+                                            editingCamera.sourceType === "ip" ? "IP Camera URL" : "MJPEG URL"}
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={editingCamera.sourceUrl}
+                                        onChange={(e) => setEditingCamera({ ...editingCamera, sourceUrl: e.target.value })}
+                                        placeholder={
+                                            editingCamera.sourceType === "rtsp"
+                                                ? "rtsp://192.168.1.100:554/stream"
+                                                : editingCamera.sourceType === "ip"
+                                                    ? "http://192.168.1.100:8080/video"
+                                                    : "http://localhost:8000/video_feed"
+                                        }
+                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-mono text-sm focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none"
+                                    />
+                                </div>
+                            )}
+
+                            {/* Enable AI */}
+                            <div className="flex items-center justify-between p-4 bg-orange-50 rounded-xl">
+                                <div>
+                                    <p className="font-medium text-slate-900">Aktifkan Deteksi AI</p>
+                                    <p className="text-sm text-slate-500">Jalankan PPE detection pada kamera ini</p>
+                                </div>
+                                <button
+                                    onClick={() => setEditingCamera({ ...editingCamera, aiEnabled: !editingCamera.aiEnabled })}
+                                    className={`relative w-12 h-7 rounded-full transition-colors ${editingCamera.aiEnabled ? "bg-orange-500" : "bg-slate-300"}`}
+                                >
+                                    <div className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow transition-transform ${editingCamera.aiEnabled ? "translate-x-6" : "translate-x-1"}`} />
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3 mt-6">
+                            <button
+                                onClick={() => setEditingCamera(null)}
+                                className="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors"
+                            >
+                                Batal
+                            </button>
+                            <button
+                                onClick={() => updateCamera(editingCamera)}
+                                className="flex-1 px-4 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-medium transition-colors"
+                            >
+                                Simpan
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
 export default function SettingsPage() {
     const [activeTab, setActiveTab] = useState("notification");
     const [notifSettings, setNotifSettings] = useState<NotificationSettings>(defaultNotificationSettings);
@@ -169,8 +538,8 @@ export default function SettingsPage() {
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
                         className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all ${activeTab === tab.id
-                                ? "bg-orange-500 text-white shadow-lg"
-                                : "text-slate-600 hover:bg-slate-100"
+                            ? "bg-orange-500 text-white shadow-lg"
+                            : "text-slate-600 hover:bg-slate-100"
                             }`}
                     >
                         <tab.icon size={18} />
@@ -247,10 +616,10 @@ export default function SettingsPage() {
                                         onClick={testTelegramConnection}
                                         disabled={testStatus === "loading"}
                                         className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all ${testStatus === "success"
-                                                ? "bg-emerald-500 text-white"
-                                                : testStatus === "error"
-                                                    ? "bg-red-500 text-white"
-                                                    : "bg-blue-500 hover:bg-blue-600 text-white"
+                                            ? "bg-emerald-500 text-white"
+                                            : testStatus === "error"
+                                                ? "bg-red-500 text-white"
+                                                : "bg-blue-500 hover:bg-blue-600 text-white"
                                             }`}
                                     >
                                         {testStatus === "loading" ? (
@@ -377,37 +746,7 @@ export default function SettingsPage() {
                 )}
 
                 {activeTab === "camera" && (
-                    <div className="space-y-6">
-                        <h3 className="text-lg font-bold text-slate-900">Konfigurasi Kamera</h3>
-
-                        {/* Camera List */}
-                        <div className="grid gap-4">
-                            {["TITIK A", "TITIK B", "TITIK C", "TITIK D"].map((cam, i) => (
-                                <div key={i} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 bg-slate-900 rounded-lg flex items-center justify-center">
-                                            <Camera className="text-white" size={20} />
-                                        </div>
-                                        <div>
-                                            <p className="font-bold text-slate-900">{cam}</p>
-                                            <p className="text-sm text-slate-500 font-mono">rtsp://192.168.1.10{i + 1}:554/stream</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                                        <span className="text-emerald-600 text-sm font-medium">Connected</span>
-                                        <button className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 rounded-lg text-sm font-medium transition-colors">
-                                            Edit
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-
-                        <button className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-slate-300 text-slate-600 rounded-xl hover:border-orange-500 hover:text-orange-500 transition-colors w-full justify-center">
-                            + Tambah Kamera Baru
-                        </button>
-                    </div>
+                    <CameraSettingsTab />
                 )}
 
                 {activeTab === "security" && (

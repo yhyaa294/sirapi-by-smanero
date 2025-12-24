@@ -233,9 +233,13 @@ export default function SingleCameraPage() {
 
                         {/* Camera Feed with AI Overlay */}
                         <div className="relative aspect-video bg-black">
-                            {/* Camera Feed - Webcam for TITIK A, Image for others */}
+                            {/* Camera Feed - AI Stream for TITIK A, Image for others */}
                             {cameraId === "A" ? (
-                                <WebcamViewer className="w-full h-full" showControls={true} />
+                                <img
+                                    src="http://localhost:8000/video_feed"
+                                    alt="Live AI Feed"
+                                    className="w-full h-full object-contain"
+                                />
                             ) : (
                                 <Image
                                     src={camera.image}

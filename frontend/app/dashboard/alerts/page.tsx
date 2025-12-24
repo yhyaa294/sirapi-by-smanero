@@ -43,12 +43,21 @@ interface Incident {
 }
 
 // Initial empty data - will be populated by Demo Mode or Backend
+interface Screenshot {
+  filename: string;
+  url: string;
+  timestamp: string;
+}
+
 export default function UnifiedAlertsPage() {
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "open" | "investigating" | "resolved">("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [showFilters, setShowFilters] = useState(false);
+  const [screenshots, setScreenshots] = useState<Screenshot[]>([]);
+  const [selectedScreenshot, setSelectedScreenshot] = useState<Screenshot | null>(null);
+  const [showModal, setShowModal] = useState(false);
 
   // Demo Mode integration
   const { isDemo, violations } = useDemoMode();
@@ -72,12 +81,53 @@ export default function UnifiedAlertsPage() {
     }
   }, [isDemo, violations]);
 
+  // Fetch screenshots from AI Engine
+  useEffect(() => {
+    const fetchScreenshots = async () => {
+      try {
+        const res = await fetch('http://localhost:8000/screenshots');
+        if (res.ok) {
+          const data = await res.json();
+          setScreenshots(data.screenshots || []);
+
+          // Create incidents from screenshots if not in demo mode
+          if (!isDemo && data.screenshots?.length > 0) {
+            const screenshotIncidents: Incident[] = data.screenshots.slice(0, 20).map((ss: Screenshot, idx: number) => {
+              const parts = ss.filename.replace('.jpg', '').split('_');
+              const violationType = parts[0] || 'no_helmet';
+              return {
+                id: `AI-${idx + 1}`,
+                timestamp: new Date(ss.timestamp),
+                type: violationType as Incident["type"],
+                severity: violationType === 'no_helmet' ? 'critical' : 'high',
+                location: `TITIK ${String.fromCharCode(65 + (idx % 4))} - ${parts[0]?.includes('helmet') ? 'Gudang Utama' : 'Loading Dock'}`,
+                cameraId: String.fromCharCode(65 + (idx % 4)),
+                description: `AI Detection: ${violationType.replace('_', ' ')} di area kerja.`,
+                status: idx < 3 ? 'open' : 'resolved',
+                read: idx >= 3,
+                confidence: 85 + Math.random() * 10,
+                imageUrl: ss.url,
+              };
+            });
+            setIncidents(prev => prev.length === 0 ? screenshotIncidents : prev);
+          }
+        }
+      } catch (err) {
+        console.log('AI Engine screenshots not available');
+      }
+    };
+
+    fetchScreenshots();
+    const interval = setInterval(fetchScreenshots, 10000); // Refresh every 10 seconds
+    return () => clearInterval(interval);
+  }, [isDemo]);
+
   // Fetch from backend if not in demo mode
   useEffect(() => {
     if (!isDemo) {
       api.getDetections(50).then(detections => {
         if (detections.length > 0) {
-          const backendIncidents: Incident[] = detections.map((det, idx) => ({
+          const backendIncidents: Incident[] = detections.map((det: { id: string; timestamp: string; type: string; severity: string; cameraId: string; acknowledged: boolean }, idx: number) => ({
             id: det.id,
             timestamp: new Date(det.timestamp),
             type: det.type.toLowerCase().replace(" ", "_") as Incident["type"],
@@ -89,10 +139,9 @@ export default function UnifiedAlertsPage() {
             read: det.acknowledged,
             confidence: 90,
           }));
-          setIncidents(backendIncidents);
+          setIncidents(prev => prev.length === 0 ? backendIncidents : prev);
         }
       }).catch(() => {
-        // Backend not available, use empty
         console.log("Backend not available for alerts");
       });
     }
@@ -191,8 +240,58 @@ export default function UnifiedAlertsPage() {
     setIncidents(prev => prev.map(i => i.id === id ? { ...i, read: true } : i));
   };
 
+  const openScreenshot = (incident: Incident) => {
+    const ss = screenshots.find(s => s.url === incident.imageUrl) ||
+      (incident.imageUrl ? { filename: '', url: incident.imageUrl, timestamp: '' } : null);
+    if (ss) {
+      setSelectedScreenshot(ss);
+      setShowModal(true);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 p-4 md:p-6 lg:p-8">
+      {/* Screenshot Modal */}
+      {showModal && selectedScreenshot && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => setShowModal(false)}>
+          <div className="relative max-w-4xl max-h-[90vh] bg-slate-900 rounded-2xl overflow-hidden border border-slate-700 shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-4 border-b border-slate-800">
+              <div>
+                <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                  <Camera className="w-5 h-5 text-red-500" />
+                  Bukti Pelanggaran
+                </h3>
+                <p className="text-sm text-slate-400">{selectedScreenshot.timestamp ? new Date(selectedScreenshot.timestamp).toLocaleString('id-ID') : 'Screenshot from AI Detection'}</p>
+              </div>
+              <button onClick={() => setShowModal(false)} className="p-2 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-4">
+              <img
+                src={selectedScreenshot.url}
+                alt="Violation Screenshot"
+                className="w-full max-h-[60vh] object-contain rounded-lg"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/images/placeholder.jpg';
+                }}
+              />
+            </div>
+            <div className="flex items-center justify-between p-4 border-t border-slate-800 bg-slate-900/50">
+              <span className="text-xs text-slate-500 font-mono">{selectedScreenshot.filename}</span>
+              <a
+                href={selectedScreenshot.url}
+                download
+                className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-bold transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                Download
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
@@ -468,10 +567,18 @@ export default function UnifiedAlertsPage() {
 
                 {/* Evidence */}
                 <div className="md:col-span-2">
-                  {incident.type !== "system" ? (
-                    <button className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs text-slate-300 transition-colors">
+                  {incident.imageUrl ? (
+                    <button
+                      onClick={() => openScreenshot(incident)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500/20 hover:bg-orange-500/30 rounded-lg text-xs text-orange-400 transition-colors"
+                    >
                       <Eye className="w-3.5 h-3.5" />
                       Lihat Foto
+                    </button>
+                  ) : incident.type !== "system" ? (
+                    <button className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs text-slate-300 transition-colors opacity-50 cursor-not-allowed">
+                      <Eye className="w-3.5 h-3.5" />
+                      Tidak Ada Foto
                     </button>
                   ) : (
                     <span className="text-xs text-slate-500">-</span>

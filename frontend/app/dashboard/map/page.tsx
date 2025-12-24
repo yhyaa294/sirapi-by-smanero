@@ -92,7 +92,7 @@ export default function MapPage() {
             </div>
 
             {/* Legend */}
-            <div className="flex flex-wrap items-center gap-6 bg-white/90 backdrop-blur-xl border border-slate-200 rounded-2xl p-4 shadow-lg">
+            <div className="flex flex-wrap items-center gap-6 bg-white border border-slate-200 rounded-2xl p-4 shadow-lg">
                 <span className="text-sm font-medium text-slate-700">Status Kamera:</span>
                 <div className="flex items-center gap-2">
                     <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -171,7 +171,7 @@ export default function MapPage() {
                         {cctvStats.map((cctv) => (
                             <div
                                 key={cctv.id}
-                                className="bg-white/90 backdrop-blur-xl border border-slate-200 rounded-2xl p-4 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:border-orange-300"
+                                className="bg-white border border-slate-200 rounded-2xl p-4 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:border-orange-300"
                             >
                                 <div className="flex items-center justify-between mb-3">
                                     <div className="flex items-center gap-3">

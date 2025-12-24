@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, memo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, AlertTriangle, UserCheck, TrendingUp, Eye, Maximize2, Volume2, Zap } from "lucide-react";
+import { ShieldCheck, AlertTriangle, Video, TrendingUp, Eye, Maximize2, Volume2, Zap } from "lucide-react";
 import { api, Stats, Camera, Alert } from "@/services/api";
 import { useDemoMode } from "@/hooks/useDemoMode";
 
@@ -68,18 +68,38 @@ const CameraCard = memo(function CameraCard({ camera, isFirst }: { camera: Camer
         <StatusBadge status={camera.status} color={camera.statusColor} />
       </div>
 
-      {/* Camera Feed - Optimized with Next.js Image */}
+      {/* Camera Feed - Live AI Stream for Camera A */}
       <div className="aspect-video bg-slate-800 relative overflow-hidden">
-        {/* Placeholder with optimized rendering */}
-        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
-          <div className="text-center">
-            <div className="w-16 h-16 mx-auto rounded-full bg-slate-700/80 flex items-center justify-center mb-2">
-              <Eye size={32} className="text-slate-500" />
+        {camera.id === "A" ? (
+          /* Live AI Stream for TITIK A */
+          <>
+            <img
+              src="http://localhost:8000/video_feed"
+              alt="Live AI Feed"
+              className="w-full h-full object-cover absolute inset-0 z-10"
+              style={{ minHeight: '100%' }}
+            />
+            {/* Loading overlay - hidden once stream loads */}
+            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900 z-0">
+              <div className="text-center">
+                <div className="w-12 h-12 mx-auto border-4 border-orange-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+                <p className="text-orange-400 text-sm font-medium">Menghubungkan ke AI Engine...</p>
+                <p className="text-slate-500 text-xs mt-1">localhost:8000</p>
+              </div>
             </div>
-            <p className="text-slate-500 text-xs font-mono">IP CAMERA {camera.id}</p>
-            <p className="text-slate-600 text-[10px] font-mono">192.168.1.10{camera.id.charCodeAt(0) - 64}</p>
+          </>
+        ) : (
+          /* Placeholder for other cameras */
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
+            <div className="text-center">
+              <div className="w-16 h-16 mx-auto rounded-full bg-slate-700/80 flex items-center justify-center mb-2">
+                <Eye size={32} className="text-slate-500" />
+              </div>
+              <p className="text-slate-500 text-xs font-mono">IP CAMERA {camera.id}</p>
+              <p className="text-slate-600 text-[10px] font-mono">192.168.1.10{camera.id.charCodeAt(0) - 64}</p>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Recording indicator */}
         <div className="absolute bottom-3 left-3 flex items-center gap-2">
@@ -94,28 +114,19 @@ const CameraCard = memo(function CameraCard({ camera, isFirst }: { camera: Camer
           </span>
         </div>
 
-        {/* Hover Controls - With loading animation */}
+        {/* Hover Controls - Using Link for instant navigation */}
         {isHovered && (
-          <div className="absolute inset-0 bg-black/50 flex items-center justify-center gap-3 transition-opacity">
-            {/* EXPAND BUTTON - Shows loading then navigates */}
-            <button
-              onClick={() => {
-                // Add loading class to button
-                const btn = document.activeElement as HTMLButtonElement;
-                if (btn) btn.classList.add('animate-spin');
-
-                // Small delay for visual feedback then navigate
-                setTimeout(() => {
-                  router.push(`/dashboard/monitor/${camera.id.toLowerCase()}`);
-                }, 300);
-              }}
-              className="p-3 bg-orange-500/80 hover:bg-orange-500 rounded-full transition-all hover:scale-110 shadow-lg shadow-orange-500/30 cursor-pointer active:scale-95"
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center gap-3">
+            {/* EXPAND BUTTON - Link for instant navigation */}
+            <Link
+              href={`/dashboard/monitor/${camera.id.toLowerCase()}`}
+              className="p-3 bg-orange-500 hover:bg-orange-600 rounded-full shadow-lg shadow-orange-500/30 cursor-pointer active:scale-95"
               title="Lihat Detail Kamera"
             >
               <Maximize2 size={20} className="text-white" />
-            </button>
-            {/* Volume button - no navigation */}
-            <button className="p-3 bg-white/25 hover:bg-white/35 rounded-full transition-colors active:scale-95">
+            </Link>
+            {/* Volume button */}
+            <button className="p-3 bg-white/25 hover:bg-white/35 rounded-full active:scale-95">
               <Volume2 size={20} className="text-white" />
             </button>
           </div>
@@ -198,8 +209,8 @@ export default function DashboardPage() {
       }
       return { ...cam, status: 'AMAN', statusColor: 'emerald' };
     }));
-
-  }, [isDemo, detections, violations, demoStats]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDemo, detections.length, violations.length]);
 
   // Fetch stats, cameras, and alerts from API
   useEffect(() => {
@@ -334,16 +345,16 @@ export default function DashboardPage() {
           <div className="text-[11px] uppercase tracking-widest text-slate-500 font-bold mt-1">Pelanggaran Hari Ini</div>
         </div>
 
-        {/* Workers - Optimized */}
+        {/* Cameras Online */}
         <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow">
           <div className="flex justify-between items-start mb-3">
             <div className="p-2.5 rounded-xl bg-emerald-50">
-              <UserCheck className="text-emerald-600 w-5 h-5" />
+              <Video className="text-emerald-600 w-5 h-5" />
             </div>
-            <span className="text-[10px] font-bold text-emerald-600 bg-emerald-100 px-2.5 py-1 rounded-full">AKTIF</span>
+            <span className="text-[10px] font-bold text-emerald-600 bg-emerald-100 px-2.5 py-1 rounded-full">ONLINE</span>
           </div>
-          <div className="text-3xl font-black text-slate-900 font-mono">{stats.workersActive}</div>
-          <div className="text-[11px] uppercase tracking-widest text-slate-500 font-bold mt-1">Pekerja di Lokasi</div>
+          <div className="text-3xl font-black text-slate-900 font-mono">{cameras.filter(c => c.statusColor !== 'red').length}/{cameras.length}</div>
+          <div className="text-[11px] uppercase tracking-widest text-slate-500 font-bold mt-1">Kamera Aktif</div>
         </div>
       </div>
 
