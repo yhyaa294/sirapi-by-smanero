@@ -18,6 +18,12 @@ interface NotificationSettings {
     notifyOnViolation: boolean;
     notifyOnCritical: boolean;
     cooldownSeconds: number;
+    // Telegram Schedule Settings
+    scheduledReportEnabled: boolean;
+    scheduledReportTime: string;
+    scheduledReportDays: string[];
+    sendScreenshotsWithNotifications: boolean;
+    notificationType: "violations" | "all";
 }
 
 const defaultNotificationSettings: NotificationSettings = {
@@ -31,6 +37,11 @@ const defaultNotificationSettings: NotificationSettings = {
     notifyOnViolation: true,
     notifyOnCritical: true,
     cooldownSeconds: 60,
+    scheduledReportEnabled: false,
+    scheduledReportTime: "08:00",
+    scheduledReportDays: ["monday", "tuesday", "wednesday", "thursday", "friday"],
+    sendScreenshotsWithNotifications: true,
+    notificationType: "violations",
 };
 
 // Camera Configuration
@@ -165,8 +176,8 @@ function CameraSettingsTab() {
                     <div
                         key={cam.id}
                         className={`p-4 rounded-xl border transition-all ${cam.enabled
-                                ? "bg-white border-emerald-200 shadow-sm"
-                                : "bg-slate-50 border-slate-200 opacity-75"
+                            ? "bg-white border-emerald-200 shadow-sm"
+                            : "bg-slate-50 border-slate-200 opacity-75"
                             }`}
                     >
                         <div className="flex items-center justify-between">
@@ -215,8 +226,8 @@ function CameraSettingsTab() {
                                     onClick={() => toggleAI(cam.id)}
                                     title={cam.aiEnabled ? "Matikan AI" : "Aktifkan AI"}
                                     className={`p-2 rounded-lg transition-colors ${cam.aiEnabled
-                                            ? "bg-orange-100 text-orange-600 hover:bg-orange-200"
-                                            : "bg-slate-100 text-slate-400 hover:bg-slate-200"
+                                        ? "bg-orange-100 text-orange-600 hover:bg-orange-200"
+                                        : "bg-slate-100 text-slate-400 hover:bg-slate-200"
                                         }`}
                                 >
                                     <Cpu size={18} />
@@ -227,8 +238,8 @@ function CameraSettingsTab() {
                                     onClick={() => toggleCamera(cam.id)}
                                     title={cam.enabled ? "Matikan" : "Nyalakan"}
                                     className={`p-2 rounded-lg transition-colors ${cam.enabled
-                                            ? "bg-emerald-100 text-emerald-600 hover:bg-emerald-200"
-                                            : "bg-slate-100 text-slate-400 hover:bg-slate-200"
+                                        ? "bg-emerald-100 text-emerald-600 hover:bg-emerald-200"
+                                        : "bg-slate-100 text-slate-400 hover:bg-slate-200"
                                         }`}
                                 >
                                     <Power size={18} />
@@ -430,15 +441,23 @@ export default function SettingsPage() {
         try {
             localStorage.setItem("smartapd-notification-settings", JSON.stringify(notifSettings));
 
-            // Also try to save to backend if available
+            // Save Telegram settings to AI Engine
             try {
-                await fetch("/api/settings/notifications", {
+                await fetch("http://localhost:8000/api/telegram/settings", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(notifSettings),
+                    body: JSON.stringify({
+                        bot_token: notifSettings.telegramBotToken,
+                        chat_id: notifSettings.telegramChatId,
+                        send_screenshots: notifSettings.sendScreenshotsWithNotifications,
+                        notification_types: notifSettings.notificationType,
+                        scheduled_report_enabled: notifSettings.scheduledReportEnabled,
+                        scheduled_report_time: notifSettings.scheduledReportTime,
+                        scheduled_report_days: notifSettings.scheduledReportDays,
+                    }),
                 });
             } catch {
-                // Backend not available, that's OK
+                // AI Engine not available, that's OK
             }
 
             setSaveStatus("success");
@@ -650,6 +669,118 @@ export default function SettingsPage() {
                                             {testMessage}
                                         </p>
                                     )}
+
+                                    {/* Telegram Schedule Settings */}
+                                    <div className="mt-6 pt-6 border-t border-blue-100 space-y-4">
+                                        <h5 className="font-bold text-slate-800 flex items-center gap-2">
+                                            <Clock size={16} className="text-blue-500" />
+                                            Jadwal Laporan Otomatis
+                                        </h5>
+
+                                        {/* Enable Scheduled Report */}
+                                        <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-slate-200">
+                                            <div>
+                                                <p className="font-medium text-slate-800">Aktifkan Laporan Terjadwal</p>
+                                                <p className="text-xs text-slate-500">Kirim laporan otomatis setiap hari</p>
+                                            </div>
+                                            <ToggleSwitch
+                                                enabled={notifSettings.scheduledReportEnabled}
+                                                onToggle={() => updateSetting("scheduledReportEnabled", !notifSettings.scheduledReportEnabled)}
+                                            />
+                                        </div>
+
+                                        {notifSettings.scheduledReportEnabled && (
+                                            <>
+                                                {/* Report Time */}
+                                                <div>
+                                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                                        Jam Kirim Laporan
+                                                    </label>
+                                                    <input
+                                                        type="time"
+                                                        value={notifSettings.scheduledReportTime}
+                                                        onChange={(e) => updateSetting("scheduledReportTime", e.target.value)}
+                                                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none"
+                                                    />
+                                                </div>
+
+                                                {/* Report Days */}
+                                                <div>
+                                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                                        Hari Aktif
+                                                    </label>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {[
+                                                            { key: "monday", label: "Sen" },
+                                                            { key: "tuesday", label: "Sel" },
+                                                            { key: "wednesday", label: "Rab" },
+                                                            { key: "thursday", label: "Kam" },
+                                                            { key: "friday", label: "Jum" },
+                                                            { key: "saturday", label: "Sab" },
+                                                            { key: "sunday", label: "Min" },
+                                                        ].map((day) => (
+                                                            <button
+                                                                key={day.key}
+                                                                onClick={() => {
+                                                                    const days = notifSettings.scheduledReportDays;
+                                                                    if (days.includes(day.key)) {
+                                                                        updateSetting("scheduledReportDays", days.filter(d => d !== day.key));
+                                                                    } else {
+                                                                        updateSetting("scheduledReportDays", [...days, day.key]);
+                                                                    }
+                                                                }}
+                                                                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${notifSettings.scheduledReportDays.includes(day.key)
+                                                                    ? "bg-blue-500 text-white"
+                                                                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                                                                    }`}
+                                                            >
+                                                                {day.label}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </>
+                                        )}
+
+                                        {/* Send Screenshots */}
+                                        <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-slate-200">
+                                            <div>
+                                                <p className="font-medium text-slate-800">Sertakan Screenshot</p>
+                                                <p className="text-xs text-slate-500">Kirim foto pelanggaran dalam notifikasi</p>
+                                            </div>
+                                            <ToggleSwitch
+                                                enabled={notifSettings.sendScreenshotsWithNotifications}
+                                                onToggle={() => updateSetting("sendScreenshotsWithNotifications", !notifSettings.sendScreenshotsWithNotifications)}
+                                            />
+                                        </div>
+
+                                        {/* Notification Type */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-2">
+                                                Jenis Notifikasi
+                                            </label>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => updateSetting("notificationType", "violations")}
+                                                    className={`flex-1 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${notifSettings.notificationType === "violations"
+                                                        ? "bg-red-500 text-white"
+                                                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                                                        }`}
+                                                >
+                                                    🚨 Pelanggaran Saja
+                                                </button>
+                                                <button
+                                                    onClick={() => updateSetting("notificationType", "all")}
+                                                    className={`flex-1 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${notifSettings.notificationType === "all"
+                                                        ? "bg-blue-500 text-white"
+                                                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                                                        }`}
+                                                >
+                                                    📊 Semua Aktivitas
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             )}
                         </div>

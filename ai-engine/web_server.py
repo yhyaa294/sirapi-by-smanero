@@ -60,6 +60,17 @@ camera_active = False
 total_violations = 0
 total_detections = 0
 
+# Real-time violation counters
+violation_counts = {
+    "no_helmet": 0,
+    "no_vest": 0,
+    "no_gloves": 0,
+    "no_boots": 0,
+}
+
+# Telegram bot
+telegram_bot = None
+
 # Detection settings
 BACKEND_URL = "http://localhost:8080"
 CONFIDENCE_THRESHOLD = 0.4  # Lowered for better detection
@@ -207,8 +218,8 @@ def draw_detections(frame: np.ndarray, detections: List[Dict]) -> np.ndarray:
 
 
 def process_violations(frame: np.ndarray, detections: List[Dict]):
-    """Process violations - send to backend with screenshot"""
-    global total_violations, last_violation_time
+    """Process violations - send to backend and Telegram with screenshot"""
+    global total_violations, last_violation_time, violation_counts, telegram_bot
     
     current_time = time.time()
     
@@ -222,6 +233,10 @@ def process_violations(frame: np.ndarray, detections: List[Dict]):
         if class_name in last_violation_time:
             if current_time - last_violation_time[class_name] < VIOLATION_COOLDOWN:
                 continue
+        
+        # Update violation counter
+        if class_name in violation_counts:
+            violation_counts[class_name] += 1
         
         # Save screenshot
         screenshot_dir = Path("./data/screenshots")
@@ -251,6 +266,39 @@ def process_violations(frame: np.ndarray, detections: List[Dict]):
                 print(f"🚨 VIOLATION: {class_name} ({det['confidence']*100:.0f}%) - Sent to backend")
                 total_violations += 1
                 last_violation_time[class_name] = current_time
+                
+                # Send Telegram notification
+                try:
+                    import asyncio
+                    from telegram_bot import send_violation_notification, update_stats
+                    
+                    violation_data = {
+                        "type": class_name,
+                        "location": "TITIK A - Gudang Utama",
+                        "time": datetime.now().strftime("%H:%M:%S"),
+                        "confidence": int(det["confidence"] * 100)
+                    }
+                    
+                    # Update Telegram bot stats
+                    update_stats({
+                        "total_detections": total_detections,
+                        "violations_today": total_violations,
+                        "compliance_rate": 100 - (total_violations / max(total_detections, 1) * 100),
+                        "no_helmet": violation_counts.get("no_helmet", 0),
+                        "no_vest": violation_counts.get("no_vest", 0),
+                        "no_gloves": violation_counts.get("no_gloves", 0),
+                        "no_boots": violation_counts.get("no_boots", 0),
+                        "last_violation": violation_data
+                    })
+                    
+                    # Send notification async
+                    loop = asyncio.new_event_loop()
+                    loop.run_until_complete(send_violation_notification(violation_data, str(screenshot_path)))
+                    loop.close()
+                    print("📱 Telegram notification sent!")
+                except Exception as tg_err:
+                    print(f"⚠️ Telegram error: {tg_err}")
+                    
             else:
                 print(f"⚠️ Backend error: {response.status_code}")
                 
@@ -426,11 +474,82 @@ async def list_screenshots():
     return {"screenshots": screenshots[:50]}  # Return latest 50
 
 
+@app.get("/api/realtime-stats")
+async def get_realtime_stats():
+    """Get real-time statistics from AI detection"""
+    global total_detections, total_violations, violation_counts
+    
+    compliance_rate = 100.0
+    if total_detections > 0:
+        compliance_rate = 100 - (total_violations / total_detections * 100)
+    
+    return {
+        "total_detections": total_detections,
+        "violations_today": total_violations,
+        "compliance_rate": round(compliance_rate, 1),
+        "cameras_online": 1 if camera_active else 0,
+        "no_helmet": violation_counts.get("no_helmet", 0),
+        "no_vest": violation_counts.get("no_vest", 0),
+        "no_gloves": violation_counts.get("no_gloves", 0),
+        "no_boots": violation_counts.get("no_boots", 0),
+        "timestamp": datetime.now().isoformat()
+    }
+
+
+@app.get("/api/telegram/settings")
+async def get_telegram_settings():
+    """Get current Telegram bot settings"""
+    try:
+        from telegram_bot import load_settings
+        settings = load_settings()
+        return settings
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@app.post("/api/telegram/settings")
+async def save_telegram_settings(request: dict):
+    """Save Telegram bot settings and restart bot"""
+    try:
+        from telegram_bot import save_settings, start_bot, stop_bot, load_settings
+        
+        # Merge with existing settings
+        current = load_settings()
+        current.update(request)
+        save_settings(current)
+        
+        # Restart bot if token and chat_id are provided
+        if current.get("bot_token") and current.get("chat_id"):
+            try:
+                stop_bot()
+            except:
+                pass
+            start_bot(current["bot_token"], current["chat_id"])
+            return {"success": True, "message": "Settings saved and bot restarted"}
+        
+        return {"success": True, "message": "Settings saved"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
 @app.on_event("startup")
 async def startup_event():
-    """Start camera thread on server startup"""
+    """Start camera thread and Telegram bot on server startup"""
+    # Start camera
     thread = Thread(target=camera_thread, args=(0,), daemon=True)
     thread.start()
+    
+    # Start Telegram bot
+    try:
+        from telegram_bot import start_bot, load_settings
+        settings = load_settings()
+        if settings.get("bot_token") and settings.get("chat_id"):
+            start_bot(settings["bot_token"], settings["chat_id"])
+            print("📱 Telegram bot started!")
+        else:
+            print("⚠️ Telegram bot not configured - set token in settings")
+    except Exception as e:
+        print(f"⚠️ Telegram bot failed to start: {e}")
 
 
 @app.on_event("shutdown")

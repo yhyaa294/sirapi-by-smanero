@@ -43,29 +43,41 @@ export default function AnalyticsPage() {
     const [violationCounts, setViolationCounts] = useState<ViolationCount[]>([]);
     const [trendData, setTrendData] = useState<{ time: string; score: number }[]>([]);
 
-    // Fetch real data from API
+    // Fetch real data from API and AI Engine
     const fetchData = async () => {
         try {
             setLoading(true);
 
-            // Fetch stats
-            const statsData = await api.getDetectionStats();
-            setStats(statsData);
+            // Fetch real-time stats from AI Engine
+            try {
+                const aiStatsResponse = await fetch('http://localhost:8000/api/realtime-stats');
+                if (aiStatsResponse.ok) {
+                    const aiStats = await aiStatsResponse.json();
+                    setStats({
+                        compliance: aiStats.compliance_rate || 100,
+                        totalDetections: aiStats.total_detections || 0,
+                        violationsToday: aiStats.violations_today || 0,
+                        workersActive: aiStats.cameras_online || 1,
+                    });
 
-            // Fetch detections
+                    // Set violation counts from AI
+                    setViolationCounts([
+                        { name: "No vest", count: aiStats.no_vest || 0 },
+                        { name: "No gloves", count: aiStats.no_gloves || 0 },
+                        { name: "No helmet", count: aiStats.no_helmet || 0 },
+                        { name: "No boots", count: aiStats.no_boots || 0 },
+                    ].filter(v => v.count > 0).sort((a, b) => b.count - a.count));
+                }
+            } catch (aiError) {
+                console.log('AI Engine not available, falling back to backend');
+                // Fallback to backend if AI Engine is not running
+                const statsData = await api.getDetectionStats();
+                setStats(statsData);
+            }
+
+            // Fetch detections from backend
             const detectionsData = await api.getDetections(50) as unknown as Detection[];
             setDetections(detectionsData);
-
-            // Calculate violation counts by type
-            const counts: Record<string, number> = {};
-            detectionsData.forEach((d: Detection) => {
-                const type = d.violation_type?.replace('no_', 'No ').replace('_', ' ') || 'Unknown';
-                counts[type] = (counts[type] || 0) + 1;
-            });
-
-            const violationArray = Object.entries(counts).map(([name, count]) => ({ name, count }));
-            violationArray.sort((a, b) => b.count - a.count);
-            setViolationCounts(violationArray.slice(0, 5));
 
             // Generate trend data from detections
             const hourlyCompliance: Record<string, { total: number; violations: number }> = {};
@@ -87,9 +99,7 @@ export default function AnalyticsPage() {
             }));
             trend.sort((a, b) => a.time.localeCompare(b.time));
             setTrendData(trend.length > 0 ? trend : [
-                { time: "08:00", score: 95 }, { time: "09:00", score: 92 },
-                { time: "10:00", score: 88 }, { time: "11:00", score: 94 },
-                { time: "12:00", score: 90 }, { time: "13:00", score: 96 },
+                { time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }), score: stats.compliance }
             ]);
 
             setLastUpdate(new Date());
@@ -451,72 +461,23 @@ Berdasarkan analisis AI SmartAPD dalam periode ${type === 'daily' ? '24 jam' : t
                 </div>
             </div>
 
-            {/* HISTORY TABLE SECTION - Real Data */}
-            <div className="p-6 bg-slate-900/50 border border-slate-800 rounded-3xl">
-                <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-                    <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                        <ShieldAlert size={18} className="text-red-500" />
-                        Riwayat Pelanggaran (Real-time)
-                        <span className="ml-2 w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-                    </h3>
-                    <div className="flex gap-2">
-                        <button className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-bold rounded-lg flex items-center gap-2">
-                            <Filter size={16} /> Filter
-                        </button>
-                    </div>
+            {/* LINK TO FULL HISTORY */}
+            <div className="p-6 bg-slate-900/50 border border-slate-800 rounded-3xl text-center">
+                <div className="flex items-center justify-center gap-3 mb-4">
+                    <ShieldAlert size={24} className="text-orange-500" />
+                    <h3 className="text-lg font-bold text-white">Riwayat Pelanggaran Lengkap</h3>
                 </div>
-
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="border-b border-slate-800 text-slate-400 text-sm uppercase tracking-wider">
-                                <th className="p-4 font-bold">ID</th>
-                                <th className="p-4 font-bold">Waktu</th>
-                                <th className="p-4 font-bold">Lokasi</th>
-                                <th className="p-4 font-bold">Pelanggaran</th>
-                                <th className="p-4 font-bold">Confidence</th>
-                                <th className="p-4 font-bold">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody className="text-slate-200 text-sm">
-                            {loading ? (
-                                <tr><td colSpan={6} className="p-8 text-center text-slate-500">Loading data...</td></tr>
-                            ) : detections.length === 0 ? (
-                                <tr><td colSpan={6} className="p-8 text-center text-slate-500">No violations detected yet</td></tr>
-                            ) : detections.slice(0, 10).map((item, index) => (
-                                <tr key={item.id || index} className="border-b border-slate-800/50 hover:bg-slate-800/30 transition">
-                                    <td className="p-4 font-mono text-slate-500">DET-{String(item.id || index + 1).padStart(3, '0')}</td>
-                                    <td className="p-4">
-                                        {new Date(item.detected_at || item.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
-                                    </td>
-                                    <td className="p-4 font-bold">TITIK {String.fromCharCode(64 + (item.camera_id || 1))} - {item.location || 'Unknown'}</td>
-                                    <td className="p-4">
-                                        <span className="flex items-center gap-2">
-                                            <AlertTriangle size={14} className="text-orange-500" />
-                                            {item.violation_type?.replace('no_', 'No ').replace('_', ' ') || 'Unknown'}
-                                        </span>
-                                    </td>
-                                    <td className="p-4">
-                                        <span className={`px-2 py-1 rounded text-xs font-bold ${item.confidence >= 0.9 ? 'bg-emerald-500/20 text-emerald-400' :
-                                            item.confidence >= 0.7 ? 'bg-amber-500/20 text-amber-400' :
-                                                'bg-red-500/20 text-red-400'
-                                            }`}>
-                                            {(item.confidence * 100).toFixed(0)}%
-                                        </span>
-                                    </td>
-                                    <td className="p-4">
-                                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${item.is_violation
-                                            ? 'bg-red-500/10 text-red-500 border border-red-500/20'
-                                            : 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
-                                            }`}>
-                                            {item.is_violation ? 'Open' : 'OK'}
-                                        </span>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                <p className="text-slate-400 mb-6 max-w-lg mx-auto">
+                    Lihat daftar lengkap semua pelanggaran APD yang terdeteksi oleh sistem AI,
+                    termasuk screenshot dan status penanganan.
+                </p>
+                <a
+                    href="/dashboard/alerts"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold transition-colors"
+                >
+                    <ShieldAlert size={18} />
+                    Buka Riwayat Kejadian
+                </a>
             </div>
 
         </div>
