@@ -304,7 +304,7 @@ Berdasarkan analisis AI SmartAPD dalam periode ${type === 'daily' ? '24 jam' : t
                     <h1 className="text-3xl font-black text-white tracking-tight">ANALYTICS & REPORT</h1>
                     <p className="text-slate-400 flex items-center gap-2">
                         Analisis K3 berbasis AI dan Laporan Otomatis.
-                        <span className="text-xs text-slate-500">
+                        <span className="text-xs text-slate-500" suppressHydrationWarning>
                             Update: {lastUpdate.toLocaleTimeString('id-ID')}
                         </span>
                     </p>
