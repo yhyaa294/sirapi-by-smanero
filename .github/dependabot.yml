@@ -1,0 +1,22 @@
+version: 2
+updates:
+  # Maintain Go dependencies
+  - package-ecosystem: "gomod"
+    directory: "/backend"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 10
+
+  # Maintain Frontend dependencies (npm)
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 10
+
+  # Maintain Python dependencies
+  - package-ecosystem: "pip"
+    directory: "/ai-engine"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 10

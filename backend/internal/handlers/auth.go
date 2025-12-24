@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"os"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -9,20 +10,28 @@ import (
 
 	"github.com/smartapd/backend/internal/database"
 	"github.com/smartapd/backend/internal/models"
+	"github.com/smartapd/backend/internal/validator"
 )
 
-var jwtSecret = []byte("smartapd-secret-key-2024")
+func getJWTSecret() []byte {
+	secret := os.Getenv("JWT_SECRET")
+	if secret == "" {
+		return []byte("smartapd-secret-key-2024")
+	}
+	return []byte(secret)
+}
 
 // LoginRequest represents login input
 type LoginRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required"`
 }
 
 // LoginResponse represents login output
 type LoginResponse struct {
-	Token string      `json:"token"`
-	User  models.User `json:"user"`
+	Token        string      `json:"token"`
+	RefreshToken string      `json:"refresh_token"`
+	User         models.User `json:"user"`
 }
 
 // Login handles user authentication
@@ -33,6 +42,11 @@ func Login(c *fiber.Ctx) error {
 			"success": false,
 			"error":   "Invalid request body",
 		})
+	}
+
+	// Validate request
+	if err := validator.GlobalValidator.Validate(req); err != nil {
+		return err
 	}
 
 	// Find user by email
@@ -69,10 +83,95 @@ func Login(c *fiber.Ctx) error {
 		"user_id": user.ID,
 		"email":   user.Email,
 		"role":    user.Role,
-		"exp":     time.Now().Add(24 * time.Hour).Unix(),
+		"type":    "access",
+		"exp":     time.Now().Add(1 * time.Hour).Unix(), // 1 hour expiration
 	})
 
-	tokenString, err := token.SignedString(jwtSecret)
+	tokenString, err := token.SignedString(getJWTSecret())
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"success": false,
+			"error":   "Failed to generate token",
+		})
+	}
+
+	// Generate Refresh token
+	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id": user.ID,
+		"type":    "refresh",
+		"exp":     time.Now().Add(7 * 24 * time.Hour).Unix(), // 7 days expiration
+	})
+
+	refreshTokenString, err := refreshToken.SignedString(getJWTSecret())
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"success": false,
+			"error":   "Failed to generate refresh token",
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"success": true,
+		"data": LoginResponse{
+			Token:        tokenString,
+			RefreshToken: refreshTokenString,
+			User:         user,
+		},
+	})
+}
+
+// RefreshToken handles token refresh
+func RefreshToken(c *fiber.Ctx) error {
+	type RefreshRequest struct {
+		RefreshToken string `json:"refresh_token" validate:"required"`
+	}
+
+	var req RefreshRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"error":   "Invalid request body",
+		})
+	}
+
+	token, err := jwt.Parse(req.RefreshToken, func(token *jwt.Token) (interface{}, error) {
+		return getJWTSecret(), nil
+	})
+
+	if err != nil || !token.Valid {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"success": false,
+			"error":   "Invalid refresh token",
+		})
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok || claims["type"] != "refresh" {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"success": false,
+			"error":   "Invalid token type",
+		})
+	}
+
+	userID := uint(claims["user_id"].(float64))
+	var user models.User
+	if err := database.GetDB().First(&user, userID).Error; err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"success": false,
+			"error":   "User not found",
+		})
+	}
+
+	// Generate new access token
+	newToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id": user.ID,
+		"email":   user.Email,
+		"role":    user.Role,
+		"type":    "access",
+		"exp":     time.Now().Add(1 * time.Hour).Unix(),
+	})
+
+	newTokenString, err := newToken.SignedString(getJWTSecret())
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"success": false,
@@ -82,9 +181,8 @@ func Login(c *fiber.Ctx) error {
 
 	return c.JSON(fiber.Map{
 		"success": true,
-		"data": LoginResponse{
-			Token: tokenString,
-			User:  user,
+		"data": fiber.Map{
+			"token": newTokenString,
 		},
 	})
 }
@@ -92,10 +190,10 @@ func Login(c *fiber.Ctx) error {
 // Register handles user registration (admin only)
 func Register(c *fiber.Ctx) error {
 	type RegisterRequest struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
-		Name     string `json:"name"`
-		Role     string `json:"role"`
+		Email    string `json:"email" validate:"required,email"`
+		Password string `json:"password" validate:"required,min=6"`
+		Name     string `json:"name" validate:"required"`
+		Role     string `json:"role" validate:"required,oneof=admin supervisor operator"`
 	}
 
 	var req RegisterRequest
@@ -104,6 +202,11 @@ func Register(c *fiber.Ctx) error {
 			"success": false,
 			"error":   "Invalid request body",
 		})
+	}
+
+	// Validate request
+	if err := validator.GlobalValidator.Validate(req); err != nil {
+		return err
 	}
 
 	// Hash password

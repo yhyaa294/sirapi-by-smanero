@@ -11,14 +11,18 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/joho/godotenv"
 
+	"github.com/smartapd/backend/internal/cache"
 	"github.com/smartapd/backend/internal/config"
 	"github.com/smartapd/backend/internal/database"
+	"github.com/smartapd/backend/internal/errors"
 	"github.com/smartapd/backend/internal/handlers"
 	"github.com/smartapd/backend/internal/middleware"
 	"github.com/smartapd/backend/internal/services"
 )
 
 func main() {
+	middleware.InitLogger()
+
 	log.Println("╔═══════════════════════════════════════╗")
 	log.Println("║     SMARTAPD BACKEND - Starting...    ║")
 	log.Println("╚═══════════════════════════════════════╝")
@@ -36,6 +40,10 @@ func main() {
 		log.Fatalf("❌ Failed to connect to database: %v", err)
 	}
 
+	// Initialize cache
+	cache.Init()
+	log.Println("✅ Cache initialized")
+
 	// Initialize services
 	telegramService := services.NewTelegramService(cfg.TelegramToken, cfg.TelegramChatID)
 	detectionService := services.NewDetectionService(telegramService)
@@ -51,13 +59,14 @@ func main() {
 	app := fiber.New(fiber.Config{
 		AppName:      "SmartAPD Backend v1.0.0",
 		ServerHeader: "SmartAPD",
-		ErrorHandler: customErrorHandler,
+		ErrorHandler: errors.ErrorHandler,
 	})
 
 	// Middleware
 	app.Use(recover.New())
 	app.Use(middleware.RequestID())
-	app.Use(middleware.Logger())
+	app.Use(middleware.EnhancedLogger())
+	app.Use(middleware.RateLimit())
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "*",
 		AllowHeaders: "Origin, Content-Type, Accept, Authorization, X-API-Key",
@@ -111,7 +120,8 @@ func main() {
 
 	// Auth routes
 	auth := api.Group("/auth")
-	auth.Post("/login", handlers.Login)
+	auth.Post("/login", middleware.AuthRateLimit(), handlers.Login) // Added strict rate limit for login
+	auth.Post("/refresh", handlers.RefreshToken)
 	auth.Post("/register", handlers.Register)
 	auth.Get("/me", middleware.JWTAuth(), handlers.GetMe)
 
@@ -161,19 +171,4 @@ func main() {
 	if err := app.Listen(":" + port); err != nil {
 		log.Fatalf("❌ Server error: %v", err)
 	}
-}
-
-// customErrorHandler handles errors globally
-func customErrorHandler(c *fiber.Ctx, err error) error {
-	code := fiber.StatusInternalServerError
-
-	if e, ok := err.(*fiber.Error); ok {
-		code = e.Code
-	}
-
-	return c.Status(code).JSON(fiber.Map{
-		"success": false,
-		"error":   err.Error(),
-		"code":    code,
-	})
 }

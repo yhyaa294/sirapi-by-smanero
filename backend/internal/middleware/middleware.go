@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"log"
+	"os"
 	"strings"
 	"time"
 
@@ -9,13 +10,19 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-var jwtSecret = []byte("smartapd-secret-key-2024")
+func getJWTSecret() []byte {
+	secret := os.Getenv("JWT_SECRET")
+	if secret == "" {
+		return []byte("smartapd-secret-key-2024")
+	}
+	return []byte(secret)
+}
 
 // JWTAuth validates JWT token for protected routes
 func JWTAuth() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		// Skip auth routes
-		if c.Path() == "/api/v1/auth/login" || c.Path() == "/api/v1/auth/register" || c.Path() == "/health" {
+		if c.Path() == "/api/v1/auth/login" || c.Path() == "/api/v1/auth/refresh" || c.Path() == "/api/v1/auth/register" || c.Path() == "/health" {
 			return c.Next()
 		}
 
@@ -39,7 +46,7 @@ func JWTAuth() fiber.Handler {
 
 		// Parse and validate token
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-			return jwtSecret, nil
+			return getJWTSecret(), nil
 		})
 
 		if err != nil || !token.Valid {
@@ -52,8 +59,13 @@ func JWTAuth() fiber.Handler {
 		// Extract claims
 		if claims, ok := token.Claims.(jwt.MapClaims); ok {
 			c.Locals("user_id", uint(claims["user_id"].(float64)))
-			c.Locals("user_email", claims["email"].(string))
-			c.Locals("user_role", claims["role"].(string))
+			// Safely assert email and role, handling potential missing values
+			if email, ok := claims["email"].(string); ok {
+				c.Locals("user_email", email)
+			}
+			if role, ok := claims["role"].(string); ok {
+				c.Locals("user_role", role)
+			}
 		}
 
 		return c.Next()

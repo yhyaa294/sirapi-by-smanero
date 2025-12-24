@@ -79,3 +79,15 @@ share/python-wheels/
 # OS
 Thumbs.db
 Desktop.ini
+
+# Binaries
+*.exe
+*.dll
+*.so
+*.dylib
+*.bin
+
+# Security
+*.pem
+*.key
+*.cert

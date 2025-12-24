@@ -1,0 +1,30 @@
+name: Release Build
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+
+    - name: Build Backend
+      run: |
+        cd backend
+        go mod tidy
+        go build -o smartapd-backend.exe ./cmd/server
+
+    - name: Upload Release Asset
+      uses: softprops/action-gh-release@v1
+      with:
+        files: backend/smartapd-backend.exe
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

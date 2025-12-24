@@ -8,6 +8,7 @@ type Config struct {
 	TelegramChatID string
 	Port           string
 	Environment    string
+	JWTSecret      string
 }
 
 func Load() *Config {
@@ -17,6 +18,7 @@ func Load() *Config {
 		TelegramChatID: getEnv("TELEGRAM_CHAT_ID", ""),
 		Port:           getEnv("PORT", "8080"),
 		Environment:    getEnv("ENVIRONMENT", "development"),
+		JWTSecret:      getEnv("JWT_SECRET", "smartapd-secret-key-2024"), // Default for dev, change in prod!
 	}
 }
 
