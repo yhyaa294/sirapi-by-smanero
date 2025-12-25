@@ -641,42 +641,36 @@ export default function SettingsPage() {
 
     // Test Telegram connection
     const testTelegramConnection = async () => {
-        if (!notifSettings.telegramBotToken || !notifSettings.telegramChatId) {
-            setTestMessage("Token dan Chat ID harus diisi!");
+        // Get chat_id from form or use TELEGRAM_CHAT_ID from .env via backend
+        const chatId = notifSettings.telegramChatId;
+
+        if (!chatId) {
+            setTestMessage("Chat ID harus diisi! (Bot Token sudah dikonfigurasi di server)");
             setTestStatus("error");
             return;
         }
-
 
         setTestStatus("loading");
         setTestMessage("");
 
         try {
-            // Use Go Backend for Telegram API
+            // Use new API that uses server-side TELEGRAM_BOT_TOKEN
             const response = await fetch(
-                "http://localhost:8080/api/v1/settings/telegram/test",
-                {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        bot_token: notifSettings.telegramBotToken,
-                        chat_id: notifSettings.telegramChatId,
-                    }),
-                }
+                `http://localhost:8080/api/v1/telegram/chats/${chatId}/test`,
+                { method: "POST" }
             );
 
-            const data = await response.json();
-
-            if (data.success) {
+            if (response.ok) {
                 setTestStatus("success");
-                setTestMessage(data.message || "Pesan terkirim! Cek Telegram Anda.");
+                setTestMessage("Pesan test berhasil dikirim! Cek Telegram Anda.");
             } else {
+                const data = await response.json().catch(() => ({}));
                 setTestStatus("error");
-                setTestMessage(data.message || data.error || "Gagal mengirim pesan");
+                setTestMessage(data.error || "Gagal mengirim pesan test");
             }
         } catch (error) {
             setTestStatus("error");
-            setTestMessage("Backend tidak aktif. Jalankan smartapd-backend.exe terlebih dahulu.");
+            setTestMessage("Backend tidak aktif atau tidak ada koneksi internet.");
         }
     };
 
