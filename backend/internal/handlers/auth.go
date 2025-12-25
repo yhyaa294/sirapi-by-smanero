@@ -220,3 +220,22 @@ func Register(c *fiber.Ctx) error {
 		},
 	})
 }
+
+// Logout invalidates the refresh token
+func Logout(c *fiber.Ctx) error {
+	var req RefreshRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
+	}
+
+	// Delete the refresh token from DB
+	result := database.DB.Where("token = ?", req.RefreshToken).Delete(&models.RefreshToken{})
+	if result.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to logout"})
+	}
+
+	return c.JSON(fiber.Map{
+		"success": true,
+		"message": "Logged out successfully",
+	})
+}

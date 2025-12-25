@@ -58,3 +58,23 @@ func AuthRateLimit() fiber.Handler {
 		},
 	})
 }
+
+// SensitiveRateLimit stricter rate limit for sensitive endpoints (detections, alerts)
+func SensitiveRateLimit() fiber.Handler {
+	maxDocs := getRateLimitConfig("RATE_LIMIT_SENSITIVE", 20)
+
+	return limiter.New(limiter.Config{
+		Max:        maxDocs,         // Default: 20 requests
+		Expiration: 1 * time.Minute, // per 1 minute
+		KeyGenerator: func(c *fiber.Ctx) string {
+			return c.IP()
+		},
+		LimitReached: func(c *fiber.Ctx) error {
+			c.Set("Retry-After", "60")
+			return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{
+				"success": false,
+				"error":   "Rate limit exceeded. Please wait before retrying.",
+			})
+		},
+	})
+}

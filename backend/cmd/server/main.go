@@ -63,10 +63,13 @@ func main() {
 	detectionService := services.NewDetectionService(telegramService)
 	sched := scheduler.NewScheduler(telegramService, emailService)
 	cleanupService := services.NewCleanupService()
+	cameraHealthChecker := services.NewCameraHealthChecker()
+	cameraHealthChecker.SetBroadcastFunc(handlers.BroadcastMessage)
 
 	// Start services
 	sched.Start()
 	cleanupService.Start()
+	cameraHealthChecker.Start()
 
 	// Send startup notification
 	telegramService.SendSystemStatus("started", "SmartAPD Backend berhasil dijalankan")
@@ -147,7 +150,8 @@ func main() {
 	auth := api.Group("/auth")
 	auth.Post("/login", middleware.AuthRateLimit(), handlers.Login)
 	auth.Post("/refresh", handlers.Refresh)
-	// auth.Post("/register", handlers.Register) // Commented out until implemented if missing
+	auth.Post("/logout", handlers.Logout)
+	// auth.Post("/register", handlers.Register) // Admin only in production
 	auth.Get("/me", middleware.Protected(), handlers.GetMe)
 
 	// Settings routes (for Telegram configuration from website)

@@ -17,6 +17,7 @@ export interface Camera {
   last_seen?: string;
   fps?: number;
   latency?: number;
+  last_error?: string;
 }
 
 export interface DailyReport {

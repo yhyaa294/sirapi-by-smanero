@@ -44,6 +44,7 @@ type Camera struct {
 	Latency    int        `json:"latency"` // in ms
 	Latitude   float64    `json:"latitude"`
 	Longitude  float64    `json:"longitude"`
+	LastError  string     `json:"last_error" gorm:"type:text"`
 }
 
 // User represents a system user for authentication
@@ -56,6 +57,15 @@ type User struct {
 	AvatarURL    string     `json:"avatar_url"`
 	IsActive     bool       `json:"is_active" gorm:"default:true"`
 	LastLoginAt  *time.Time `json:"last_login_at"`
+}
+
+// RefreshToken stores refresh tokens for server-side invalidation
+type RefreshToken struct {
+	ID        uint      `gorm:"primaryKey" json:"id"`
+	UserID    uint      `json:"user_id" gorm:"index"`
+	Token     string    `json:"token" gorm:"unique;not null"`
+	ExpiresAt time.Time `json:"expires_at"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 // DetectionStats for API response
