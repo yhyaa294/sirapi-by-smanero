@@ -77,34 +77,36 @@ CONFIDENCE_THRESHOLD = 0.4  # Lowered for better detection
 VIOLATION_COOLDOWN = 30  # seconds
 last_violation_time = {}
 
-# Violation classes
-VIOLATION_CLASSES = {"no_helmet", "no_vest", "no_gloves", "no_boots"}
+# Violation classes (from Roboflow dataset)
+VIOLATION_CLASSES = {"NO-Hardhat", "NO-Mask", "NO-Safety Vest"}
 
 # Class mapping for YOLOv8 PPE detection
-# Adjust based on your trained model
+# Roboflow Construction Site Safety Dataset
 CLASS_NAMES = {
-    0: "person",
-    1: "helmet", 
-    2: "no_helmet",
-    3: "vest",
-    4: "no_vest",
-    5: "gloves",
-    6: "no_gloves", 
-    7: "boots",
-    8: "no_boots"
+    0: "Hardhat",
+    1: "Mask", 
+    2: "NO-Hardhat",
+    3: "NO-Mask",
+    4: "NO-Safety Vest",
+    5: "Person",
+    6: "Safety Cone",
+    7: "Safety Vest", 
+    8: "machinery",
+    9: "vehicle"
 }
 
-# Colors (BGR)
+# Colors (BGR) - matching Roboflow dataset classes
 COLORS = {
-    "helmet": (0, 255, 0),      # Green
-    "no_helmet": (0, 0, 255),   # Red
-    "vest": (0, 255, 0),
-    "no_vest": (0, 0, 255),
-    "gloves": (0, 255, 0),
-    "no_gloves": (0, 0, 255),
-    "boots": (0, 255, 0),
-    "no_boots": (0, 0, 255),
-    "person": (255, 255, 0),    # Cyan
+    "Hardhat": (0, 255, 0),         # Green - Safe
+    "NO-Hardhat": (0, 0, 255),      # Red - Violation
+    "Safety Vest": (0, 255, 0),     # Green - Safe
+    "NO-Safety Vest": (0, 0, 255),  # Red - Violation
+    "Mask": (0, 255, 0),            # Green - Safe
+    "NO-Mask": (0, 0, 255),         # Red - Violation
+    "Person": (255, 255, 0),        # Cyan
+    "Safety Cone": (0, 165, 255),   # Orange
+    "machinery": (128, 128, 0),     # Teal
+    "vehicle": (128, 0, 128),       # Purple
 }
 
 # Load model
@@ -113,6 +115,8 @@ if YOLO_AVAILABLE:
     try:
         # Try to load PPE model first
         model_paths = [
+            "./ai-engine/smartapd_ppe_model.pt",  # Trained model
+            "./smartapd_ppe_model.pt",
             "./ai-engine/models/ppe_detector.pt",
             "./ai-engine/yolov8n.pt",
             "./models/ppe_detector.pt",
