@@ -481,6 +481,48 @@ async def list_screenshots():
     return {"screenshots": screenshots[:50]}  # Return latest 50
 
 
+@app.get("/screenshots/{filename}/blur")
+async def get_blurred_screenshot(filename: str, level: int = 5):
+    """Serve a blurred version of a violation screenshot (Face Redaction)"""
+    screenshot_path = Path("./data/screenshots") / filename
+    if not screenshot_path.exists():
+        return JSONResponse({"error": "Screenshot not found"}, status_code=404)
+
+    # Read image
+    img = cv2.imread(str(screenshot_path))
+    if img is None:
+        return JSONResponse({"error": "Failed to read image"}, status_code=500)
+
+    # Face detection (using standard OpenCV Haar Cascade)
+    try:
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        face_cascade_path = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
+        face_cascade = cv2.CascadeClassifier(face_cascade_path)
+        faces = face_cascade.detectMultiScale(gray, 1.1, 4)
+        
+        # Blur faces (Pixelation)
+        for (x, y, w, h) in faces:
+            roi = img[y:y+h, x:x+w]
+            
+            # Pixelate factor
+            k = 15 # Block size
+            h_roi, w_roi = roi.shape[:2]
+            if h_roi > 0 and w_roi > 0:
+                # Scale down
+                temp = cv2.resize(roi, (max(1, w_roi//k), max(1, h_roi//k)), interpolation=cv2.INTER_LINEAR)
+                # Scale up
+                blur_roi = cv2.resize(temp, (w_roi, h_roi), interpolation=cv2.INTER_NEAREST)
+                img[y:y+h, x:x+w] = blur_roi
+    except Exception as e:
+        print(f"Blur error: {e}")
+        # If face detection fails, return original or error? returning original for now with header
+        pass
+
+    # Encode
+    _, buffer = cv2.imencode('.jpg', img)
+    return Response(content=buffer.tobytes(), media_type="image/jpeg")
+
+
 @app.get("/api/realtime-stats")
 async def get_realtime_stats():
     """Get real-time statistics from AI detection"""

@@ -17,6 +17,7 @@ import (
 	"github.com/smartapd/backend/internal/errors"
 	"github.com/smartapd/backend/internal/handlers"
 	"github.com/smartapd/backend/internal/middleware"
+	"github.com/smartapd/backend/internal/scheduler"
 	"github.com/smartapd/backend/internal/services"
 )
 
@@ -46,12 +47,25 @@ func main() {
 
 	// Initialize services
 	telegramService := services.NewTelegramService(cfg.TelegramToken, cfg.TelegramChatID)
+
+	// Email Service (requires SMTP settings from env)
+	emailSettings := services.EmailSettings{
+		SMTPHost:  cfg.SMTPHost,
+		SMTPPort:  cfg.SMTPPort,
+		SMTPUser:  cfg.SMTPUser,
+		SMTPPass:  cfg.SMTPPass,
+		FromEmail: cfg.SMTPFromEmail,
+		FromName:  "SmartAPD",
+		Enabled:   cfg.SMTPUser != "" && cfg.SMTPPass != "",
+	}
+	emailService := services.NewEmailService(emailSettings)
+
 	detectionService := services.NewDetectionService(telegramService)
-	scheduler := services.NewScheduler(detectionService, telegramService)
+	sched := scheduler.NewScheduler(telegramService, emailService)
 	cleanupService := services.NewCleanupService()
 
 	// Start services
-	scheduler.Start()
+	sched.Start()
 	cleanupService.Start()
 
 	// Send startup notification
@@ -121,6 +135,7 @@ func main() {
 	cameras.Post("/", handlers.CreateCamera)
 	cameras.Put("/:id", handlers.UpdateCamera)
 	cameras.Delete("/:id", handlers.DeleteCamera)
+	cameras.Post("/:id/reconnect", handlers.ReconnectCamera)
 
 	// Report routes
 	reports := api.Group("/reports")
@@ -146,6 +161,37 @@ func main() {
 	notifications.Post("/telegram", handlers.SendTelegramNotification)
 	notifications.Post("/email", handlers.SendEmailNotification)
 
+	// Alert Rules routes
+	rules := api.Group("/rules")
+	rules.Get("/", handlers.GetAlertRules)
+	rules.Post("/", handlers.CreateAlertRule)
+	rules.Delete("/:id", handlers.DeleteAlertRule)
+	rules.Post("/simulate", handlers.SimulateRule)
+
+	// Image routes
+	images := api.Group("/images")
+	images.Get("/:id/blur", handlers.GetBlurredImage)
+
+	// Analytics routes
+	analytics := api.Group("/analytics")
+	analytics.Get("/heatmap", handlers.GetHeatmapData)
+	analytics.Get("/summary", handlers.GetAnalyticsSummary)
+
+	// Dashboard routes
+	dashboards := api.Group("/dashboards")
+	dashboards.Get("/", handlers.GetDashboards)
+	dashboards.Post("/", handlers.CreateDashboard)
+	dashboards.Get("/:id", handlers.GetDashboard)
+	dashboards.Post("/schedule", handlers.ScheduleReport)
+
+	// Integration routes
+	integrations := api.Group("/integrations")
+	integrations.Get("/", handlers.GetIntegrations)
+	integrations.Post("/", handlers.CreateIntegration)
+	integrations.Put("/:id", handlers.UpdateIntegration)
+	integrations.Delete("/:id", handlers.DeleteIntegration)
+	integrations.Post("/test/:id", handlers.TestIntegration)
+
 	// Email settings routes
 	email := api.Group("/email")
 	email.Get("/settings", handlers.GetEmailSettings)
@@ -163,7 +209,7 @@ func main() {
 		<-sigChan
 
 		log.Println("\n🛑 Shutting down gracefully...")
-		scheduler.Stop()
+		sched.Stop()
 		telegramService.SendSystemStatus("stopped", "SmartAPD Backend dihentikan")
 		app.Shutdown()
 	}()

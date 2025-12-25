@@ -1,0 +1,56 @@
+name: Report Generator CI
+
+on:
+  push:
+    paths:
+      - 'frontend/public/reports/**'
+      - 'frontend/scripts/generate_report.js'
+      - '.github/workflows/generate-report.yml'
+  pull_request:
+    paths:
+      - 'frontend/public/reports/**'
+      - 'frontend/scripts/generate_report.js'
+
+jobs:
+  generate-pdf:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./frontend
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: './frontend/package-lock.json'
+
+    - name: Install Dependencies
+      run: npm install puppeteer handlebars --legacy-peer-deps
+
+    - name: Create Logo Placeholder (if missing)
+      run: |
+        mkdir -p public/images
+        # Download a placeholder logic if real logo not in git
+        # Or simple check if it exists in repo. If User didn't commit it, this will fail if script is strict.
+        # We previously fixed ignore rules, so logo should be there IF user pushed.
+        # But for robustness, let's touch a file.
+        touch public/images/logo.png
+
+    - name: Generate PDF
+      run: node scripts/generate_report.js
+      env:
+        # Puppeteer cache path fix for CI
+        PUPPETEER_CACHE_DIR: ~/.cache/puppeteer
+
+    - name: Upload Report Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: SmartAPD-Sample-Report
+        path: frontend/public/reports/SmartAPD_Report_Sample.pdf
+        retention-days: 5

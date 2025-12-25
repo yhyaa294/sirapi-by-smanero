@@ -1,0 +1,45 @@
+{
+    "Title": "Laporan Mingguan Kepatuhan APD",
+    "Unit": "Depo Lokomotif Jatinegara",
+    "Period": "23 Des 2025 - 29 Des 2025",
+    "GeneratedAt": "30 Des 2025, 08:00 WIB",
+    "SummaryText": "Tingkat kepatuhan APD minggu ini menunjukkan tren positif sebesar 85%, meningkat 5% dari minggu sebelumnya. Pelanggaran terbanyak masih didominasi oleh tidak menggunakan Helm Safety di area maintenance pit.",
+    "StatusColor": "yellow",
+    "Recommendation": "Tingkatkan pengawasan di Area Maintenance Pit pada jam istirahat siang.",
+    "SafetyScore": 85,
+    "TotalViolations": 12,
+    "ViolationsIncrease": 2.5,
+    "TotalDetections": 1450,
+    "ActiveCameras": 8,
+    "TotalCameras": 10,
+    "Violations": [
+        {
+            "Time": "24 Des, 09:12",
+            "Location": "Gate 3",
+            "Type": "No Helmet",
+            "Confidence": 98,
+            "Status": "Open"
+        },
+        {
+            "Time": "24 Des, 14:30",
+            "Location": "Maintenance Pit 1",
+            "Type": "No Vest",
+            "Confidence": 92,
+            "Status": "Resolved"
+        },
+        {
+            "Time": "25 Des, 10:15",
+            "Location": "Warehouse",
+            "Type": "No Helmet",
+            "Confidence": 88,
+            "Status": "Open"
+        },
+        {
+            "Time": "26 Des, 16:45",
+            "Location": "Gate 1",
+            "Type": "No Boots",
+            "Confidence": 95,
+            "Status": "Verified"
+        }
+    ]
+}

@@ -5,9 +5,14 @@ import {
     Settings, Camera, Bell, Shield, Database, Save, RefreshCw,
     Send, CheckCircle, XCircle, Loader2, MessageSquare, Mail,
     Smartphone, Volume2, Clock, Wifi,
-    Edit2, Trash2, Plus, Video, ExternalLink, Webcam, Power, Cpu,
-    HardDrive, Activity, Eye, Focus, Maximize, AlertCircle, Signal
+    HardDrive, Activity, Eye, Focus, Maximize, AlertCircle, Signal, Map, List
 } from "lucide-react";
+
+import dynamic from 'next/dynamic';
+const MapView = dynamic(() => import('@/components/MapView'), {
+    ssr: false,
+    loading: () => <div className="h-[400px] w-full bg-slate-100 rounded-xl flex items-center justify-center animate-pulse">Loading Map...</div>
+});
 
 interface NotificationSettings {
     telegramBotToken: string;
@@ -75,6 +80,7 @@ function CameraSettingsTab() {
     const [isLoading, setIsLoading] = useState(true);
     const [editingCamera, setEditingCamera] = useState<Partial<ApiCamera> & { sourceType?: string; webCamId?: number } | null>(null);
     const [testingCamera, setTestingCamera] = useState<number | null>(null);
+    const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
 
     const searchParams = useSearchParams();
     const router = useRouter();
@@ -119,6 +125,17 @@ function CameraSettingsTab() {
             webCamId: 0
         };
         setEditingCamera(newCamera);
+    };
+
+    const handleReconnect = async (id: number) => {
+        if (!confirm("Force reconnect camera stream?")) return;
+        const success = await api.reconnectCamera(id);
+        if (success) {
+            alert("Reconnection initiated");
+            fetchCameras();
+        } else {
+            alert("Failed to trigger reconnection");
+        }
     };
 
     // Save (Create or Update)
@@ -211,6 +228,20 @@ function CameraSettingsTab() {
                     >
                         <RefreshCw size={18} className={isLoading ? "animate-spin" : ""} />
                     </button>
+                    <div className="flex bg-slate-100 p-1 rounded-lg mr-2">
+                        <button
+                            onClick={() => setViewMode('list')}
+                            className={`p-1.5 rounded-md transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-400 hover:text-slate-600'}`}
+                        >
+                            <List size={18} />
+                        </button>
+                        <button
+                            onClick={() => setViewMode('map')}
+                            className={`p-1.5 rounded-md transition-all ${viewMode === 'map' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-400 hover:text-slate-600'}`}
+                        >
+                            <Map size={18} />
+                        </button>
+                    </div>
                     <button
                         onClick={addCamera}
                         className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-medium transition-colors"
@@ -227,6 +258,8 @@ function CameraSettingsTab() {
                     <Loader2 className="w-8 h-8 animate-spin mx-auto text-orange-500 mb-2" />
                     <p className="text-slate-500">Memuat data kamera...</p>
                 </div>
+            ) : viewMode === 'map' ? (
+                <MapView cameras={cameras} />
             ) : (
                 <div className="grid gap-4">
                     {cameras.map((cam) => {
@@ -292,15 +325,19 @@ function CameraSettingsTab() {
                                                 <div className="flex items-center gap-4 mt-3 pt-3 border-t border-slate-100 text-xs text-slate-500">
                                                     <div className="flex items-center gap-1">
                                                         <Maximize size={12} />
-                                                        <span>1920x1080</span>
+                                                        <span>{cam.resolution || '1920x1080'}</span>
                                                     </div>
-                                                    <div className="flex items-center gap-1">
+                                                    <div className="flex items-center gap-1" title="Frames Per Second">
                                                         <Activity size={12} />
-                                                        <span>30 FPS</span>
+                                                        <span className="font-mono">{cam.fps || 0} FPS</span>
                                                     </div>
-                                                    <div className="flex items-center gap-1 text-emerald-600">
+                                                    <div className="flex items-center gap-1" title="Network Latency">
                                                         <Signal size={12} />
-                                                        <span>Stable</span>
+                                                        <span className="font-mono">{cam.latency || 0}ms</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1 text-slate-400">
+                                                        <Clock size={12} />
+                                                        <span>Last: {cam.last_seen ? new Date(cam.last_seen).toLocaleTimeString() : '-'}</span>
                                                     </div>
                                                 </div>
                                             )}
@@ -341,6 +378,15 @@ function CameraSettingsTab() {
                                             ) : (
                                                 <ExternalLink size={18} />
                                             )}
+                                        </button>
+
+                                        {/* Reconnect Button */}
+                                        <button
+                                            onClick={() => handleReconnect(cam.ID)}
+                                            className="p-2 bg-purple-50 text-purple-600 hover:bg-purple-100 rounded-lg transition-colors"
+                                            title="Reconnect Stream"
+                                        >
+                                            <RefreshCw size={18} />
                                         </button>
 
                                         {/* Edit Button */}

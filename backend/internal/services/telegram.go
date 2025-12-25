@@ -265,3 +265,54 @@ Status: <code>%s</code>
 
 	return t.SendMessage(msg)
 }
+
+// SendDocument sends a document (PDF, etc) via Telegram
+func (t *TelegramService) SendDocument(filePath string, caption string) error {
+	if !t.Enabled {
+		return fmt.Errorf("telegram service disabled")
+	}
+
+	// Check if file exists
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		return fmt.Errorf("file not found: %s", filePath)
+	}
+
+	url := fmt.Sprintf("https://api.telegram.org/bot%s/sendDocument", t.BotToken)
+
+	// Create multipart form
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	// Add chat_id
+	writer.WriteField("chat_id", t.ChatID)
+	writer.WriteField("caption", caption)
+	writer.WriteField("parse_mode", "HTML")
+
+	// Add document
+	file, err := os.Open(filePath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	part, err := writer.CreateFormFile("document", filepath.Base(filePath))
+	if err != nil {
+		return err
+	}
+	io.Copy(part, file)
+	writer.Close()
+
+	// Send request
+	resp, err := http.Post(url, writer.FormDataContentType(), body)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		respBody, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("telegram error: %s", string(respBody))
+	}
+
+	return nil
+}

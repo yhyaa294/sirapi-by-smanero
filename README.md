@@ -321,6 +321,7 @@ TELEGRAM_CHAT_ID=your_chat_id_here
 # AI Engine
 CONFIDENCE_THRESHOLD=0.5
 DETECTION_INTERVAL=0.5
+REPORT_BASE_URL=http://localhost:3000 # Untuk generate PDF/Asset loading
 ```
 
 ### config.yaml

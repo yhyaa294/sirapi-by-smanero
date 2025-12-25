@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"time"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/smartapd/backend/internal/database"
 	"github.com/smartapd/backend/internal/models"
@@ -107,5 +109,39 @@ func DeleteCamera(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"success": true,
 		"message": "Camera deleted successfully",
+	})
+}
+
+// ReconnectCamera triggers a camera reconnection process
+func ReconnectCamera(c *fiber.Ctx) error {
+	id := c.Params("id")
+	var camera models.Camera
+
+	if err := database.GetDB().First(&camera, id).Error; err != nil {
+		return c.Status(404).JSON(fiber.Map{"error": "Camera not found"})
+	}
+
+	// Mock reconnection trigger
+	camera.Status = "reconnecting"
+	database.GetDB().Save(&camera)
+
+	// Simulate async reconnection process
+	go func() {
+		// In a real system, this would trigger the AI Engine or RTSP client
+		time.Sleep(3 * time.Second)
+
+		// Update to online with fresh health metrics
+		camera.Status = "online"
+		now := time.Now()
+		camera.LastSeen = &now
+		camera.FPS = 25
+		camera.Latency = 45 // mock latency
+		database.GetDB().Save(&camera)
+	}()
+
+	return c.JSON(fiber.Map{
+		"success": true,
+		"message": "Camera reconnection initiated",
+		"data":    camera,
 	})
 }

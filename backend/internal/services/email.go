@@ -1,12 +1,12 @@
 package services
 
 import (
-	"crypto/tls"
 	"fmt"
 	"log"
-	"net/smtp"
-	"strings"
+	"os"
 	"time"
+
+	"gopkg.in/gomail.v2"
 )
 
 // EmailSettings holds the email configuration
@@ -27,6 +27,7 @@ type EmailService struct {
 	Enabled     bool
 	RateLimiter map[string]time.Time
 	Cooldown    time.Duration
+	Dialer      *gomail.Dialer
 }
 
 // NewEmailService creates a new email service instance
@@ -39,6 +40,12 @@ func NewEmailService(settings EmailSettings) *EmailService {
 	}
 
 	if service.Enabled {
+		service.Dialer = gomail.NewDialer(
+			settings.SMTPHost,
+			settings.SMTPPort,
+			settings.SMTPUser,
+			settings.SMTPPass,
+		)
 		log.Println("✅ Email service initialized")
 	} else {
 		log.Println("⚠️ Email service disabled (missing SMTP configuration)")
@@ -60,90 +67,55 @@ func (e *EmailService) canSend(key string) bool {
 
 // SendEmail sends an email with HTML content
 func (e *EmailService) SendEmail(to, subject, body string) error {
-	if !e.Enabled {
+	if !e.Enabled || e.Dialer == nil {
 		return fmt.Errorf("email service disabled")
 	}
 
-	// Create HTML email
-	htmlBody := e.wrapInTemplate(body)
+	m := gomail.NewMessage()
 
-	// Create message
 	from := e.Settings.FromEmail
 	if e.Settings.FromName != "" {
-		from = fmt.Sprintf("%s <%s>", e.Settings.FromName, e.Settings.FromEmail)
+		m.SetHeader("From", fmt.Sprintf("%s <%s>", e.Settings.FromName, from))
+	} else {
+		m.SetHeader("From", from)
 	}
 
-	msg := []byte(fmt.Sprintf("From: %s\r\n"+
-		"To: %s\r\n"+
-		"Subject: %s\r\n"+
-		"MIME-Version: 1.0\r\n"+
-		"Content-Type: text/html; charset=UTF-8\r\n"+
-		"\r\n"+
-		"%s", from, to, subject, htmlBody))
+	m.SetHeader("To", to)
+	m.SetHeader("Subject", subject)
+	m.SetBody("text/html", e.wrapInTemplate(body))
 
-	// Connect to SMTP server
-	addr := fmt.Sprintf("%s:%d", e.Settings.SMTPHost, e.Settings.SMTPPort)
-	auth := smtp.PlainAuth("", e.Settings.SMTPUser, e.Settings.SMTPPass, e.Settings.SMTPHost)
-
-	// Use TLS for Gmail
-	if strings.Contains(e.Settings.SMTPHost, "gmail") {
-		return e.sendWithTLS(addr, auth, e.Settings.FromEmail, []string{to}, msg)
-	}
-
-	return smtp.SendMail(addr, auth, e.Settings.FromEmail, []string{to}, msg)
+	return e.Dialer.DialAndSend(m)
 }
 
-// sendWithTLS sends email using TLS connection (for Gmail)
-func (e *EmailService) sendWithTLS(addr string, auth smtp.Auth, from string, to []string, msg []byte) error {
-	host := strings.Split(addr, ":")[0]
-
-	tlsConfig := &tls.Config{
-		InsecureSkipVerify: false,
-		ServerName:         host,
+// SendReport sends an email with PDF attachment
+func (e *EmailService) SendReport(to string, subject string, body string, attachmentName string, attachmentData []byte) error {
+	if !e.Enabled || e.Dialer == nil {
+		return fmt.Errorf("email service disabled")
 	}
 
-	conn, err := tls.Dial("tcp", addr, tlsConfig)
-	if err != nil {
+	m := gomail.NewMessage()
+
+	from := e.Settings.FromEmail
+	if e.Settings.FromName != "" {
+		m.SetHeader("From", fmt.Sprintf("%s <%s>", e.Settings.FromName, from))
+	} else {
+		m.SetHeader("From", from)
+	}
+
+	m.SetHeader("To", to)
+	m.SetHeader("Subject", subject)
+	m.SetBody("text/html", e.wrapInTemplate(body))
+
+	// Write temp file for attachment
+	tempFile := fmt.Sprintf("./temp_%d_%s", time.Now().UnixNano(), attachmentName)
+	if err := os.WriteFile(tempFile, attachmentData, 0644); err != nil {
 		return err
 	}
-	defer conn.Close()
+	defer os.Remove(tempFile)
 
-	client, err := smtp.NewClient(conn, host)
-	if err != nil {
-		return err
-	}
-	defer client.Close()
+	m.Attach(tempFile, gomail.Rename(attachmentName))
 
-	if err = client.Auth(auth); err != nil {
-		return err
-	}
-
-	if err = client.Mail(from); err != nil {
-		return err
-	}
-
-	for _, recipient := range to {
-		if err = client.Rcpt(recipient); err != nil {
-			return err
-		}
-	}
-
-	w, err := client.Data()
-	if err != nil {
-		return err
-	}
-
-	_, err = w.Write(msg)
-	if err != nil {
-		return err
-	}
-
-	err = w.Close()
-	if err != nil {
-		return err
-	}
-
-	return client.Quit()
+	return e.Dialer.DialAndSend(m)
 }
 
 // wrapInTemplate wraps content in HTML email template
@@ -218,6 +190,8 @@ func (e *EmailService) SendViolationAlert(violationType, location string, confid
 	`, violationType, location, confidence*100, time.Now().Format("15:04:05 02-01-2006"))
 
 	for _, recipient := range e.Settings.Recipients {
+		// Pass raw body, wrapper handles it in SendEmail?
+		// Wait, SendEmail calls wrapInTemplate. So I should pass raw body here.
 		if err := e.SendEmail(recipient, subject, body); err != nil {
 			log.Printf("Failed to send email to %s: %v", recipient, err)
 		}

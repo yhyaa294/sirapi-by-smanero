@@ -18,6 +18,7 @@ import {
   FileText,
 } from "lucide-react";
 import { AlertToastContainer } from "@/components/AlertToast";
+import NotificationPanel from "@/components/NotificationPanel";
 
 // Separated Clock Component to prevent full Layout re-renders
 function ClockWidget() {
@@ -271,15 +272,7 @@ export default function DashboardLayout({
               <div className="h-10 w-px bg-slate-200"></div>
 
               {/* Notifications - Linked to Alerts (Unified Incident Center) */}
-              <Link
-                href="/dashboard/alerts"
-                className="relative p-2 hover:bg-slate-100 rounded-full text-slate-500 hover:text-slate-900 transition-colors"
-              >
-                <Bell size={22} />
-                <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-red-500 rounded-full text-[10px] text-white font-bold flex items-center justify-center border-2 border-white animate-pulse">
-                  3
-                </span>
-              </Link>
+              <NotificationPanel />
 
               {/* User Profile - Linked */}
               <Link

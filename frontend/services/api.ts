@@ -14,6 +14,9 @@ export interface Camera {
   is_active: boolean;
   latitude?: number;
   longitude?: number;
+  last_seen?: string;
+  fps?: number;
+  latency?: number;
 }
 
 export interface DailyReport {
@@ -123,6 +126,18 @@ export const api = {
     try {
       const res = await fetch(`${API_BASE}/cameras/${id}`, {
         method: 'DELETE',
+      });
+      return res.ok;
+    } catch (error) {
+      console.error('API Error:', error);
+      return false;
+    }
+  },
+
+  async reconnectCamera(id: number): Promise<boolean> {
+    try {
+      const res = await fetch(`${API_BASE}/cameras/${id}/reconnect`, {
+        method: 'POST',
       });
       return res.ok;
     } catch (error) {
