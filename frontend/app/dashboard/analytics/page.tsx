@@ -150,20 +150,30 @@ export default function AnalyticsPage() {
                 setDetections(detectionsData);
 
                 detectionsData.forEach((d: Detection) => {
-                    let zoneName = "Unknown";
-                    const loc = (d.location || "").toLowerCase();
-                    if (loc.includes("gudang") || d.camera_id === 1) zoneName = "Loading Dock";
-                    else if (loc.includes("produksi") || d.camera_id === 2) zoneName = "Welding Bay";
-                    else if (loc.includes("lapor") || loc.includes("pintu") || d.camera_id === 3) zoneName = "Main Entrance";
-                    else if (loc.includes("kimia")) zoneName = "Chemical Store";
-                    else zoneName = "Chemical Store"; // Fallback demo
+                    // Map detection to camera zone (use camera location, not hardcoded)
+                    let zoneName = d.location || `Kamera ${d.camera_id}`;
 
-                    if (!zones[zoneName]) zones[zoneName] = { ...zones["Loading Dock"], name: zoneName, score: 100, violations: 0 };
+                    // Use existing zone from camera, or create a fallback
+                    if (!zones[zoneName]) {
+                        // Try to find matching camera zone
+                        const matchingZone = Object.values(zones).find(z =>
+                            z.name.toLowerCase() === zoneName.toLowerCase() ||
+                            d.camera_id && (camerasData as any[])?.find(c => c.ID === d.camera_id)?.location === z.name
+                        );
+                        if (matchingZone) {
+                            zoneName = matchingZone.name;
+                        } else if (Object.keys(zones).length > 0) {
+                            // Fallback to first camera zone
+                            zoneName = Object.keys(zones)[0];
+                        } else {
+                            continue; // Skip if no zones available
+                        }
+                    }
 
-                    if (d.is_violation) {
+                    if (zones[zoneName] && d.is_violation) {
                         zones[zoneName].violations += 1;
-                        zones[zoneName].score = Math.max(0, zones[zoneName].score - 10); // Penalty
-                        zones[zoneName].violationType = d.violation_type.replace("no_", "No ");
+                        zones[zoneName].score = Math.max(0, zones[zoneName].score - 10);
+                        zones[zoneName].violationType = d.violation_type?.replace("no_", "No ") || "Unknown";
 
                         const s = zones[zoneName].score;
                         zones[zoneName].status = s < 60 ? "KRITIS" : s < 85 ? "WASPADA" : "AMAN";
