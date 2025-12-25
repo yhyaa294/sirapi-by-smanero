@@ -125,17 +125,26 @@ export default function AnalyticsPage() {
                 setStats(statsData);
             }
 
-            // Process Zones & Teams
+            // Process Zones from cameras (no more hardcoded dummy zones)
             const zones: Record<string, ZoneStat> = {};
-            const defaultZones = ["Loading Dock", "Welding Bay", "Main Entrance", "Chemical Store"];
 
-            // Initial Zones
-            defaultZones.forEach(z => {
-                zones[z] = {
-                    name: z, score: 100, status: "AMAN", violations: 0, violationType: "Compliant",
-                    bgBorder: "border-emerald-500/30", bgSoft: "bg-emerald-500/10", iconColor: "text-emerald-500", progressColor: "bg-emerald-500"
-                };
-            });
+            // Create zones from actual cameras
+            if (camerasData && camerasData.length > 0) {
+                (camerasData as any[]).forEach((camera: any, idx: number) => {
+                    const zoneName = camera.location || camera.name || `Kamera ${idx + 1}`;
+                    zones[zoneName] = {
+                        name: zoneName,
+                        score: 100,
+                        status: "AMAN",
+                        violations: 0,
+                        violationType: "Compliant",
+                        bgBorder: "border-emerald-500/30",
+                        bgSoft: "bg-emerald-500/10",
+                        iconColor: "text-emerald-500",
+                        progressColor: "bg-emerald-500"
+                    };
+                });
+            }
 
             if (detectionsData && detectionsData.length > 0) {
                 setDetections(detectionsData);
@@ -171,17 +180,19 @@ export default function AnalyticsPage() {
             }
             setZoneStats(Object.values(zones));
 
-            // Mock Team Mapping
-            const processedTeams = [
-                { name: "Tim Logistik", score: zones["Loading Dock"]?.score || 100, violations: zones["Loading Dock"]?.violations || 0, color: "emerald", status: "Aman" },
-                { name: "Tim Produksi", score: zones["Welding Bay"]?.score || 100, violations: zones["Welding Bay"]?.violations || 0, color: "yellow", status: "Perlu Review" },
-                { name: "Vendor Sec", score: zones["Main Entrance"]?.score || 100, violations: zones["Main Entrance"]?.violations || 0, color: "emerald", status: "Aman" },
-                { name: "Tim Maintenance", score: zones["Chemical Store"]?.score || 100, violations: zones["Chemical Store"]?.violations || 0, color: "blue", status: "Aman" },
-            ].map(t => {
-                if (t.score < 60) { t.color = "red"; t.status = "Kritis"; }
-                else if (t.score < 85) { t.color = "yellow"; t.status = "Waspada"; }
-                else { t.color = "emerald"; t.status = "Aman"; }
-                return t;
+            // Create teams from zones (no more hardcoded dummy teams)
+            const processedTeams = Object.values(zones).map((zone, idx) => {
+                let color = "emerald";
+                let status = "Aman";
+                if (zone.score < 60) { color = "red"; status = "Kritis"; }
+                else if (zone.score < 85) { color = "yellow"; status = "Waspada"; }
+                return {
+                    name: zone.name,
+                    score: zone.score,
+                    violations: zone.violations,
+                    color,
+                    status
+                };
             }).sort((a, b) => a.score - b.score);
             setTeamStats(processedTeams);
 
@@ -245,7 +256,6 @@ export default function AnalyticsPage() {
     const handleExportXLSX = async () => {
         // Dynamic import to avoid SSR issues
         const ExcelJS = (await import('exceljs')).default;
-        const { saveAs } = await import('file-saver');
 
         // Fetch fresh data if needed
         let exportData = detections;
@@ -359,7 +369,14 @@ export default function AnalyticsPage() {
         // Generate and download
         const buffer = await workbook.xlsx.writeBuffer();
         const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-        saveAs(blob, `SmartAPD_Laporan_${now.toISOString().split('T')[0]}.xlsx`);
+
+        // Native download approach
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `SmartAPD_Laporan_${now.toISOString().split('T')[0]}.xlsx`;
+        a.click();
+        URL.revokeObjectURL(url);
         setShowDownloadMenu(false);
     };
 
