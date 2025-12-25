@@ -48,6 +48,10 @@ func main() {
 	// Initialize services
 	telegramService := services.NewTelegramService(cfg.TelegramToken, cfg.TelegramChatID)
 
+	// Initialize Telegram Bot (interactive commands)
+	telegramBot := services.NewTelegramBot(telegramService)
+	telegramBot.StartPolling()
+
 	// Email Service (requires SMTP settings from env)
 	emailSettings := services.EmailSettings{
 		SMTPHost:  cfg.SMTPHost,
