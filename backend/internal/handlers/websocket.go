@@ -2,13 +2,13 @@ package handlers
 
 import (
 	"log"
-	"os"
 	"sync"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/websocket/v2"
-	"github.com/golang-jwt/jwt/v5"
+
+	"github.com/smartapd/backend/internal/middleware"
 )
 
 // ==================== WEBSOCKET HANDLER ====================
@@ -25,23 +25,13 @@ func WebSocketHandler(c *fiber.Ctx) error {
 
 	if tokenString == "" {
 		// Also allow strict mode where we don't proceed without token
-		// But for development/compatibility we might check if user wants it enforced
-		// Current constraint: "only client sending Bearer token allowed"
-		// Since it's websocket, "Bearer" usually implies header, but standard JS WebSocket API
-		// doesn't support headers. Query param is standard alternative.
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"error": "Missing auth token",
 		})
 	}
 
 	// Verify token
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		secret := os.Getenv("JWT_SECRET")
-		if secret == "" {
-			secret = "smartapd-secret-key-2024"
-		}
-		return []byte(secret), nil
-	})
+	token, err := middleware.ValidateToken(tokenString)
 
 	if err != nil || !token.Valid {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{

@@ -51,7 +51,7 @@ Demo password
 
 | No | Pertanyaan | Jawaban |
 |----|------------|---------|
-| D11 | Database yang diinginkan? | **BEBAS** (akan pakai Supabase - gratis) |
+| D11 | Database yang diinginkan? | **NEON** (PostgreSQL Serverless) |
 | D12 | Data apa saja yang mau disimpan? | **YA SEMUANYA** (Log, Screenshot, Video klip, Statistik, Data pekerja) |
 | D13 | Berapa lama data disimpan? | **90 HARI** |
 
@@ -141,6 +141,7 @@ Demo password
 | L13 | Tanggal presentasi? | **28 DESEMBER 2024** (5 hari lagi!) |
 | L14 | Perlu Demo Mode? | **YA** (auto-generate deteksi tanpa webcam) |
 | L15 | Rekam video demo? | **YA** |
+| L16 | Peta Lokasi? | **GOOGLE MAPS** (Custom Style & Markers) |
 
 ---
 
@@ -196,10 +197,10 @@ Demo password
 │                    ▼           ▼           ▼                      │
 │            ┌───────────┐ ┌───────────┐ ┌───────────┐              │
 │            │ DATABASE  │ │ TELEGRAM  │ │  BROWSER  │              │
-│            │ (SQLite)  │ │   BOT     │ │   PUSH    │              │
+│            │  (Neon)   │ │   BOT     │ │   PUSH    │              │
 │            │           │ │           │ │           │              │
-│            │ • Local   │ │ • Alert   │ │ • Notif   │              │
-│            │ • Simple  │ │ • Photo   │ │           │              │
+│            │ • Cloud   │ │ • Alert   │ │ • Notif   │              │
+│            │ • Postgres│ │ • Photo   │ │           │              │
 │            └───────────┘ └───────────┘ └───────────┘              │
 │                                                                    │
 │            ┌──────────────────────────────────────┐               │

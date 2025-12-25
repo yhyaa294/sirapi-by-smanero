@@ -6,12 +6,23 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/smartapd/backend/internal/database"
 	"github.com/smartapd/backend/internal/models"
+	"github.com/smartapd/backend/internal/services"
 )
 
 // ==================== DETECTION HANDLERS ====================
 
+type DetectionHandler struct {
+	service *services.DetectionService
+}
+
+func NewDetectionHandler(service *services.DetectionService) *DetectionHandler {
+	return &DetectionHandler{
+		service: service,
+	}
+}
+
 // GetDetections returns all detections with optional filters
-func GetDetections(c *fiber.Ctx) error {
+func (h *DetectionHandler) GetDetections(c *fiber.Ctx) error {
 	var detections []models.Detection
 
 	db := database.GetDB()
@@ -40,7 +51,7 @@ func GetDetections(c *fiber.Ctx) error {
 }
 
 // GetDetection returns a single detection by ID
-func GetDetection(c *fiber.Ctx) error {
+func (h *DetectionHandler) GetDetection(c *fiber.Ctx) error {
 	id := c.Params("id")
 	var detection models.Detection
 
@@ -52,7 +63,7 @@ func GetDetection(c *fiber.Ctx) error {
 }
 
 // CreateDetection creates a new detection record
-func CreateDetection(c *fiber.Ctx) error {
+func (h *DetectionHandler) CreateDetection(c *fiber.Ctx) error {
 	detection := new(models.Detection)
 
 	if err := c.BodyParser(detection); err != nil {
@@ -61,31 +72,31 @@ func CreateDetection(c *fiber.Ctx) error {
 
 	detection.DetectedAt = time.Now()
 
-	if err := database.GetDB().Create(detection).Error; err != nil {
-		return c.Status(500).JSON(fiber.Map{"error": "Failed to create detection"})
+	// Use service to process detection (handles alerts, stats, db save)
+	if err := h.service.ProcessNewDetection(detection); err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "Failed to process detection"})
 	}
+
+	// Broadcast to WebSocket clients
+	BroadcastDetection(detection)
 
 	return c.Status(201).JSON(fiber.Map{
 		"success": true,
 		"data":    detection,
-		"message": "Detection created successfully",
+		"message": "Detection processed successfully",
 	})
 }
 
 // GetDetectionStats returns detection statistics
-func GetDetectionStats(c *fiber.Ctx) error {
+func (h *DetectionHandler) GetDetectionStats(c *fiber.Ctx) error {
+	// Use cached stats from service
+	stats := h.service.GetTodayStats()
+	complianceRate := h.service.GetComplianceRate()
+
+	// Use DB for breakdown if needed, or implement in service.
+	// For now, keeping the DB query for breakdown as service only caches totals.
 	db := database.GetDB()
 
-	var totalDetections, totalViolations int64
-	db.Model(&models.Detection{}).Count(&totalDetections)
-	db.Model(&models.Detection{}).Where("is_violation = ?", true).Count(&totalViolations)
-
-	complianceRate := float64(0)
-	if totalDetections > 0 {
-		complianceRate = float64(totalDetections-totalViolations) / float64(totalDetections) * 100
-	}
-
-	// Count by violation type
 	var results []struct {
 		ViolationType string
 		Count         int64
@@ -104,8 +115,8 @@ func GetDetectionStats(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"success": true,
 		"data": models.DetectionStats{
-			TotalDetections: totalDetections,
-			TotalViolations: totalViolations,
+			TotalDetections: stats.TotalToday,
+			TotalViolations: stats.ViolationsToday,
 			ComplianceRate:  complianceRate,
 			ByViolationType: byType,
 		},

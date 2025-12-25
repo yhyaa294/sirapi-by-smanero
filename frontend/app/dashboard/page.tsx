@@ -4,19 +4,9 @@ import { useState, useEffect, useMemo, memo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, AlertTriangle, Video, TrendingUp, Eye, Maximize2, Volume2, Zap } from "lucide-react";
-import { api, Stats, Camera, Alert } from "@/services/api";
+import { ShieldCheck, AlertTriangle, Video, TrendingUp, Eye, EyeOff, Maximize2, Volume2, Zap, Plus, Settings2, Grid, LayoutGrid, Box } from "lucide-react";
+import { api, Stats, Camera, Alert, realtime } from "@/services/api";
 import { useDemoMode } from "@/hooks/useDemoMode";
-
-// Default camera data (used as fallback)
-const defaultCameras = [
-  { id: "A", name: "TITIK A", location: "Gudang Utama", status: "AMAN", statusColor: "emerald" },
-  { id: "B", name: "TITIK B", location: "Area Assembly", status: "PERINGATAN", statusColor: "amber" },
-  { id: "C", name: "TITIK C", location: "Welding Bay", status: "AMAN", statusColor: "emerald" },
-  { id: "D", name: "TITIK D", location: "Loading Dock", status: "BAHAYA", statusColor: "red" },
-];
-
-type CameraDisplay = typeof defaultCameras[0];
 
 // Status badge component
 const StatusBadge = ({ status, color }: { status: string; color: string }) => {
@@ -24,38 +14,30 @@ const StatusBadge = ({ status, color }: { status: string; color: string }) => {
     emerald: "bg-emerald-500 text-white",
     amber: "bg-amber-500 text-white",
     red: "bg-red-500 text-white animate-pulse",
+    slate: "bg-slate-500 text-white",
   };
 
   return (
-    <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${colors[color]}`}>
+    <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${colors[color] || colors.slate}`}>
       {status}
     </span>
   );
 };
 
 // Camera card component - Memoized for performance
-const CameraCard = memo(function CameraCard({ camera, isFirst }: { camera: CameraDisplay; isFirst?: boolean }) {
-  const router = useRouter();
+const CameraCard = memo(function CameraCard({ camera, currentTime, isScreenOn, onToggleScreen }: { camera: any; currentTime: string, isScreenOn: boolean, onToggleScreen: (id: string | number) => void }) {
   const [isHovered, setIsHovered] = useState(false);
-  const [currentTime, setCurrentTime] = useState<string>("");
-
-  useEffect(() => {
-    setCurrentTime(new Date().toLocaleTimeString('id-ID'));
-    const timer = setInterval(() => {
-      setCurrentTime(new Date().toLocaleTimeString('id-ID'));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
 
   const borderColors: Record<string, string> = {
     emerald: "border-emerald-500/30 hover:border-emerald-500",
     amber: "border-amber-500/30 hover:border-amber-500",
     red: "border-red-500 shadow-lg shadow-red-500/20",
+    slate: "border-slate-500/30 hover:border-slate-500",
   };
 
   return (
     <div
-      className={`relative bg-slate-900 rounded-2xl overflow-hidden border-2 transition-all duration-300 ${borderColors[camera.statusColor]}`}
+      className={`relative bg-slate-900 rounded-2xl overflow-hidden border-2 transition-all duration-300 ${borderColors[camera.statusColor] || borderColors.slate}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -65,21 +47,38 @@ const CameraCard = memo(function CameraCard({ camera, isFirst }: { camera: Camer
           <h4 className="text-white font-bold text-sm">{camera.name}</h4>
           <p className="text-white/70 text-xs">{camera.location}</p>
         </div>
-        <StatusBadge status={camera.status} color={camera.statusColor} />
+        <div className="flex items-center gap-2">
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              onToggleScreen(camera.id);
+            }}
+            className="p-1 rounded-full bg-black/40 hover:bg-black/60 text-white/80 hover:text-white transition-colors"
+            title={isScreenOn ? "Matikan Layar" : "Hidupkan Layar"}
+          >
+            {isScreenOn ? <Eye size={14} /> : <EyeOff size={14} />}
+          </button>
+          <StatusBadge status={camera.status} color={camera.statusColor} />
+        </div>
       </div>
 
-      {/* Camera Feed - Live AI Stream for Camera A */}
+      {/* Camera Feed - Live AI Stream */}
       <div className="aspect-video bg-slate-800 relative overflow-hidden">
-        {camera.id === "A" ? (
-          /* Live AI Stream for TITIK A */
+        {camera.status !== "OFFLINE" && isScreenOn ? (
+          /* Live AI Stream */
           <>
             <img
               src="http://localhost:8000/video_feed"
               alt="Live AI Feed"
               className="w-full h-full object-cover absolute inset-0 z-10"
               style={{ minHeight: '100%' }}
+              onError={(e) => {
+                // Fallback if stream fails
+                e.currentTarget.style.display = 'none';
+                e.currentTarget.nextElementSibling?.classList.remove('hidden');
+              }}
             />
-            {/* Loading overlay - hidden once stream loads */}
+            {/* Loading overlay - shown if stream fails or loading */}
             <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900 z-0">
               <div className="text-center">
                 <div className="w-12 h-12 mx-auto border-4 border-orange-500 border-t-transparent rounded-full animate-spin mb-3"></div>
@@ -89,56 +88,74 @@ const CameraCard = memo(function CameraCard({ camera, isFirst }: { camera: Camer
             </div>
           </>
         ) : (
-          /* Placeholder for other cameras */
+          /* Placeholder for other cameras, offline, or screen OFF */
           <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
             <div className="text-center">
-              <div className="w-16 h-16 mx-auto rounded-full bg-slate-700/80 flex items-center justify-center mb-2">
-                <Eye size={32} className="text-slate-500" />
+              <div className={`w-16 h-16 mx-auto rounded-full ${camera.status === 'OFFLINE' ? 'bg-slate-800' : 'bg-slate-700/80'} flex items-center justify-center mb-2`}>
+                {camera.status === 'OFFLINE' ? (
+                  <div className="text-slate-600 flex flex-col items-center">
+                    <Zap size={24} className="mb-1 opacity-50" />
+                    <span className="text-[10px] font-bold">NO SIGNAL</span>
+                  </div>
+                ) : !isScreenOn ? (
+                  /* Screen manually turned off - Click to Turn On */
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onToggleScreen(camera.id);
+                    }}
+                    className="flex flex-col items-center hover:scale-110 transition-transform cursor-pointer relative z-40"
+                  >
+                    <EyeOff size={32} className="text-slate-600 mb-1" />
+                    <span className="text-[10px] text-slate-500 font-bold">CLICK TO SHOW</span>
+                  </button>
+                ) : (
+                  <Eye size={32} className="text-slate-500" />
+                )}
               </div>
-              <p className="text-slate-500 text-xs font-mono">IP CAMERA {camera.id}</p>
-              <p className="text-slate-600 text-[10px] font-mono">192.168.1.10{camera.id.charCodeAt(0) - 64}</p>
+              <p className="text-slate-500 text-xs font-mono">
+                {camera.status === 'OFFLINE' ? 'IP CAMERA OFF' : !isScreenOn ? 'SCREEN HIDDEN' : `IP CAMERA ${camera.id}`}
+              </p>
             </div>
           </div>
         )}
 
-        {/* Recording indicator */}
-        <div className="absolute bottom-3 left-3 flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-          <span className="text-white/70 text-[10px] font-mono">REC</span>
-        </div>
+        {/* Recording indicator - Only if Online */}
+        {camera.status !== 'OFFLINE' && (
+          <div className="absolute bottom-3 left-3 flex items-center gap-2 z-20">
+            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+            <span className="text-white/70 text-[10px] font-mono">REC</span>
+          </div>
+        )}
 
         {/* Timestamp */}
-        <div className="absolute bottom-3 right-3">
+        <div className="absolute bottom-3 right-3 z-20">
           <span className="text-white/50 text-[10px] font-mono" suppressHydrationWarning>
             {currentTime || "--:--:--"}
           </span>
         </div>
 
-        {/* Hover Controls - Using Link for instant navigation */}
-        {isHovered && (
-          <div className="absolute inset-0 bg-black/50 flex items-center justify-center gap-3">
+        {/* Hover Controls - Only if screen is ON (to prevent blocking 'Turn On' button) */}
+        {isHovered && isScreenOn && (
+          <div className="absolute inset-0 bg-black/50 z-30 flex items-center justify-center gap-3 animate-fade-in">
             {/* EXPAND BUTTON - Link for instant navigation */}
             <Link
-              href={`/dashboard/monitor/${camera.id.toLowerCase()}`}
-              className="p-3 bg-orange-500 hover:bg-orange-600 rounded-full shadow-lg shadow-orange-500/30 cursor-pointer active:scale-95"
+              href={`/dashboard/monitor/${String(camera.id).toLowerCase()}`}
+              className="p-3 bg-orange-500 hover:bg-orange-600 rounded-full shadow-lg shadow-orange-500/30 cursor-pointer active:scale-95 transition-transform"
               title="Lihat Detail Kamera"
             >
               <Maximize2 size={20} className="text-white" />
             </Link>
-            {/* Volume button */}
-            <button className="p-3 bg-white/25 hover:bg-white/35 rounded-full active:scale-95">
-              <Volume2 size={20} className="text-white" />
-            </button>
           </div>
         )}
       </div>
 
       {/* AI Detection Overlay - for BAHAYA status */}
       {camera.statusColor === "red" && (
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/3 left-1/4 w-20 h-32 border-2 border-red-500 rounded animate-pulse">
+        <div className="absolute inset-0 pointer-events-none z-10">
+          <div className="absolute top-1/3 left-1/4 w-20 h-32 border-2 border-red-500 rounded animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.5)]">
             <div className="absolute -top-5 left-0 bg-red-500 text-white text-[10px] px-2 py-0.5 rounded font-bold">
-              NO HELMET
+              VIOLATION
             </div>
           </div>
         </div>
@@ -147,42 +164,188 @@ const CameraCard = memo(function CameraCard({ camera, isFirst }: { camera: Camer
   );
 });
 
+const AddCameraCard = () => (
+  <Link href="/dashboard/settings?tab=camera&action=add" className="group relative bg-slate-50 rounded-2xl border-2 border-dashed border-slate-300 hover:border-orange-500 hover:bg-orange-50 transition-all duration-300 flex flex-col items-center justify-center aspect-video cursor-pointer">
+    <div className="w-16 h-16 rounded-full bg-slate-200 group-hover:bg-orange-100 flex items-center justify-center mb-3 transition-colors">
+      <Plus size={32} className="text-slate-400 group-hover:text-orange-500 transition-colors" />
+    </div>
+    <span className="text-sm font-bold text-slate-500 group-hover:text-orange-600">Tambah Kamera Baru</span>
+  </Link>
+);
+
 export default function DashboardPage() {
   const [stats, setStats] = useState<Stats>({
-    compliance: 94.2,
-    totalDetections: 1247,
-    violationsToday: 12,
-    workersActive: 248
+    compliance: 100,
+    totalDetections: 0,
+    violationsToday: 0,
+    workersActive: 0
   });
-  const [cameras, setCameras] = useState<CameraDisplay[]>(defaultCameras);
-  const [recentAlerts, setRecentAlerts] = useState<{ time: string; type: string; location: string; severity: string }[]>([
-    { time: "2 menit lalu", type: "NO HELMET", location: "TITIK D - Loading Dock", severity: "BAHAYA" },
-    { time: "15 menit lalu", type: "NO VEST", location: "TITIK B - Assembly", severity: "PERINGATAN" },
-    { time: "32 menit lalu", type: "NO GLOVES", location: "TITIK C - Welding", severity: "PERINGATAN" },
-  ]);
-  const [loading, setLoading] = useState(true);
+
+  const [cameras, setCameras] = useState<any[]>([]);
+  const [recentAlerts, setRecentAlerts] = useState<any[]>([]);
+  const [wsConnected, setWsConnected] = useState(false);
+  const [time, setTime] = useState<string>("");
+
+  useEffect(() => {
+    setTime(new Date().toLocaleTimeString('id-ID'));
+    const timer = setInterval(() => {
+      setTime(new Date().toLocaleTimeString('id-ID'));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Screen Visibility & Grid State
+  const [screenVisibility, setScreenVisibility] = useState<Record<string, boolean>>({});
+  const [gridCols, setGridCols] = useState(3);
+  const [isLayoutMenuOpen, setIsLayoutMenuOpen] = useState(false);
+
+  useEffect(() => {
+    // Load saved settings
+    const savedVisibility = localStorage.getItem('camera_screen_visibility');
+    if (savedVisibility) setScreenVisibility(JSON.parse(savedVisibility));
+
+    const savedGrid = localStorage.getItem('dashboard_grid_cols');
+    if (savedGrid) setGridCols(parseInt(savedGrid));
+  }, []);
+
+  const getScreenStatus = (id: string | number) => {
+    // Default to true (ON) if not set
+    return screenVisibility[String(id)] !== false;
+  };
+
+  const toggleScreen = (id: string | number) => {
+    setScreenVisibility(prev => {
+      const newState = {
+        ...prev,
+        [String(id)]: prev[String(id)] === false ? true : false
+      };
+      localStorage.setItem('camera_screen_visibility', JSON.stringify(newState));
+      return newState;
+    });
+  };
+
+  const changeGrid = (cols: number) => {
+    setGridCols(cols);
+    localStorage.setItem('dashboard_grid_cols', cols.toString());
+  };
 
   // Demo Mode integration
   const { isDemo, detections, violations, stats: demoStats } = useDemoMode();
 
-  // Update stats and alerts when demo mode generates new detections
+  // Initial Data Fetch
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const statsData = await api.getStats();
+        if (statsData) {
+          setStats({
+            compliance: statsData.compliance_rate ?? 100,
+            totalDetections: statsData.total_detections ?? 0,
+            violationsToday: statsData.total_violations ?? 0,
+            workersActive: 0
+          });
+        }
+
+        const camerasData = await api.getCameras();
+        if (camerasData && camerasData.length > 0) {
+          const transformed = camerasData.map((cam: Camera) => ({
+            id: cam.ID,
+            name: cam.name || `TITIK ${cam.ID}`,
+            location: cam.location || 'Area Kerja',
+            status: cam.is_active ? 'AMAN' : 'OFFLINE',
+            statusColor: cam.is_active ? 'emerald' : 'slate',
+            isOnline: cam.is_active
+          }));
+          setCameras(transformed);
+        } else {
+          // Fallback if no cameras found - mostly for initial state or error
+          setCameras([]);
+        }
+
+        const alertsData = await api.getDetections(5);
+        if (alertsData && alertsData.length > 0) {
+          const violations = alertsData.filter((d: any) => d.is_violation);
+          const transformed = violations.slice(0, 3).map((alert: any) => ({
+            time: new Date(alert.detected_at).toLocaleTimeString('id-ID'),
+            type: alert.violation_type.replace('_', ' ').toUpperCase(),
+            location: alert.location,
+            severity: 'BAHAYA'
+          }));
+          setRecentAlerts(transformed);
+        }
+
+      } catch (error) {
+        console.error('Failed to fetch data:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Real-time WebSocket Handler
+  useEffect(() => {
+    if (isDemo) return;
+
+    realtime.connect();
+
+    realtime.on('connected', () => setWsConnected(true));
+    realtime.on('disconnected', () => setWsConnected(false));
+
+    realtime.on('detection', (data: any) => {
+      setStats(prev => ({
+        ...prev,
+        totalDetections: prev.totalDetections + 1,
+        violationsToday: data.is_violation ? prev.violationsToday + 1 : prev.violationsToday,
+        compliance: ((prev.totalDetections + 1 - (data.is_violation ? prev.violationsToday + 1 : prev.violationsToday)) / (prev.totalDetections + 1)) * 100
+      }));
+
+      if (data.is_violation) {
+        setCameras(prev => prev.map(cam => {
+          if (String(cam.id) === String(data.camera_id) || cam.name.includes(data.camera_id)) {
+            return { ...cam, status: "BAHAYA", statusColor: "red" };
+          }
+          return cam;
+        }));
+
+        setTimeout(() => {
+          setCameras(prev => prev.map(cam => {
+            if (String(cam.id) === String(data.camera_id) || cam.name.includes(data.camera_id)) {
+              return { ...cam, status: cam.isOnline ? "AMAN" : "OFFLINE", statusColor: cam.isOnline ? "emerald" : "slate" };
+            }
+            return cam;
+          }));
+        }, 5000);
+
+        const newAlert = {
+          time: "Baru Saja",
+          type: data.violation_type.replace('_', ' ').toUpperCase(),
+          location: data.location,
+          severity: "BAHAYA"
+        };
+        setRecentAlerts(prev => [newAlert, ...prev].slice(0, 3));
+      }
+    });
+
+    return () => realtime.disconnect();
+  }, [isDemo]);
+
+  // Demo Mode Effect
   useEffect(() => {
     if (!isDemo || detections.length === 0) return;
 
-    // Update stats with demo data
     setStats(prev => ({
       ...prev,
       compliance: demoStats.compliance,
       violationsToday: violations.length,
+      totalDetections: detections.length
     }));
 
-    // Update recent alerts with demo detections
+    // Demo alerts logic...
     const demoAlerts = violations.slice(0, 5).map((detection) => {
       const now = new Date();
       const diffMs = now.getTime() - detection.timestamp.getTime();
       const diffMins = Math.floor(diffMs / 60000);
-      const diffSecs = Math.floor(diffMs / 1000);
-      const timeAgo = diffMins > 0 ? `${diffMins} menit lalu` : `${diffSecs} detik lalu`;
+      const timeAgo = diffMins > 0 ? `${diffMins} menit lalu` : `Baru Saja`;
 
       return {
         time: timeAgo,
@@ -196,85 +359,22 @@ export default function DashboardPage() {
       setRecentAlerts(demoAlerts);
     }
 
-    // Update camera statuses based on demo detections
     setCameras(prev => prev.map(cam => {
       const camViolations = violations.filter(v => v.cameraId === cam.id);
       if (camViolations.length > 0) {
-        const severity = camViolations[0].severity;
-        return {
-          ...cam,
-          status: severity === 'critical' ? 'BAHAYA' : severity === 'high' ? 'PERINGATAN' : 'AMAN',
-          statusColor: severity === 'critical' ? 'red' : severity === 'high' ? 'amber' : 'emerald',
-        };
+        return { ...cam, status: 'BAHAYA', statusColor: 'red' };
       }
       return { ...cam, status: 'AMAN', statusColor: 'emerald' };
     }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [isDemo, detections.length, violations.length]);
-
-  // Fetch stats, cameras, and alerts from API
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Fetch stats
-        const statsData = await api.getDetectionStats();
-        setStats({
-          compliance: statsData?.compliance ?? 94.2,
-          totalDetections: statsData?.totalDetections ?? 0,
-          violationsToday: statsData?.violationsToday ?? 0,
-          workersActive: statsData?.workersActive ?? 248
-        });
-
-        // Fetch cameras
-        const camerasData = await api.getCameras();
-        if (camerasData && camerasData.length > 0) {
-          const transformed: CameraDisplay[] = camerasData.map((cam: Camera, i: number) => ({
-            id: cam.id || String.fromCharCode(65 + i),
-            name: `TITIK ${cam.id || String.fromCharCode(65 + i)}`,
-            location: cam.location || cam.name || 'Area Kerja',
-            status: cam.status === 'online' ? 'AMAN' : 'OFFLINE',
-            statusColor: cam.status === 'online' ? 'emerald' : 'red'
-          }));
-          setCameras(transformed);
-        }
-
-        // Fetch recent alerts
-        const alertsData = await api.getAlerts();
-        if (alertsData && alertsData.length > 0) {
-          const transformed = alertsData.slice(0, 3).map((alert: Alert) => {
-            const date = new Date(alert.timestamp);
-            const now = new Date();
-            const diffMs = now.getTime() - date.getTime();
-            const diffMins = Math.floor(diffMs / 60000);
-            const timeAgo = diffMins < 60 ? `${diffMins} menit lalu` : `${Math.floor(diffMins / 60)} jam lalu`;
-
-            return {
-              time: timeAgo,
-              type: alert.type || 'PELANGGARAN',
-              location: `${alert.zone} - ${alert.zone}`,
-              severity: alert.severity === 'high' || alert.severity === 'critical' ? 'BAHAYA' : 'PERINGATAN'
-            };
-          });
-          setRecentAlerts(transformed);
-        }
-      } catch (error) {
-        console.error('Failed to fetch data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-    const interval = setInterval(fetchData, 30000);
-    return () => clearInterval(interval);
-  }, []);
 
 
   return (
     <div className="space-y-6">
 
-      {/* Location Header */}
-      <div className="flex items-center justify-between">
+      {/* Header & Controls */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="p-2 bg-slate-900 rounded-lg">
             <ShieldCheck className="w-6 h-6 text-emerald-500" />
@@ -282,9 +382,13 @@ export default function DashboardPage() {
           <div>
             <div className="flex items-center gap-2">
               <h3 className="text-xl font-bold text-slate-900">Global Overview</h3>
-              {isDemo && (
+              {isDemo ? (
                 <span className="px-2 py-1 bg-orange-500 text-white text-[10px] font-bold rounded animate-pulse flex items-center gap-1">
                   <Zap size={10} /> DEMO
+                </span>
+              ) : wsConnected && (
+                <span className="px-2 py-1 bg-emerald-500 text-white text-[10px] font-bold rounded flex items-center gap-1">
+                  <Zap size={10} /> LIVE
                 </span>
               )}
             </div>
@@ -292,40 +396,110 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Camera Filter Tabs - Optimized: removed heavy backdrop-blur */}
-        <div className="flex items-center gap-2 bg-white/95 rounded-xl p-1 border border-slate-200 shadow-sm">
-          <button className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium flex items-center gap-2">
-            <Eye size={16} />
-            ALL
+        {/* Global Action Buttons */}
+        <div className="flex items-center gap-2 relative">
+          <button
+            onClick={() => setIsLayoutMenuOpen(!isLayoutMenuOpen)}
+            className={`px-4 py-2 border rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-sm ${isLayoutMenuOpen ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+          >
+            <Settings2 size={16} />
+            Atur Tata Letak
           </button>
-          {cameras.map((cam) => (
-            <Link
-              key={cam.id}
-              href={`/dashboard/monitor/${cam.id.toLowerCase()}`}
-              className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors"
-            >
-              <span className={`w-2 h-2 rounded-full ${cam.statusColor === "emerald" ? "bg-emerald-500" :
-                cam.statusColor === "amber" ? "bg-amber-500" : "bg-red-500"
-                }`}></span>
-              TITIK {cam.id}
-            </Link>
-          ))}
+
+          {/* Layout Menu Dropdown */}
+          {isLayoutMenuOpen && (
+            <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-200 p-4 z-50 animate-in fade-in slide-in-from-top-2">
+              <h4 className="text-xs font-bold text-slate-500 uppercase mb-3">Ukuran Grid Dashboard</h4>
+              <div className="grid grid-cols-4 gap-2">
+                <button
+                  onClick={() => changeGrid(1)}
+                  className={`p-2 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors ${gridCols === 1 ? 'bg-orange-100 text-orange-600 ring-2 ring-orange-500 ring-offset-1' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}
+                  title="1 Kolom (Besar)"
+                >
+                  <Box size={20} />
+                  <span className="text-[10px] font-bold">1x</span>
+                </button>
+                <button
+                  onClick={() => changeGrid(2)}
+                  className={`p-2 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors ${gridCols === 2 ? 'bg-orange-100 text-orange-600 ring-2 ring-orange-500 ring-offset-1' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}
+                  title="2 Kolom (Sedang)"
+                >
+                  <Grid size={20} />
+                  <span className="text-[10px] font-bold">2x</span>
+                </button>
+                <button
+                  onClick={() => changeGrid(3)}
+                  className={`p-2 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors ${gridCols === 3 ? 'bg-orange-100 text-orange-600 ring-2 ring-orange-500 ring-offset-1' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}
+                  title="3 Kolom (Standar)"
+                >
+                  <LayoutGrid size={20} />
+                  <span className="text-[10px] font-bold">3x</span>
+                </button>
+                <button
+                  onClick={() => changeGrid(4)}
+                  className={`p-2 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors ${gridCols === 4 ? 'bg-orange-100 text-orange-600 ring-2 ring-orange-500 ring-offset-1' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}
+                  title="4 Kolom (Kecil)"
+                >
+                  <LayoutGrid size={20} className="rotate-90" />
+                  <span className="text-[10px] font-bold">4x</span>
+                </button>
+              </div>
+              <div className="mt-3 pt-3 border-t border-slate-100">
+                <p className="text-[10px] text-slate-400 text-center">
+                  Pengaturan tersimpan otomatis
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
+      {/* Navigation Tabs - Synced with Cameras */}
+      <div className="flex overflow-x-auto pb-2 gap-2 scrollbar-hide">
+        <button className="px-4 py-2 bg-slate-900 text-white rounded-full text-sm font-medium flex items-center gap-2 whitespace-nowrap shadow-md">
+          <Eye size={16} />
+          ALL CAMERAS
+        </button>
+        {cameras.map((cam) => (
+          <Link
+            key={cam.id}
+            href={`/dashboard/monitor/${String(cam.id).toLowerCase()}`}
+            className={`px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 transition-all whitespace-nowrap border ${cam.statusColor === 'slate' ? 'bg-slate-100 text-slate-400 border-slate-200' : 'bg-white text-slate-600 border-slate-200 hover:border-emerald-500 hover:text-emerald-600'
+              }`}
+          >
+            <span className={`w-2 h-2 rounded-full ${cam.statusColor === "emerald" ? "bg-emerald-500" :
+              cam.statusColor === "amber" ? "bg-amber-500" :
+                cam.statusColor === "red" ? "bg-red-500" : "bg-slate-400"
+              }`}></span>
+            {cam.name}
+          </Link>
+        ))}
+        <Link href="/dashboard/settings?tab=camera" className="px-3 py-2 bg-slate-100 text-slate-500 hover:bg-slate-200 rounded-full text-sm font-medium flex items-center gap-1 transition-colors whitespace-nowrap">
+          <Plus size={14} />
+        </Link>
+      </div>
+
+
       {/* Stats Row */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {/* Compliance Score - Optimized: solid bg instead of heavy blur */}
-        <div className="md:col-span-2 bg-white border border-slate-200 rounded-2xl p-6 flex items-center justify-between shadow-md hover:shadow-lg transition-shadow">
+        <div className="md:col-span-2 bg-white border border-slate-200 rounded-2xl p-6 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
           <div>
             <h3 className="text-[11px] uppercase tracking-widest text-slate-500 font-bold mb-1">REAL-TIME COMPLIANCE</h3>
             <div className="flex items-baseline gap-2">
-              <span className="text-5xl font-black text-slate-900 font-mono">{stats.compliance.toFixed(1)}</span>
-              <span className="text-2xl font-bold text-emerald-600">%</span>
+              {stats.totalDetections > 0 ? (
+                <>
+                  <span className="text-5xl font-black text-slate-900 font-mono">{stats.compliance.toFixed(1)}</span>
+                  <span className="text-2xl font-bold text-emerald-600">%</span>
+                </>
+              ) : (
+                <span className="text-4xl font-black text-slate-400 font-mono">READY</span>
+              )}
             </div>
             <div className="flex items-center gap-2 mt-2 text-sm text-emerald-600">
               <TrendingUp size={16} />
-              <span className="font-medium">+2.4% dari minggu lalu</span>
+              <span className="font-medium">
+                {stats.totalDetections > 0 ? "Akurasi berbasis deteksi AI" : "Menunggu data stream..."}
+              </span>
             </div>
           </div>
           <div className="h-20 w-20 rounded-full bg-gradient-to-br from-emerald-100 to-emerald-50 border-4 border-emerald-200 flex items-center justify-center">
@@ -333,8 +507,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Violations - Optimized */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow">
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex justify-between items-start mb-3">
             <div className="p-2.5 rounded-xl bg-red-50">
               <AlertTriangle className="text-red-600 w-5 h-5" />
@@ -345,34 +518,45 @@ export default function DashboardPage() {
           <div className="text-[11px] uppercase tracking-widest text-slate-500 font-bold mt-1">Pelanggaran Hari Ini</div>
         </div>
 
-        {/* Cameras Online */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow">
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex justify-between items-start mb-3">
             <div className="p-2.5 rounded-xl bg-emerald-50">
               <Video className="text-emerald-600 w-5 h-5" />
             </div>
             <span className="text-[10px] font-bold text-emerald-600 bg-emerald-100 px-2.5 py-1 rounded-full">ONLINE</span>
           </div>
-          <div className="text-3xl font-black text-slate-900 font-mono">{cameras.filter(c => c.statusColor !== 'red').length}/{cameras.length}</div>
+          <div className="text-3xl font-black text-slate-900 font-mono">{cameras.filter(c => c.status !== 'OFFLINE').length}/{cameras.length}</div>
           <div className="text-[11px] uppercase tracking-widest text-slate-500 font-bold mt-1">Kamera Aktif</div>
         </div>
       </div>
 
-      {/* Camera Grid - Optimized with priority loading */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {cameras.map((camera, index) => (
-          <CameraCard key={camera.id} camera={camera} isFirst={index === 0} />
+      {/* Camera Grid Container */}
+      <div className={`grid gap-6 ${gridCols === 1 ? 'grid-cols-1' :
+        gridCols === 2 ? 'grid-cols-1 md:grid-cols-2' :
+          gridCols === 3 ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' :
+            'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'
+        }`}>
+        {cameras.map((camera) => (
+          <CameraCard
+            key={camera.id}
+            camera={camera}
+            currentTime={time}
+            isScreenOn={getScreenStatus(camera.id)}
+            onToggleScreen={toggleScreen}
+          />
         ))}
+        {/* Add Camera Card appended to grid */}
+        <AddCameraCard />
       </div>
 
-      {/* Recent Alerts - Optimized */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-md">
+      {/* Recent Alerts */}
+      <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Riwayat Deteksi Terbaru</h3>
-          <button className="text-sm text-orange-600 hover:text-orange-700 font-medium">Lihat Semua →</button>
+          <Link href="/dashboard/alerts" className="text-sm text-orange-600 hover:text-orange-700 font-medium">Lihat Semua →</Link>
         </div>
         <div className="space-y-3">
-          {recentAlerts.map((alert, i) => (
+          {recentAlerts.length > 0 ? recentAlerts.map((alert, i) => (
             <div key={i} className="flex items-center gap-4 p-3 bg-slate-50 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer group">
               <div className={`p-2 rounded-lg ${alert.severity === "BAHAYA" ? "bg-red-100" : "bg-amber-100"
                 }`}>
@@ -392,7 +576,9 @@ export default function DashboardPage() {
               </div>
               <span className="text-xs text-slate-400 font-mono">{alert.time}</span>
             </div>
-          ))}
+          )) : (
+            <p className="text-center text-slate-400 py-4 italic">Belum ada deteksi hari ini.</p>
+          )}
         </div>
       </div>
 

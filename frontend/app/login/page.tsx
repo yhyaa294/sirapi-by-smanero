@@ -58,21 +58,23 @@ export default function LoginPage() {
 
       if (response.ok) {
         const data = await response.json();
-        // Store JWT token
-        if (data.data && data.data.token) {
-          localStorage.setItem('auth-token', data.data.token);
-          // Store refresh token if available
-          if (data.data.refresh_token) {
-            localStorage.setItem('refresh-token', data.data.refresh_token);
-          }
 
-          document.cookie = `auth-token=${data.data.token}; path=/; max-age=86400`;
-        } else {
-          // Fallback for older API or different structure
-          if (data.token) {
-            localStorage.setItem('auth-token', data.token);
-            document.cookie = `auth-token=${data.token}; path=/; max-age=86400`;
+        // Debug response
+        console.log("Login response:", data);
+
+        // Determine token from various possible structures
+        const accessToken = data.access_token || data.token || (data.data && data.data.token);
+        const refreshToken = data.refresh_token || (data.data && data.data.refresh_token);
+
+        if (accessToken) {
+          localStorage.setItem('auth-token', accessToken);
+          document.cookie = `auth-token=${accessToken}; path=/; max-age=86400`;
+
+          if (refreshToken) {
+            localStorage.setItem('refresh-token', refreshToken);
           }
+        } else {
+          throw new Error("Token tidak ditemukan dalam respons server");
         }
 
         router.push("/dashboard");

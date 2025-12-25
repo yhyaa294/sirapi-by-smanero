@@ -161,6 +161,9 @@ def detect_ppe(frame: np.ndarray) -> List[Dict]:
     results = model(frame, conf=CONFIDENCE_THRESHOLD, verbose=False)
     detections = []
     
+    # Whitelist classes to avoid "cat", "dog", etc.
+    ALLOWED_CLASSES = {"person", "helmet", "no_helmet", "vest", "no_vest", "gloves", "no_gloves", "boots", "no_boots"}
+
     for r in results:
         for box in r.boxes:
             cls_id = int(box.cls[0])
@@ -173,6 +176,10 @@ def detect_ppe(frame: np.ndarray) -> List[Dict]:
             else:
                 class_name = CLASS_NAMES.get(cls_id, f"class_{cls_id}")
             
+            # Filter out unwanted classes (cleanup for generic YOLO models)
+            if class_name not in ALLOWED_CLASSES:
+                continue
+
             # Check if it's a PPE violation (simple heuristic)
             is_violation = "no_" in class_name.lower() or class_name in VIOLATION_CLASSES
             
@@ -513,6 +520,33 @@ async def shutdown_event():
     """Stop camera on shutdown"""
     global camera_active
     camera_active = False
+
+
+@app.post("/camera/start")
+async def start_camera():
+    """Start camera detection"""
+    global camera_active
+    
+    if camera_active:
+        return {"status": "already_running"}
+        
+    camera_active = True
+    thread = Thread(target=camera_thread, args=(0,), daemon=True)
+    thread.start()
+    return {"status": "started"}
+
+
+@app.post("/camera/stop")
+async def stop_camera():
+    """Stop camera detection"""
+    global camera_active
+    
+    if not camera_active:
+        return {"status": "already_stopped"}
+        
+    camera_active = False
+    return {"status": "stopped"}
+
 
 
 # =============================================================================

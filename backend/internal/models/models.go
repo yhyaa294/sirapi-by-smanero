@@ -32,12 +32,14 @@ type Alert struct {
 // Camera represents a CCTV camera
 type Camera struct {
 	gorm.Model
-	Name       string `json:"name"`
-	Location   string `json:"location"`
-	RTSPUrl    string `json:"rtsp_url"`
-	Status     string `json:"status"` // online, offline, error
-	Resolution string `json:"resolution"`
-	IsActive   bool   `json:"is_active" gorm:"default:true"`
+	Name       string  `json:"name"`
+	Location   string  `json:"location"`
+	RTSPUrl    string  `json:"rtsp_url"`
+	Status     string  `json:"status"` // online, offline, error
+	Resolution string  `json:"resolution"`
+	IsActive   bool    `json:"is_active" gorm:"default:true"`
+	Latitude   float64 `json:"latitude"`
+	Longitude  float64 `json:"longitude"`
 }
 
 // User represents a system user for authentication

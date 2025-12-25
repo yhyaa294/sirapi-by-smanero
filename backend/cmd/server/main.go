@@ -48,9 +48,11 @@ func main() {
 	telegramService := services.NewTelegramService(cfg.TelegramToken, cfg.TelegramChatID)
 	detectionService := services.NewDetectionService(telegramService)
 	scheduler := services.NewScheduler(detectionService, telegramService)
+	cleanupService := services.NewCleanupService()
 
-	// Start scheduler
+	// Start services
 	scheduler.Start()
+	cleanupService.Start()
 
 	// Send startup notification
 	telegramService.SendSystemStatus("started", "SmartAPD Backend berhasil dijalankan")
@@ -65,13 +67,20 @@ func main() {
 	// Middleware
 	app.Use(recover.New())
 	app.Use(middleware.RequestID())
-	app.Use(middleware.EnhancedLogger())
+	app.Use(middleware.RedactedLogger()) // Replaced EnhancedLogger with RedactedLogger
 	app.Use(middleware.RateLimit())
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: "*",
+		AllowOrigins: os.Getenv("FRONTEND_URL"), // e.g. "http://localhost:3000,https://smartapd.id"
 		AllowHeaders: "Origin, Content-Type, Accept, Authorization, X-API-Key",
 		AllowMethods: "GET, POST, PUT, DELETE, OPTIONS",
 	}))
+
+	if os.Getenv("FRONTEND_URL") == "" {
+		log.Println("⚠️  FRONTEND_URL not set, defaulting CORS to allow * (INSECURE for production)")
+		app.Use(cors.New(cors.Config{
+			AllowOrigins: "*",
+		}))
+	}
 
 	// Health check
 	app.Get("/health", func(c *fiber.Ctx) error {
@@ -92,11 +101,12 @@ func main() {
 	api := app.Group("/api/v1")
 
 	// Detection routes
+	detectionHandler := handlers.NewDetectionHandler(detectionService)
 	detections := api.Group("/detections")
-	detections.Get("/", handlers.GetDetections)
-	detections.Get("/stats", handlers.GetDetectionStats)
-	detections.Get("/:id", handlers.GetDetection)
-	detections.Post("/", handlers.CreateDetection)
+	detections.Get("/", detectionHandler.GetDetections)
+	detections.Get("/stats", detectionHandler.GetDetectionStats)
+	detections.Get("/:id", detectionHandler.GetDetection)
+	detections.Post("/", detectionHandler.CreateDetection)
 
 	// Alert routes
 	alerts := api.Group("/alerts")
@@ -120,10 +130,10 @@ func main() {
 
 	// Auth routes
 	auth := api.Group("/auth")
-	auth.Post("/login", middleware.AuthRateLimit(), handlers.Login) // Added strict rate limit for login
-	auth.Post("/refresh", handlers.RefreshToken)
-	auth.Post("/register", handlers.Register)
-	auth.Get("/me", middleware.JWTAuth(), handlers.GetMe)
+	auth.Post("/login", middleware.AuthRateLimit(), handlers.Login)
+	auth.Post("/refresh", handlers.Refresh)
+	// auth.Post("/register", handlers.Register) // Commented out until implemented if missing
+	auth.Get("/me", middleware.Protected(), handlers.GetMe)
 
 	// Settings routes (for Telegram configuration from website)
 	settings := api.Group("/settings")

@@ -1,413 +1,317 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import Image from "next/image";
+import { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+import {
+    AlertTriangle,
+    CheckCircle,
+    Video,
+    Maximize2,
+    Activity,
+    History,
+    Settings,
+    ArrowLeft,
+    Siren,
+    Eye,
+    Settings2
+} from "lucide-react";
+import dynamic from 'next/dynamic';
 import Link from "next/link";
-import { useParams } from "next/navigation";
-import dynamic from "next/dynamic";
+import { api, Camera } from "@/services/api";
 
-// Dynamic import WebcamViewer (no SSR)
 const WebcamViewer = dynamic(() => import("@/components/WebcamViewer"), {
     ssr: false,
     loading: () => (
-        <div className="w-full aspect-video bg-slate-800 flex items-center justify-center">
-            <span className="text-slate-400">Loading webcam...</span>
+        <div className="w-full h-full bg-slate-900 flex items-center justify-center text-slate-500 animate-pulse">
+            <Video size={48} className="opacity-50" />
+            <span className="ml-4 font-mono">INITIALIZING VIDEO FEED...</span>
         </div>
-    ),
+    )
 });
-import {
-    ArrowLeft,
-    Camera,
-    Shield,
-    AlertTriangle,
-    Activity,
-    Cpu,
-    Eye,
-    HardHat,
-    Shirt,
-    Hand,
-    Footprints,
-    Clock,
-    Zap,
-    RefreshCw,
-    Volume2,
-    Maximize2,
-    Settings,
-    Download,
-} from "lucide-react";
 
-// Camera data mapping
-const cameraData: Record<string, { name: string; location: string; image: string; status: string }> = {
-    "A": { name: "TITIK A", location: "Gudang Utama", image: "/images/worker 1.png", status: "online" },
-    "B": { name: "TITIK B", location: "Area Assembly", image: "/images/worker 2.png", status: "alert" },
-    "C": { name: "TITIK C", location: "Welding Bay", image: "/images/worker 3.png", status: "online" },
-    "D": { name: "TITIK D", location: "Loading Dock", image: "/images/worker 4.png", status: "online" },
-};
-
-// Simulated AI detection results
-const detectionResults = [
-    { id: 1, type: "helmet", label: "Helmet", status: "detected", confidence: 98.5, color: "emerald", x: "25%", y: "8%", w: "18%", h: "15%" },
-    { id: 2, type: "vest", label: "Vest", status: "detected", confidence: 95.2, color: "emerald", x: "22%", y: "25%", w: "25%", h: "30%" },
-    { id: 3, type: "gloves", label: "Gloves", status: "missing", confidence: 94.8, color: "red", x: "15%", y: "50%", w: "12%", h: "10%" },
-    { id: 4, type: "boots", label: "Safety Boots", status: "detected", confidence: 91.3, color: "emerald", x: "20%", y: "75%", w: "20%", h: "18%" },
-];
-
-// Simulated real-time logs
-const initialLogs = [
-    { time: "10:11:22", event: "AI Detection cycle completed", type: "info" },
-    { time: "10:11:20", event: "⚠️ Missing Gloves detected", type: "warning" },
-    { time: "10:11:18", event: "Helmet verified - 98.5%", type: "success" },
-    { time: "10:11:15", event: "Vest verified - 95.2%", type: "success" },
-    { time: "10:11:10", event: "Worker entered frame", type: "info" },
-    { time: "10:11:05", event: "Camera feed stable", type: "info" },
-];
-
-export default function SingleCameraPage() {
+export default function MonitorPage() {
     const params = useParams();
-    const cameraId = (params.id as string)?.toUpperCase() || "A";
-    const camera = cameraData[cameraId] || cameraData["A"];
+    const router = useRouter();
+    const [id, setId] = useState<string>("");
 
-    const [currentTime, setCurrentTime] = useState("");
-    const [fps, setFps] = useState(28);
-    const [detectionSpeed, setDetectionSpeed] = useState(42);
-    const [logs, setLogs] = useState(initialLogs);
+    const [camera, setCamera] = useState<Camera | null>(null);
+    const [allCameras, setAllCameras] = useState<Camera[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState("");
 
-    // Update time every second
+    // Initialize ID
     useEffect(() => {
-        const updateTime = () => {
-            setCurrentTime(new Date().toLocaleTimeString("id-ID"));
+        if (params?.id) {
+            setId(Array.isArray(params.id) ? params.id[0] : params.id);
+        }
+    }, [params]);
+
+    // Fetch Cameras & Current Camera
+    useEffect(() => {
+        const loadData = async () => {
+            setIsLoading(true);
+            try {
+                // 1. Get all cameras for nav
+                const cameras = await api.getCameras();
+                setAllCameras(cameras);
+
+                // 2. Find current camera
+                if (id) {
+                    const camId = parseInt(id);
+                    if (!isNaN(camId)) {
+                        const cam = await api.getCamera(camId);
+                        if (cam) setCamera(cam);
+                        else setError("Kamera tidak ditemukan");
+                    } else {
+                        // Fallback logic for string IDs if necessary
+                        setError("ID Kamera tidak valid");
+                    }
+                }
+            } catch (err) {
+                console.error(err);
+                setError("Gagal memuat data kamera");
+            } finally {
+                setIsLoading(false);
+            }
         };
-        updateTime();
-        const timer = setInterval(updateTime, 1000);
-        return () => clearInterval(timer);
-    }, []);
 
-    // Simulate FPS and detection speed fluctuation
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setFps(Math.floor(25 + Math.random() * 8));
-            setDetectionSpeed(Math.floor(38 + Math.random() * 15));
-        }, 2000);
-        return () => clearInterval(interval);
-    }, []);
+        if (id) loadData();
+    }, [id]);
 
-    // Simulate new log entries
-    useEffect(() => {
-        const interval = setInterval(() => {
-            const events = [
-                { event: "AI Detection cycle completed", type: "info" },
-                { event: "Frame processed successfully", type: "info" },
-                { event: "All APD verified", type: "success" },
-                { event: "Worker position tracked", type: "info" },
-            ];
-            const randomEvent = events[Math.floor(Math.random() * events.length)];
-            const newLog = {
-                time: new Date().toLocaleTimeString("id-ID"),
-                ...randomEvent,
-            };
-            setLogs((prev) => [newLog, ...prev.slice(0, 9)]);
-        }, 5000);
-        return () => clearInterval(interval);
-    }, []);
+    // Simulated Real-time Logs
+    const [logs, setLogs] = useState([
+        { time: "10:45:22", type: "info", message: "System check completed" },
+        { time: "10:42:15", type: "success", message: "Camera connected successfully" },
+        { time: "10:40:00", type: "info", message: "Motion detection active" },
+    ]);
 
-    const getAPDIcon = (type: string) => {
-        switch (type) {
-            case "helmet": return <HardHat className="w-4 h-4" />;
-            case "vest": return <Shirt className="w-4 h-4" />;
-            case "gloves": return <Hand className="w-4 h-4" />;
-            case "boots": return <Footprints className="w-4 h-4" />;
-            default: return <Shield className="w-4 h-4" />;
+    // Render Source Logic
+    const renderVideoSource = () => {
+        if (!camera) return null;
+
+        // Check if RTSP URL is actually a webcam device ID (number) or special ID
+        const isWebcam = !isNaN(Number(camera.rtsp_url)) || camera.rtsp_url.length < 5;
+
+        // Note: We prioritize the AI Engine stream (localhost:8000/video_feed) 
+        // because the Python backend locks the camera access. 
+        // Direct getUserMedia would fail or conflict.
+
+        if (isWebcam) {
+            return (
+                <div className="relative w-full h-full bg-slate-900 rounded-2xl overflow-hidden">
+                    <img
+                        src="http://localhost:8000/video_feed"
+                        alt="Live AI Feed"
+                        className="w-full h-full object-cover absolute inset-0 z-10"
+                        onError={(e) => {
+                            // Fallback UI if stream is down
+                            e.currentTarget.style.display = 'none';
+                            e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                        }}
+                    />
+                    {/* Offline / Loading State */}
+                    <div className="absolute inset-0 flex items-center justify-center bg-slate-800 hidden">
+                        <div className="text-center p-6">
+                            <div className="w-16 h-16 bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <Video className="w-8 h-8 text-slate-500" />
+                            </div>
+                            <h3 className="text-white font-bold text-lg mb-1">Stream Unavailable</h3>
+                            <p className="text-slate-400 text-sm">Pastikan AI Engine berjalan di port 8000</p>
+                        </div>
+                    </div>
+
+                    {/* Overlay Info */}
+                    <div className="absolute top-4 left-4 z-20">
+                        <span className="px-3 py-1 bg-emerald-500 text-white text-xs font-bold rounded shadow-lg animate-pulse flex items-center gap-2">
+                            <span className="w-2 h-2 bg-white rounded-full"></span>
+                            LIVE AI FEED
+                        </span>
+                    </div>
+                </div>
+            );
+        } else {
+            return (
+                <div className="relative w-full h-full">
+                    {/* Placeholder for RTSP stream */}
+                    <div className="absolute inset-0 flex items-center justify-center bg-slate-900 text-white rounded-2xl">
+                        <div className="text-center">
+                            <Activity className="w-12 h-12 mx-auto mb-2 animate-pulse text-orange-500" />
+                            <p className="font-bold">RTSP Stream</p>
+                            <p className="text-xs opacity-50 font-mono mt-1 px-4 py-1 bg-black/50 rounded">{camera.rtsp_url}</p>
+                            <p className="text-xs text-slate-500 mt-2">(Stream Proxy Required)</p>
+                        </div>
+                    </div>
+                </div>
+            )
         }
     };
 
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-slate-50 p-6 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-slate-500 font-mono animate-pulse">CONNECTING TO SECURE FEED...</p>
+                </div>
+            </div>
+        )
+    }
+
+    if (error || !camera) {
+        return (
+            <div className="min-h-screen bg-slate-50 p-6 flex flex-col items-center justify-center">
+                <AlertTriangle size={48} className="text-red-500 mb-4" />
+                <h2 className="text-xl font-bold text-slate-800">Error</h2>
+                <p className="text-slate-500 mb-6">{error || "Camera Not Found"}</p>
+                <button onClick={() => router.push('/dashboard')} className="px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition">
+                    Kembali ke Dashboard
+                </button>
+            </div>
+        )
+    }
+
     return (
-        <div className="min-h-screen bg-slate-950 p-4 md:p-6">
-            {/* Header - Consistent with Dashboard */}
-            <div className="flex flex-col gap-4 mb-6">
-                {/* Top Row - Title and Time */}
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <Link
-                            href="/dashboard"
-                            className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-white text-sm transition-colors"
-                        >
-                            <ArrowLeft className="w-4 h-4" />
-                            Back to Grid
-                        </Link>
-                        <div className="w-px h-8 bg-slate-700"></div>
-                        <div>
-                            <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                                <Camera className="w-6 h-6 text-orange-500" />
-                                {camera.name} - {camera.location}
-                            </h1>
-                            <p className="text-slate-400 text-sm">Live AI Monitoring • Camera ID: CAM-{cameraId}</p>
-                        </div>
-                    </div>
+        <div className="min-h-screen bg-slate-50 p-6 space-y-6">
 
-                    <div className="flex items-center gap-4">
-                        {/* Date/Time Display - Same as Dashboard */}
-                        <div className="text-right hidden md:block">
-                            <div className="text-xl font-mono font-bold text-white tracking-tight" suppressHydrationWarning>
-                                {currentTime || "--:--:--"}
-                            </div>
-                            <div className="text-[10px] text-slate-500" suppressHydrationWarning>
-                                {new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-                            </div>
-                        </div>
-
-                        <div className="h-10 w-px bg-slate-700 hidden md:block"></div>
-
-                        <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/30 rounded-full">
-                            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-                            <span className="text-xs text-emerald-400 font-medium">LIVE</span>
+            {/* Header / Nav */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                    <Link href="/dashboard" className="p-2 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+                        <ArrowLeft size={20} className="text-slate-600" />
+                    </Link>
+                    <div>
+                        <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                            {camera.name}
+                        </h1>
+                        <div className="flex items-center gap-2 mt-1">
+                            <span className={`w-2 h-2 rounded-full animate-pulse ${camera.status === 'online' ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
+                            <span className={`text-sm font-bold uppercase tracking-wider ${camera.status === 'online' ? 'text-emerald-600' : 'text-red-600'}`}>
+                                {camera.status.toUpperCase()}
+                            </span>
+                            <span className="text-slate-300 mx-2">|</span>
+                            <span className="text-sm text-slate-500 flex items-center gap-1">
+                                <Video size={14} />
+                                {camera.location}
+                            </span>
                         </div>
                     </div>
                 </div>
 
-                {/* Bottom Row - Camera Navigation Tabs (Scrollable on Mobile) */}
-                <div className="overflow-x-auto scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
-                    <div className="flex items-center gap-2 bg-slate-900/50 rounded-xl p-1.5 border border-slate-800 w-fit min-w-max">
-                        {/* ALL Button */}
+                {/* Quick Nav Tabs */}
+                <div className="flex overflow-x-auto pb-2 md:pb-0 bg-white p-1 rounded-xl border border-slate-200 scrollbar-hide">
+                    {allCameras.map(cam => (
                         <Link
-                            href="/dashboard"
-                            className="px-4 py-2 bg-slate-800/50 hover:bg-slate-700 text-slate-400 hover:text-white rounded-lg text-sm font-medium flex items-center gap-2 transition-all"
+                            key={cam.ID}
+                            href={`/dashboard/monitor/${cam.ID}`}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${cam.ID === camera.ID
+                                ? "bg-slate-900 text-white shadow-md"
+                                : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+                                }`}
                         >
-                            <Eye size={16} />
-                            ALL
+                            {cam.name.replace("Kamera ", "").replace("Camera ", "")}
                         </Link>
-
-                        {/* Camera Buttons */}
-                        {[
-                            { id: "A", dotColor: "bg-emerald-500" },
-                            { id: "B", dotColor: "bg-amber-500" },
-                            { id: "C", dotColor: "bg-emerald-500" },
-                            { id: "D", dotColor: "bg-red-500" },
-                        ].map(({ id, dotColor }) => {
-                            const isActive = cameraId === id;
-
-                            return (
-                                <Link
-                                    key={id}
-                                    href={`/dashboard/monitor/${id.toLowerCase()}`}
-                                    className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-all whitespace-nowrap ${isActive
-                                        ? "bg-white text-slate-900 shadow-lg font-bold"
-                                        : "bg-slate-800/50 text-slate-400 hover:bg-slate-700 hover:text-white"
-                                        }`}
-                                >
-                                    <span className={`w-2 h-2 rounded-full ${isActive ? "bg-slate-900" : dotColor}`}></span>
-                                    TITIK {id}
-                                </Link>
-                            );
-                        })}
-                    </div>
+                    ))}
+                    <Link
+                        href="/dashboard/settings"
+                        className="px-3 py-2 text-slate-400 hover:text-orange-500 transition-colors flex items-center"
+                        title="Configure Cameras"
+                    >
+                        <Settings size={16} />
+                    </Link>
                 </div>
             </div>
 
-            {/* Main Content - Split Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-10 gap-6">
-                {/* Left Panel - Camera Feed (70%) */}
-                <div className="lg:col-span-7">
-                    <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-                        {/* Camera Header */}
-                        <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-900/80">
-                            <div className="flex items-center gap-3">
-                                <div className="flex items-center gap-2">
-                                    <span className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></span>
-                                    <span className="text-white font-mono text-sm">REC</span>
+            {/* Main Content Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-140px)]">
+
+                {/* Left Column: Video Feed (Span 2) */}
+                <div className="lg:col-span-2 space-y-6 flex flex-col">
+                    {/* Video Player */}
+                    <div className="flex-1 bg-black rounded-2xl overflow-hidden relative shadow-2xl border border-slate-800 group">
+
+                        {renderVideoSource()}
+
+                        {/* Overlay Controls */}
+                        <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button className="p-2 bg-black/50 backdrop-blur text-white rounded-lg hover:bg-orange-500 transition-colors">
+                                <Maximize2 size={20} />
+                            </button>
+                        </div>
+
+                        {/* AI Stats Overlay */}
+                        <div className="absolute bottom-6 left-6 right-6 flex gap-4">
+                            <div className="flex-1 bg-black/60 backdrop-blur-md p-4 rounded-xl border border-white/10 flex items-center gap-4">
+                                <div className="p-3 bg-emerald-500/20 text-emerald-500 rounded-lg">
+                                    <CheckCircle size={24} />
                                 </div>
-                                <span className="text-slate-400 text-sm">|</span>
-                                <span className="text-slate-400 text-sm font-mono">1920x1080 @ {fps}fps</span>
+                                <div>
+                                    <p className="text-white font-bold text-lg">98.5%</p>
+                                    <p className="text-slate-400 text-xs uppercase tracking-wider">Compliance Rate</p>
+                                </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <button className="p-2 hover:bg-slate-800 rounded-lg transition-colors">
-                                    <Volume2 className="w-4 h-4 text-slate-400" />
-                                </button>
-                                <button className="p-2 hover:bg-slate-800 rounded-lg transition-colors">
-                                    <Settings className="w-4 h-4 text-slate-400" />
-                                </button>
-                                <button className="p-2 hover:bg-slate-800 rounded-lg transition-colors">
-                                    <Maximize2 className="w-4 h-4 text-slate-400" />
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Camera Feed with AI Overlay */}
-                        <div className="relative aspect-video bg-black">
-                            {/* Camera Feed - AI Stream for TITIK A, Image for others */}
-                            {cameraId === "A" ? (
-                                <img
-                                    src="http://localhost:8000/video_feed"
-                                    alt="Live AI Feed"
-                                    className="w-full h-full object-contain"
-                                    onError={(e) => {
-                                        const target = e.target as HTMLImageElement;
-                                        target.style.display = 'none';
-                                    }}
-                                />
-                            ) : (
-                                <>
-                                    <Image
-                                        src={camera.image}
-                                        alt={`Camera ${cameraId} Feed`}
-                                        fill
-                                        className="object-contain"
-                                        priority
-                                    />
-
-                                    {/* AI Detection Bounding Boxes - Only for non-AI cameras */}
-                                    {detectionResults.map((detection) => (
-                                        <div
-                                            key={detection.id}
-                                            className={`absolute border-2 rounded transition-all ${detection.color === "emerald"
-                                                ? "border-emerald-500 shadow-lg shadow-emerald-500/20"
-                                                : "border-red-500 shadow-lg shadow-red-500/20 animate-pulse"
-                                                }`}
-                                            style={{
-                                                left: detection.x,
-                                                top: detection.y,
-                                                width: detection.w,
-                                                height: detection.h,
-                                            }}
-                                        >
-                                            {/* Label */}
-                                            <div
-                                                className={`absolute -top-6 left-0 px-2 py-0.5 rounded text-[10px] font-bold whitespace-nowrap ${detection.color === "emerald"
-                                                    ? "bg-emerald-500 text-white"
-                                                    : "bg-red-500 text-white"
-                                                    }`}
-                                            >
-                                                {detection.status === "detected" ? "✓" : "✗"} {detection.label}: {detection.confidence}%
-                                            </div>
-                                        </div>
-                                    ))}
-                                </>
-                            )}
-
-                            {/* Timestamp Overlay */}
-                            <div className="absolute bottom-4 left-4 px-3 py-1.5 bg-black/70 rounded-lg">
-                                <span className="text-white font-mono text-sm" suppressHydrationWarning>
-                                    {new Date().toLocaleDateString("id-ID")} • {currentTime}
-                                </span>
-                            </div>
-
-                            {/* AI Processing Indicator */}
-                            <div className="absolute bottom-4 right-4 flex items-center gap-2 px-3 py-1.5 bg-black/70 rounded-lg">
-                                <Cpu className="w-4 h-4 text-orange-500 animate-pulse" />
-                                <span className="text-orange-400 font-mono text-sm">AI: {detectionSpeed}ms</span>
-                            </div>
-                        </div>
-
-                        {/* Control Bar */}
-                        <div className="flex items-center justify-between p-4 border-t border-slate-800 bg-slate-900/80">
-                            <div className="flex items-center gap-4">
-                                <button className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 rounded-lg text-white text-sm font-medium transition-colors">
-                                    <AlertTriangle className="w-4 h-4" />
-                                    Report Incident
-                                </button>
-                                <button className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-white text-sm font-medium transition-colors">
-                                    <Download className="w-4 h-4" />
-                                    Screenshot
-                                </button>
-                            </div>
-                            <div className="flex items-center gap-2 text-slate-400 text-sm">
-                                <Eye className="w-4 h-4" />
-                                <span>YOLOv8 • SmartAPD Engine v1.0</span>
+                            <div className="flex-1 bg-black/60 backdrop-blur-md p-4 rounded-xl border border-white/10 flex items-center gap-4">
+                                <div className="p-3 bg-blue-500/20 text-blue-500 rounded-lg">
+                                    <Eye size={24} />
+                                </div>
+                                <div>
+                                    <p className="text-white font-bold text-lg">Active</p>
+                                    <p className="text-slate-400 text-xs uppercase tracking-wider">AI Monitoring</p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Right Panel - AI Info (30%) */}
-                <div className="lg:col-span-3 space-y-4">
-                    {/* Detection Stats */}
-                    <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-4">
-                        <h3 className="text-white font-bold mb-4 flex items-center gap-2">
-                            <Activity className="w-5 h-5 text-orange-500" />
-                            Detection Stats
-                        </h3>
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className="bg-slate-800/50 rounded-xl p-3 text-center">
-                                <p className="text-2xl font-bold text-emerald-400">{fps}</p>
-                                <p className="text-xs text-slate-400">FPS</p>
-                            </div>
-                            <div className="bg-slate-800/50 rounded-xl p-3 text-center">
-                                <p className="text-2xl font-bold text-orange-400">{detectionSpeed}ms</p>
-                                <p className="text-xs text-slate-400">Inference</p>
-                            </div>
-                        </div>
-                    </div>
+                {/* Right Column: Real-time Data */}
+                <div className="space-y-6 flex flex-col h-full overflow-hidden">
 
-                    {/* APD Status */}
-                    <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-4">
-                        <h3 className="text-white font-bold mb-4 flex items-center gap-2">
-                            <Shield className="w-5 h-5 text-emerald-500" />
-                            APD Status
-                        </h3>
-                        <div className="space-y-3">
-                            {detectionResults.map((detection) => (
-                                <div
-                                    key={detection.id}
-                                    className={`flex items-center justify-between p-3 rounded-xl border ${detection.status === "detected"
-                                        ? "bg-emerald-500/10 border-emerald-500/30"
-                                        : "bg-red-500/10 border-red-500/30"
-                                        }`}
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div
-                                            className={`p-2 rounded-lg ${detection.status === "detected" ? "bg-emerald-500/20 text-emerald-400" : "bg-red-500/20 text-red-400"
-                                                }`}
-                                        >
-                                            {getAPDIcon(detection.type)}
-                                        </div>
-                                        <div>
-                                            <p className={`font-medium ${detection.status === "detected" ? "text-emerald-400" : "text-red-400"}`}>
-                                                {detection.label}
-                                            </p>
-                                            <p className="text-xs text-slate-500">
-                                                {detection.status === "detected" ? "Detected" : "⚠️ Missing"}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <span className={`text-sm font-mono ${detection.status === "detected" ? "text-emerald-400" : "text-red-400"}`}>
-                                        {detection.confidence}%
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Real-time Logs */}
-                    <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-4">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-white font-bold flex items-center gap-2">
-                                <Zap className="w-5 h-5 text-yellow-500" />
-                                Real-time Logs
+                    {/* Live Detections */}
+                    <div className="flex-1 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col overflow-hidden">
+                        <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                            <h3 className="font-bold text-slate-800 flex items-center gap-2">
+                                <Siren size={18} className="text-orange-500" />
+                                Live Detections
                             </h3>
-                            <button className="p-1.5 hover:bg-slate-800 rounded-lg transition-colors">
-                                <RefreshCw className="w-4 h-4 text-slate-400" />
-                            </button>
+                            <span className="text-xs font-mono text-emerald-600 bg-emerald-50 px-2 py-1 rounded animate-pulse">
+                                LIVE
+                            </span>
                         </div>
-                        <div className="space-y-2 max-h-[300px] overflow-y-auto">
-                            {logs.map((log, index) => (
-                                <div
-                                    key={index}
-                                    className="flex items-start gap-2 p-2 bg-slate-800/30 rounded-lg text-xs"
-                                >
-                                    <span className="text-slate-500 font-mono whitespace-nowrap">{log.time}</span>
-                                    <span
-                                        className={`${log.type === "success"
-                                            ? "text-emerald-400"
-                                            : log.type === "warning"
-                                                ? "text-amber-400"
-                                                : "text-slate-400"
-                                            }`}
-                                    >
-                                        {log.event}
-                                    </span>
+                        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                            {/* Mock Detections for now */}
+                            <div className="flex gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                <div className="w-16 h-16 bg-slate-200 rounded-lg flex-shrink-0 animate-pulse"></div>
+                                <div>
+                                    <p className="font-bold text-slate-800 text-sm">Monitoring Area...</p>
+                                    <p className="text-xs text-slate-500 mt-1">Waiting for API events...</p>
+                                    <p className="text-xs text-slate-400 mt-2 font-mono">{new Date().toLocaleTimeString()}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* System Logs */}
+                    <div className="h-1/3 bg-slate-900 rounded-2xl border border-slate-800 shadow-sm flex flex-col overflow-hidden">
+                        <div className="p-4 border-b border-slate-800 flex justify-between items-center">
+                            <h3 className="font-bold text-slate-200 flex items-center gap-2 text-sm">
+                                <History size={16} className="text-blue-400" />
+                                System Logs
+                            </h3>
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-4 space-y-2 font-mono text-xs">
+                            {logs.map((log, i) => (
+                                <div key={i} className="flex gap-3 text-slate-400">
+                                    <span className="text-slate-600">{log.time}</span>
+                                    <span className={
+                                        log.type === 'error' ? 'text-red-400' :
+                                            log.type === 'success' ? 'text-emerald-400' :
+                                                'text-blue-400'
+                                    }>[{log.type.toUpperCase()}]</span>
+                                    <span>{log.message}</span>
                                 </div>
                             ))}
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>

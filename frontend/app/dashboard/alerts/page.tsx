@@ -127,7 +127,7 @@ export default function UnifiedAlertsPage() {
     if (!isDemo) {
       api.getDetections(50).then(detections => {
         if (detections.length > 0) {
-          const backendIncidents: Incident[] = detections.map((det: { id: string; timestamp: string; type: string; severity: string; cameraId: string; acknowledged: boolean }, idx: number) => ({
+          const backendIncidents: Incident[] = detections.map((det: any, idx: number) => ({
             id: det.id,
             timestamp: new Date(det.timestamp),
             type: det.type.toLowerCase().replace(" ", "_") as Incident["type"],
@@ -138,6 +138,7 @@ export default function UnifiedAlertsPage() {
             status: det.acknowledged ? "resolved" : "open",
             read: det.acknowledged,
             confidence: 90,
+            imageUrl: det.imageUrl ? (det.imageUrl.startsWith('http') ? det.imageUrl : `http://localhost:8000/${det.imageUrl}`) : undefined,
           }));
           setIncidents(prev => prev.length === 0 ? backendIncidents : prev);
         }
@@ -251,43 +252,130 @@ export default function UnifiedAlertsPage() {
 
   return (
     <div className="min-h-screen bg-slate-950 p-4 md:p-6 lg:p-8">
-      {/* Screenshot Modal */}
+      {/* Incident Detail Modal */}
       {showModal && selectedScreenshot && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => setShowModal(false)}>
-          <div className="relative max-w-4xl max-h-[90vh] bg-slate-900 rounded-2xl overflow-hidden border border-slate-700 shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between p-4 border-b border-slate-800">
-              <div>
-                <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                  <Camera className="w-5 h-5 text-red-500" />
-                  Bukti Pelanggaran
-                </h3>
-                <p className="text-sm text-slate-400">{selectedScreenshot.timestamp ? new Date(selectedScreenshot.timestamp).toLocaleString('id-ID') : 'Screenshot from AI Detection'}</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4" onClick={() => setShowModal(false)}>
+          <div className="relative w-full max-w-6xl bg-slate-900 rounded-3xl overflow-hidden border border-slate-700 shadow-2xl flex flex-col md:flex-row max-h-[90vh]" onClick={e => e.stopPropagation()}>
+
+            {/* Left: Main Content (Player) */}
+            <div className="flex-1 flex flex-col min-h-0 bg-black relative group">
+              {/* Header Overlay */}
+              <div className="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/80 to-transparent z-10 flex justify-between">
+                <div>
+                  <h3 className="text-white font-bold text-lg flex items-center gap-2">
+                    <Camera className="w-5 h-5 text-red-500" />
+                    {selectedScreenshot.timestamp ? new Date(selectedScreenshot.timestamp).toLocaleString('id-ID') : 'Kejadian CCTV-01'}
+                  </h3>
+                  <p className="text-slate-300 text-xs">Rekaman Insiden #INC-{String(selectedScreenshot.timestamp).slice(-4)}</p>
+                </div>
+                <div className="bg-red-600/20 backdrop-blur-md px-3 py-1 rounded-full border border-red-500/50 flex items-center gap-2">
+                  <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                  <span className="text-xs font-bold text-red-100 uppercase">Replay Mode</span>
+                </div>
               </div>
-              <button onClick={() => setShowModal(false)} className="p-2 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors">
-                <X className="w-5 h-5" />
-              </button>
+
+              {/* Main Visual */}
+              <div className="flex-1 flex items-center justify-center bg-slate-950 relative overflow-hidden">
+                <img
+                  src={selectedScreenshot.url}
+                  alt="Main visual"
+                  className="max-h-full max-w-full object-contain"
+                />
+
+                {/* Fake Navigation Arrows */}
+                <button className="absolute left-4 p-2 bg-black/50 rounded-full text-white/50 hover:text-white hover:bg-black/80 transition-all opacity-0 group-hover:opacity-100">
+                  <ChevronDown className="rotate-90" size={24} />
+                </button>
+                <button className="absolute right-4 p-2 bg-black/50 rounded-full text-white/50 hover:text-white hover:bg-black/80 transition-all opacity-0 group-hover:opacity-100">
+                  <ChevronDown className="-rotate-90" size={24} />
+                </button>
+              </div>
+
+              {/* Video Controls (Mock) */}
+              <div className="p-4 bg-slate-900/90 border-t border-slate-800 backdrop-blur">
+                {/* Timeline Bar */}
+                <div className="w-full h-1.5 bg-slate-700 rounded-full mb-4 relative cursor-pointer group/timeline">
+                  <div className="absolute top-0 left-0 w-[40%] h-full bg-orange-500 rounded-full relative">
+                    <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-lg scale-0 group-hover/timeline:scale-100 transition-transform"></div>
+                  </div>
+                  {/* Incident Marker */}
+                  <div className="absolute top-1/2 left-[40%] -translate-y-1/2 w-4 h-4 bg-red-500 rounded-full border-2 border-slate-900 z-10" title="Incident Encountered"></div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <button className="text-white hover:text-orange-500 transition"><Search className="rotate-180" size={20} /></button> {/* Rewind */}
+                    <button className="w-10 h-10 bg-white text-black rounded-full flex items-center justify-center hover:bg-slate-200 transition">
+                      <div className="w-0 h-0 border-t-[6px] border-t-transparent border-l-[10px] border-l-black border-b-[6px] border-b-transparent ml-1"></div>
+                    </button>
+                    <button className="text-white hover:text-orange-500 transition"><Search size={20} /></button> {/* Forward */}
+                    <span className="text-xs font-mono text-slate-400">00:14 / 00:45</span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button className="px-3 py-1.5 rounded-lg bg-slate-800 text-xs text-white hover:bg-slate-700 font-medium">1x Speed</button>
+                    <button className="p-2 text-slate-400 hover:text-white"><Download size={18} /></button>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="p-4">
-              <img
-                src={selectedScreenshot.url}
-                alt="Violation Screenshot"
-                className="w-full max-h-[60vh] object-contain rounded-lg"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = '/images/placeholder.jpg';
-                }}
-              />
+
+            {/* Right: Sidebar Info */}
+            <div className="w-full md:w-80 bg-slate-800/50 p-6 flex flex-col gap-6 border-l border-slate-800 overflow-y-auto">
+              <div className="flex justify-between items-start">
+                <h4 className="text-white font-bold">Detail Insiden</h4>
+                <button onClick={() => setShowModal(false)} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-white"><X size={20} /></button>
+              </div>
+
+              {/* AI Analysis */}
+              <div className="space-y-3">
+                <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
+                  <p className="text-xs text-red-400 font-bold uppercase mb-1">Terdeteksi AI</p>
+                  <p className="text-white font-medium">Pekerja Tidak Menggunakan Helm (No Helmet)</p>
+                  <p className="text-xs text-slate-400 mt-2">Confidence: <span className="text-emerald-400">92.4%</span></p>
+                </div>
+              </div>
+
+              {/* Multi-View Selector */}
+              <div>
+                <p className="text-xs text-slate-500 font-bold uppercase mb-3 flex items-center gap-2">
+                  <Camera size={12} /> Sudut Pandang Lain
+                </p>
+                <div className="space-y-2">
+                  <div className="p-2 rounded-lg bg-slate-700/50 border border-orange-500/50 cursor-pointer flex gap-3 items-center">
+                    <div className="w-16 h-10 bg-black rounded overflow-hidden relative">
+                      <img src={selectedScreenshot.url} className="w-full h-full object-cover opacity-50" />
+                      <div className="absolute inset-0 flex items-center justify-center"><Eye size={12} className="text-orange-500" /></div>
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-white">CAM-01 (Utama)</p>
+                      <p className="text-[10px] text-orange-400">Playing Now</p>
+                    </div>
+                  </div>
+                  <div className="p-2 rounded-lg bg-slate-800 border border-slate-700 hover:bg-slate-700 cursor-pointer flex gap-3 items-center opacity-60 hover:opacity-100 transition">
+                    <div className="w-16 h-10 bg-black rounded overflow-hidden"></div>
+                    <div>
+                      <p className="text-xs font-bold text-slate-300">CAM-02 (Samping)</p>
+                      <p className="text-[10px] text-slate-500">Syncing...</p>
+                    </div>
+                  </div>
+                  <div className="p-2 rounded-lg bg-slate-800 border border-slate-700 hover:bg-slate-700 cursor-pointer flex gap-3 items-center opacity-60 hover:opacity-100 transition">
+                    <div className="w-16 h-10 bg-black rounded overflow-hidden"></div>
+                    <div>
+                      <p className="text-xs font-bold text-slate-300">CAM-03 (Atas)</p>
+                      <p className="text-[10px] text-slate-500">Available</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-auto">
+                <button className="w-full py-3 bg-orange-600 hover:bg-orange-500 text-white font-bold rounded-xl transition-colors shadow-lg shadow-orange-600/20">
+                  Investigasi Lebih Lanjut
+                </button>
+              </div>
             </div>
-            <div className="flex items-center justify-between p-4 border-t border-slate-800 bg-slate-900/50">
-              <span className="text-xs text-slate-500 font-mono">{selectedScreenshot.filename}</span>
-              <a
-                href={selectedScreenshot.url}
-                download
-                className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-bold transition-colors"
-              >
-                <Download className="w-4 h-4" />
-                Download
-              </a>
-            </div>
+
           </div>
         </div>
       )}

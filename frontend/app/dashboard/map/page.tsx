@@ -29,18 +29,54 @@ interface CCTVStats {
 export default function MapPage() {
     const [loading, setLoading] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
+    const [cctvStats, setCctvStats] = useState<CCTVStats[]>([]);
 
-    const [cctvStats] = useState<CCTVStats[]>([
-        { id: "CAM-01", name: "Kamera Gudang Utama", status: "online", zone: "Zona A - Gudang", detections: 45 },
-        { id: "CAM-02", name: "Kamera Area Assembly", status: "alert", zone: "Zona B - Assembly", detections: 128 },
-        { id: "CAM-03", name: "Kamera Welding Bay", status: "online", zone: "Zona C - Welding", detections: 67 },
-        { id: "CAM-04", name: "Kamera Loading Dock", status: "online", zone: "Zona D - Loading Dock", detections: 89 },
-    ]);
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const camerasData = await api.getCameras();
+                if (camerasData && camerasData.length > 0) {
+                    const mapped: CCTVStats[] = camerasData.map((cam: any, i: number) => ({
+                        id: cam.id || `CAM-${String(i + 1).padStart(2, '0')}`,
+                        name: cam.name || `Kamera ${i + 1}`,
+                        status: cam.status === 'online' ? 'online' : 'offline', // Default mapping
+                        zone: cam.location ? `Zona ${cam.location}` : `Zona ${String.fromCharCode(65 + i)}`,
+                        detections: Math.floor(Math.random() * 50) // Mocking detections count as backend might not return it in this list yet
+                    }));
+                    setCctvStats(mapped);
+                } else {
+                    // Fallback if no API data yet
+                    setCctvStats([
+                        { id: "CAM-01", name: "Kamera Gudang Utama", status: "online", zone: "Zona A - Gudang", detections: 45 },
+                        { id: "CAM-02", name: "Kamera Area Assembly", status: "alert", zone: "Zona B - Assembly", detections: 128 },
+                        { id: "CAM-03", name: "Kamera Welding Bay", status: "online", zone: "Zona C - Welding", detections: 67 },
+                        { id: "CAM-04", name: "Kamera Loading Dock", status: "online", zone: "Zona D - Loading Dock", detections: 89 },
+                    ]);
+                }
+            } catch (err) {
+                console.error("Failed to fetch map stats", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
 
     const refreshData = async () => {
         setLoading(true);
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Re-fetch logic
+        const camerasData = await api.getCameras();
+        if (camerasData) {
+            const mapped: CCTVStats[] = camerasData.map((cam: any, i: number) => ({
+                id: cam.id || `CAM-${String(i + 1).padStart(2, '0')}`,
+                name: cam.name || `Kamera ${i + 1}`,
+                status: cam.status === 'online' ? 'online' : 'offline',
+                zone: cam.location ? `Zona ${cam.location}` : `Zona ${String.fromCharCode(65 + i)}`,
+                detections: Math.floor(Math.random() * 50)
+            }));
+            setCctvStats(mapped);
+        }
         setLoading(false);
     };
 
@@ -61,10 +97,10 @@ export default function MapPage() {
     };
 
     return (
-        <div className="space-y-6 h-full">
+        <div className="space-y-6 h-full flex flex-col">
 
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
                         <MapPin className="text-orange-500" />
@@ -91,8 +127,8 @@ export default function MapPage() {
                 </div>
             </div>
 
-            {/* Legend */}
-            <div className="flex flex-wrap items-center gap-6 bg-white border border-slate-200 rounded-2xl p-4 shadow-lg">
+            {/* Legend - Shrinkable */}
+            <div className="flex flex-wrap items-center gap-6 bg-white border border-slate-200 rounded-2xl p-4 shadow-lg shrink-0">
                 <span className="text-sm font-medium text-slate-700">Status Kamera:</span>
                 <div className="flex items-center gap-2">
                     <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -117,18 +153,18 @@ export default function MapPage() {
                 </div>
             </div>
 
-            <div className={`grid ${isFullscreen ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-4"} gap-6`}>
+            <div className={`grid ${isFullscreen ? "grid-cols-1 h-full" : "grid-cols-1 lg:grid-cols-4 lg:h-[calc(100vh-250px)]"} gap-6 grow`}>
 
                 {/* Map Container */}
-                <div className={`${isFullscreen ? "col-span-1" : "lg:col-span-3"} bg-slate-900 rounded-2xl overflow-hidden shadow-2xl border border-slate-700`}>
-                    <div className="flex items-center justify-between p-4 border-b border-slate-700 bg-slate-800/50">
+                <div className={`${isFullscreen ? "col-span-1 h-full" : "lg:col-span-3 h-full"} bg-slate-900 rounded-2xl overflow-hidden shadow-2xl border border-slate-700 flex flex-col`}>
+                    <div className="flex items-center justify-between p-4 border-b border-slate-700 bg-slate-800/50 shrink-0">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center">
                                 <MapPin size={20} className="text-white" />
                             </div>
                             <div>
                                 <h3 className="text-white font-bold">Peta Fasilitas Real-Time</h3>
-                                <p className="text-slate-400 text-xs">CartoDB Dark Matter • Leaflet</p>
+                                <p className="text-slate-400 text-xs">Satellite View • Mojoagung</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
@@ -139,13 +175,13 @@ export default function MapPage() {
                         </div>
                     </div>
 
-                    {/* Leaflet Map */}
-                    <div className={`${isFullscreen ? "h-[70vh]" : "h-[500px]"}`}>
+                    {/* Leaflet Map - Flex Grow to fill */}
+                    <div className="flex-1 relative min-h-[500px]">
                         <DashboardMap />
                     </div>
 
                     {/* Map Footer */}
-                    <div className="p-3 border-t border-slate-700 bg-slate-800/50 flex items-center justify-between">
+                    <div className="p-3 border-t border-slate-700 bg-slate-800/50 flex items-center justify-between shrink-0">
                         <div className="flex items-center gap-4 text-xs text-slate-400">
                             <span>Zoom: Scroll / Pinch</span>
                             <span>Pan: Drag</span>
@@ -159,8 +195,8 @@ export default function MapPage() {
 
                 {/* CCTV Sidebar - Hidden in Fullscreen */}
                 {!isFullscreen && (
-                    <div className="space-y-4">
-                        <div className="flex items-center justify-between">
+                    <div className="space-y-4 overflow-y-auto pr-2 custom-scrollbar lg:h-full">
+                        <div className="flex items-center justify-between shrink-0">
                             <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                                 <Video size={20} className="text-orange-500" />
                                 Daftar CCTV

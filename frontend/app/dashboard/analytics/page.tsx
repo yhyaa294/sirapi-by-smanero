@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
-import { Download, AlertTriangle, CheckCircle, Clock, ShieldAlert, FileText, Filter, FileSpreadsheet, Calendar, RefreshCw, Camera, TrendingUp, TrendingDown } from "lucide-react";
+import { Download, AlertTriangle, CheckCircle, Clock, ShieldAlert, FileText, Filter, FileSpreadsheet, Calendar, RefreshCw, Camera, TrendingUp, TrendingDown, ExternalLink, MapPin } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { api } from "@/services/api";
@@ -318,54 +318,7 @@ Berdasarkan analisis AI SmartAPD dalam periode ${type === 'daily' ? '24 jam' : t
                         <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
                         Refresh
                     </button>
-                    <div className="relative">
-                        <button
-                            onClick={() => setShowDownloadMenu(!showDownloadMenu)}
-                            disabled={isGenerating}
-                            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 text-white font-bold rounded-xl shadow-lg shadow-orange-500/20 transition-all disabled:opacity-70"
-                        >
-                            {isGenerating ? <Clock className="animate-spin" size={20} /> : <Download size={20} />}
-                            {isGenerating ? "Generating..." : "Download Report"}
-                        </button>
-                        {showDownloadMenu && (
-                            <div className="absolute right-0 mt-2 w-64 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl z-50 overflow-hidden">
-                                <div className="p-3 border-b border-slate-700">
-                                    <p className="text-xs font-bold text-slate-400 uppercase">Format PDF</p>
-                                </div>
-                                <button onClick={() => handleDownloadPDF('daily')} className="w-full px-4 py-3 text-left text-white hover:bg-slate-700 flex items-center gap-3">
-                                    <Calendar size={18} className="text-orange-500" />
-                                    <div>
-                                        <p className="font-bold">Laporan Harian</p>
-                                        <p className="text-xs text-slate-400">24 jam terakhir</p>
-                                    </div>
-                                </button>
-                                <button onClick={() => handleDownloadPDF('weekly')} className="w-full px-4 py-3 text-left text-white hover:bg-slate-700 flex items-center gap-3">
-                                    <Calendar size={18} className="text-blue-500" />
-                                    <div>
-                                        <p className="font-bold">Laporan Mingguan</p>
-                                        <p className="text-xs text-slate-400">7 hari terakhir</p>
-                                    </div>
-                                </button>
-                                <button onClick={() => handleDownloadPDF('monthly')} className="w-full px-4 py-3 text-left text-white hover:bg-slate-700 flex items-center gap-3">
-                                    <Calendar size={18} className="text-purple-500" />
-                                    <div>
-                                        <p className="font-bold">Laporan Bulanan</p>
-                                        <p className="text-xs text-slate-400">30 hari terakhir</p>
-                                    </div>
-                                </button>
-                                <div className="p-3 border-t border-slate-700">
-                                    <p className="text-xs font-bold text-slate-400 uppercase">Format Lain</p>
-                                </div>
-                                <button onClick={handleExportCSV} className="w-full px-4 py-3 text-left text-white hover:bg-slate-700 flex items-center gap-3">
-                                    <FileSpreadsheet size={18} className="text-emerald-500" />
-                                    <div>
-                                        <p className="font-bold">Export CSV</p>
-                                        <p className="text-xs text-slate-400">Data mentah untuk Excel</p>
-                                    </div>
-                                </button>
-                            </div>
-                        )}
-                    </div>
+
                 </div>
             </div>
 
@@ -412,72 +365,331 @@ Berdasarkan analisis AI SmartAPD dalam periode ${type === 'daily' ? '24 jam' : t
                 </div>
             </div>
 
-            {/* CHARTS SECTION */}
+            {/* ZONE SAFETY HEALTH & TOP VIOLATORS */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Trend Chart */}
-                <div className="lg:col-span-2 p-6 bg-slate-900/50 border border-slate-800 rounded-3xl">
-                    <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
-                        <FileText size={18} className="text-orange-500" />
-                        Tren Kepatuhan (Live)
-                        <span className="ml-auto text-xs text-slate-500 font-normal">Data real-time dari AI Engine</span>
-                    </h3>
-                    <div className="h-[300px] w-full">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={trendData}>
-                                <defs>
-                                    <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                                        <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-                                    </linearGradient>
-                                </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                                <XAxis dataKey="time" stroke="#64748b" fontSize={12} />
-                                <YAxis stroke="#64748b" fontSize={12} domain={[0, 100]} />
-                                <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', color: '#fff' }} />
-                                <Area type="monotone" dataKey="score" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorScore)" />
-                            </AreaChart>
-                        </ResponsiveContainer>
+
+                {/* Visual Zone Safety - Simplified */}
+                <div className="lg:col-span-2 flex flex-col gap-6">
+                    <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                            <MapPin size={18} className="text-orange-500" />
+                            Status Keamanan Area (Live Zone Health)
+                        </h3>
+                        <div className="flex gap-2 text-xs">
+                            <div className="px-3 py-1 bg-slate-800 rounded-full border border-slate-700 text-slate-400">
+                                Total Zones: <span className="text-white font-bold">3</span>
+                            </div>
+                            <div className="px-3 py-1 bg-slate-800 rounded-full border border-slate-700 text-slate-400">
+                                Monitored: <span className="text-emerald-400 font-bold">100%</span>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {/* Zone 1: Loading Dock (High Risk) */}
+                        <div className="p-5 bg-gradient-to-br from-slate-900 to-slate-800 border border-red-500/30 rounded-2xl relative overflow-hidden group hover:border-red-500/50 transition-all cursor-pointer">
+                            <div className="absolute top-0 right-0 p-16 bg-red-500/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 group-hover:bg-red-500/20 transition-all"></div>
+
+                            <div className="relative z-10">
+                                <div className="flex justify-between items-start mb-4">
+                                    <div className="p-2 bg-slate-950/50 rounded-lg group-hover:scale-110 transition-transform">
+                                        <AlertTriangle size={20} className="text-red-500" />
+                                    </div>
+                                    <span className="px-2 py-1 bg-red-500/20 text-red-400 text-[10px] font-bold rounded uppercase tracking-wider">KRITIS</span>
+                                </div>
+                                <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Loading Dock</h4>
+                                <div className="flex items-end gap-2 mb-2">
+                                    <span className="text-3xl font-bold text-white">45%</span>
+                                    <span className="text-xs text-red-400 mb-1 font-bold">Safety Score</span>
+                                </div>
+                                <div className="w-full bg-slate-950 rounded-full h-1.5 overflow-hidden">
+                                    <div className="h-full bg-red-500 w-[45%] shadow-[0_0_10px_rgba(239,68,68,0.5)]"></div>
+                                </div>
+                                <p className="text-[10px] text-slate-500 mt-3 flex items-center gap-1">
+                                    <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div>
+                                    3 Active Violations
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Zone 2: Welding Bay (Med Risk) */}
+                        <div className="p-5 bg-gradient-to-br from-slate-900 to-slate-800 border border-yellow-500/30 rounded-2xl relative overflow-hidden group hover:border-yellow-500/50 transition-all cursor-pointer">
+                            <div className="absolute top-0 right-0 p-16 bg-yellow-500/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 group-hover:bg-yellow-500/20 transition-all"></div>
+                            <div className="relative z-10">
+                                <div className="flex justify-between items-start mb-4">
+                                    <div className="p-2 bg-slate-950/50 rounded-lg group-hover:scale-110 transition-transform">
+                                        <AlertTriangle size={20} className="text-yellow-500" />
+                                    </div>
+                                    <span className="px-2 py-1 bg-yellow-500/20 text-yellow-400 text-[10px] font-bold rounded uppercase tracking-wider">WASPADA</span>
+                                </div>
+                                <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Welding Bay</h4>
+                                <div className="flex items-end gap-2 mb-2">
+                                    <span className="text-3xl font-bold text-white">78%</span>
+                                    <span className="text-xs text-yellow-400 mb-1 font-bold">Safety Score</span>
+                                </div>
+                                <div className="w-full bg-slate-950 rounded-full h-1.5 overflow-hidden">
+                                    <div className="h-full bg-yellow-500 w-[78%] shadow-[0_0_10px_rgba(234,179,8,0.5)]"></div>
+                                </div>
+                                <p className="text-[10px] text-slate-500 mt-3 flex items-center gap-1">
+                                    <div className="w-1.5 h-1.5 bg-yellow-500 rounded-full"></div>
+                                    No Helmet Detected
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Zone 3: Main Entrance (Safe) */}
+                        <div className="p-5 bg-gradient-to-br from-slate-900 to-slate-800 border border-emerald-500/30 rounded-2xl relative overflow-hidden group hover:border-emerald-500/50 transition-all cursor-pointer">
+                            <div className="absolute top-0 right-0 p-16 bg-emerald-500/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 group-hover:bg-emerald-500/20 transition-all"></div>
+                            <div className="relative z-10">
+                                <div className="flex justify-between items-start mb-4">
+                                    <div className="p-2 bg-slate-950/50 rounded-lg group-hover:scale-110 transition-transform">
+                                        <CheckCircle size={20} className="text-emerald-500" />
+                                    </div>
+                                    <span className="px-2 py-1 bg-emerald-500/20 text-emerald-400 text-[10px] font-bold rounded uppercase tracking-wider">AMAN</span>
+                                </div>
+                                <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Main Entrance</h4>
+                                <div className="flex items-end gap-2 mb-2">
+                                    <span className="text-3xl font-bold text-white">98%</span>
+                                    <span className="text-xs text-emerald-400 mb-1 font-bold">Safety Score</span>
+                                </div>
+                                <div className="w-full bg-slate-950 rounded-full h-1.5 overflow-hidden">
+                                    <div className="h-full bg-emerald-500 w-[98%] shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
+                                </div>
+                                <p className="text-[10px] text-slate-500 mt-3 flex items-center gap-1">
+                                    <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></div>
+                                    Fully Compliant
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                {/* Violation Type Chart */}
-                <div className="p-6 bg-slate-900/50 border border-slate-800 rounded-3xl">
-                    <h3 className="text-lg font-bold text-white mb-6">Jenis Pelanggaran</h3>
-                    <div className="h-[300px] w-full">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={violationCounts.length > 0 ? violationCounts : [
-                                { name: "No Helmet", count: 0 },
-                                { name: "No Vest", count: 0 },
-                                { name: "No Gloves", count: 0 },
-                            ]} layout="vertical">
-                                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#1e293b" />
-                                <XAxis type="number" stroke="#64748b" hide />
-                                <YAxis dataKey="name" type="category" stroke="#94a3b8" width={100} fontSize={12} />
-                                <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', color: '#fff' }} cursor={{ fill: '#1e293b' }} />
-                                <Bar dataKey="count" fill="#f97316" radius={[0, 4, 4, 0]} barSize={20} />
-                            </BarChart>
-                        </ResponsiveContainer>
+                {/* Top Violator Card */}
+                <div className="p-6 bg-slate-900/50 border border-slate-800 rounded-3xl flex flex-col h-full">
+                    <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+                        <TrendingDown size={18} className="text-red-500" />
+                        Top Violator / Divisi
+                    </h3>
+                    <div className="flex-1 flex flex-col gap-3 overflow-y-auto pr-2 custom-scrollbar">
+                        {[
+                            { name: "Tim Logistik", score: 92, status: "Aman", color: "emerald", violations: 2 },
+                            { name: "Tim Produksi A", score: 85, status: "Waspada", color: "yellow", violations: 5 },
+                            { name: "Tim Produksi B", score: 45, status: "Kritis", color: "red", violations: 12 },
+                            { name: "Vendor Eksternal", score: 60, status: "Perlu Training", color: "orange", violations: 8 },
+                        ].map((team, i) => (
+                            <div key={i} className="p-3 bg-slate-800/40 rounded-xl border border-slate-700/50 relative overflow-hidden group hover:bg-slate-800/70 transition-colors cursor-pointer">
+                                <div className={`absolute left-0 top-0 bottom-0 w-1 bg-${team.color}-500 transition-all group-hover:w-1.5`}></div>
+                                <div className="flex justify-between items-center mb-1">
+                                    <h4 className="font-bold text-white text-sm">{team.name}</h4>
+                                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded bg-${team.color}-500/20 text-${team.color}-400`}>
+                                        {team.status}
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-2 mb-1">
+                                    <div className="flex-1 bg-slate-900 rounded-full h-1.5 overflow-hidden">
+                                        <div className={`h-full bg-${team.color}-500`} style={{ width: `${team.score}%` }}></div>
+                                    </div>
+                                    <span className="text-[10px] font-bold text-slate-400 w-8 text-right">{team.score}%</span>
+                                </div>
+                                <p className="text-xs text-slate-500 flex justify-between">
+                                    <span>Compliance Rate</span>
+                                    <span className="text-slate-400">{team.violations} Issues</span>
+                                </p>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>
 
-            {/* LINK TO FULL HISTORY */}
-            <div className="p-6 bg-slate-900/50 border border-slate-800 rounded-3xl text-center">
-                <div className="flex items-center justify-center gap-3 mb-4">
-                    <ShieldAlert size={24} className="text-orange-500" />
-                    <h3 className="text-lg font-bold text-white">Riwayat Pelanggaran Lengkap</h3>
+            {/* CHARTS SECTION */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Trend Chart */}
+                <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+                    <FileText size={18} className="text-orange-500" />
+                    Tren Kepatuhan (Live)
+                    <span className="ml-auto text-xs text-slate-500 font-normal">Data real-time dari AI Engine</span>
+                </h3>
+                <div className="h-[300px] w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={trendData}>
+                            <defs>
+                                <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                                    <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                                </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                            <XAxis dataKey="time" stroke="#64748b" fontSize={12} />
+                            <YAxis stroke="#64748b" fontSize={12} domain={[0, 100]} />
+                            <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', color: '#fff' }} />
+                            <Area type="monotone" dataKey="score" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorScore)" />
+                        </AreaChart>
+                    </ResponsiveContainer>
                 </div>
-                <p className="text-slate-400 mb-6 max-w-lg mx-auto">
-                    Lihat daftar lengkap semua pelanggaran APD yang terdeteksi oleh sistem AI,
-                    termasuk screenshot dan status penanganan.
-                </p>
-                <a
-                    href="/dashboard/alerts"
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold transition-colors"
-                >
-                    <ShieldAlert size={18} />
-                    Buka Riwayat Kejadian
-                </a>
+            </div>
+
+            {/* Violation Type Chart */}
+            <div className="p-6 bg-slate-900/50 border border-slate-800 rounded-3xl">
+                <h3 className="text-lg font-bold text-white mb-6">Jenis Pelanggaran</h3>
+                <div className="h-[300px] w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={violationCounts.length > 0 ? violationCounts : [
+                            { name: "No Helmet", count: 0 },
+                            { name: "No Vest", count: 0 },
+                            { name: "No Gloves", count: 0 },
+                        ]} layout="vertical">
+                            <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#1e293b" />
+                            <XAxis type="number" stroke="#64748b" hide />
+                            <YAxis dataKey="name" type="category" stroke="#94a3b8" width={100} fontSize={12} />
+                            <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', color: '#fff' }} cursor={{ fill: '#1e293b' }} />
+                            <Bar dataKey="count" fill="#f97316" radius={[0, 4, 4, 0]} barSize={20} />
+                        </BarChart>
+                    </ResponsiveContainer>
+                </div>
+            </div>
+
+            {/* SHIFT ANALYSIS HEATMAP */}
+            <div className="lg:col-span-3 p-6 bg-slate-900/50 border border-slate-800 rounded-3xl">
+                <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                        <Clock size={18} className="text-blue-500" />
+                        Analisis Waktu Operasional (Shift Heatmap)
+                    </h3>
+                    <div className="flex gap-2 text-xs">
+                        <span className="flex items-center gap-1 text-slate-400"><div className="w-3 h-3 bg-slate-800 rounded-sm"></div> Aman</span>
+                        <span className="flex items-center gap-1 text-slate-400"><div className="w-3 h-3 bg-red-900 rounded-sm"></div> Rendah</span>
+                        <span className="flex items-center gap-1 text-slate-400"><div className="w-3 h-3 bg-red-500 rounded-sm"></div> Tinggi</span>
+                    </div>
+                </div>
+
+                <div className="scrollbar-thin scrollbar-thumb-slate-700 pb-4 overflow-x-auto">
+                    <div className="min-w-[800px]">
+                        {/* Hours Header */}
+                        <div className="flex mb-2">
+                            <div className="w-20 shrink-0"></div> {/* Label Spacer */}
+                            {Array.from({ length: 14 }).map((_, i) => (
+                                <div key={i} className="flex-1 text-center text-xs text-slate-500 font-mono">
+                                    {(i + 6).toString().padStart(2, '0')}:00
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Days Rows */}
+                        {['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'].map((day, dayIndex) => (
+                            <div key={day} className="flex items-center mb-2">
+                                <div className="w-20 shrink-0 text-xs font-bold text-slate-400">{day}</div>
+                                <div className="flex-1 flex gap-1">
+                                    {Array.from({ length: 14 }).map((_, hourIndex) => {
+                                        // Mock data logic: Random intensity based on "Work Hours"
+                                        // More violations around 10:00 (hourIndex 4) and 14:00 (hourIndex 8)
+                                        const hour = hourIndex + 6;
+                                        let intensity = 0;
+
+                                        // Random seed based on day/hour
+                                        const seed = (dayIndex * 14 + hourIndex) % 7;
+
+                                        if (hour >= 8 && hour <= 16) {
+                                            if (hour === 10 || hour === 11 || hour === 14) intensity = 2 + (seed % 3); // High
+                                            else intensity = 1 + (seed % 2); // Medium
+                                        }
+
+                                        // Special case: Friday before break
+                                        if (day === 'Jumat' && hour === 11) intensity = 4;
+
+                                        // Colors
+                                        let bgClass = "bg-slate-800"; // 0
+                                        if (intensity === 1) bgClass = "bg-emerald-900/30";
+                                        if (intensity === 2) bgClass = "bg-yellow-900/40";
+                                        if (intensity === 3) bgClass = "bg-orange-600/60";
+                                        if (intensity >= 4) bgClass = "bg-red-600";
+
+                                        return (
+                                            <div
+                                                key={hour}
+                                                className={`flex-1 h-8 rounded-sm ${bgClass} transition-all hover:opacity-80 cursor-pointer group relative`}
+                                            >
+                                                <div className="hidden group-hover:block absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-900 border border-slate-700 text-xs text-white rounded whitespace-nowrap z-10">
+                                                    {day} {hour}:00 - {intensity > 0 ? `${intensity * 3} Pelanggaran` : 'Aman'}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+
+            {/* REPORT GENERATOR SECTION - MERGED */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Quick Export */}
+                <div className="p-6 bg-slate-900/50 border border-slate-800 rounded-3xl">
+                    <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                        <Download size={18} className="text-orange-500" />
+                        Quick Export
+                    </h3>
+                    <p className="text-slate-400 mb-6 text-sm">Download laporan standar dalam format PDF atau CSV.</p>
+
+                    <div className="grid grid-cols-2 gap-3">
+                        <button onClick={() => handleDownloadPDF('daily')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded-xl flex items-center gap-3 transition-colors text-left group">
+                            <div className="p-2 bg-orange-500/10 rounded-lg text-orange-500 group-hover:text-white group-hover:bg-orange-500 transition-colors"><FileText size={18} /></div>
+                            <div>
+                                <p className="text-white font-bold text-sm">Harian</p>
+                                <p className="text-xs text-slate-500">Just now</p>
+                            </div>
+                        </button>
+                        <button onClick={() => handleDownloadPDF('weekly')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded-xl flex items-center gap-3 transition-colors text-left group">
+                            <div className="p-2 bg-blue-500/10 rounded-lg text-blue-500 group-hover:text-white group-hover:bg-blue-500 transition-colors"><FileText size={18} /></div>
+                            <div>
+                                <p className="text-white font-bold text-sm">Mingguan</p>
+                                <p className="text-xs text-slate-500">Last 7 days</p>
+                            </div>
+                        </button>
+                        <button onClick={() => handleDownloadPDF('monthly')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded-xl flex items-center gap-3 transition-colors text-left group">
+                            <div className="p-2 bg-purple-500/10 rounded-lg text-purple-500 group-hover:text-white group-hover:bg-purple-500 transition-colors"><FileText size={18} /></div>
+                            <div>
+                                <p className="text-white font-bold text-sm">Bulanan</p>
+                                <p className="text-xs text-slate-500">Last 30 days</p>
+                            </div>
+                        </button>
+                        <button onClick={handleExportCSV} className="p-3 bg-slate-800 hover:bg-slate-700 rounded-xl flex items-center gap-3 transition-colors text-left group">
+                            <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-500 group-hover:text-white group-hover:bg-emerald-500 transition-colors"><FileSpreadsheet size={18} /></div>
+                            <div>
+                                <p className="text-white font-bold text-sm">CSV Data</p>
+                                <p className="text-xs text-slate-500">Raw Data</p>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                {/* Custom Report Builder Link */}
+                <div className="p-6 bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700 rounded-3xl relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-32 bg-orange-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+
+                    <div className="relative z-10 flex flex-col h-full">
+                        <div className="mb-auto">
+                            <div className="w-12 h-12 bg-slate-800 rounded-2xl flex items-center justify-center mb-4 border border-slate-700 shadow-lg">
+                                <Filter className="text-white" size={24} />
+                            </div>
+                            <h3 className="text-xl font-bold text-white mb-2">Custom Report Generator</h3>
+                            <p className="text-slate-400 text-sm mb-4">
+                                Buat laporan spesifik berdasarkan parameter custom: rentang tanggal, filter jenis pelanggaran, zona kamera, dan shift kerja tertentu.
+                            </p>
+                            <ul className="space-y-2 mb-6">
+                                <li className="flex items-center gap-2 text-xs text-slate-300"><div className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></div> Filter by Date Range</li>
+                                <li className="flex items-center gap-2 text-xs text-slate-300"><div className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></div> Specific Camera Zones</li>
+                                <li className="flex items-center gap-2 text-xs text-slate-300"><div className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></div> Include Evidence Photos</li>
+                            </ul>
+                        </div>
+
+                        <button className="w-full py-3 bg-white text-slate-900 font-bold rounded-xl hover:bg-slate-200 transition-colors flex items-center justify-center gap-2">
+                            Mulai Custom Report <ExternalLink size={16} />
+                        </button>
+                    </div>
+                </div>
             </div>
 
         </div>

@@ -5,11 +5,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard,
-  ShieldAlert,
   Video,
   VideoOff,
-  FileText,
   Settings,
   Menu,
   Bell,
@@ -18,64 +15,19 @@ import {
   History,
   MapPin,
   User,
-  Zap,
-  ZapOff
+  FileText,
 } from "lucide-react";
 import { AlertToastContainer } from "@/components/AlertToast";
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const [collapsed, setCollapsed] = useState(false);
+// Separated Clock Component to prevent full Layout re-renders
+function ClockWidget() {
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
-  const [mounted, setMounted] = useState(false);
-  const [cameraEnabled, setCameraEnabled] = useState(true);
-  const pathname = usePathname();
 
-  // Set mounted to true on client side and update time
   useEffect(() => {
-    setMounted(true);
     setCurrentTime(new Date());
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-
-    // Load camera state from localStorage
-    const savedCameraState = localStorage.getItem('smartapd-camera-enabled');
-    if (savedCameraState === 'false') {
-      setCameraEnabled(false);
-    }
-
     return () => clearInterval(timer);
   }, []);
-
-  // Toggle camera on/off
-  const toggleCamera = () => {
-    const newValue = !cameraEnabled;
-    setCameraEnabled(newValue);
-    localStorage.setItem('smartapd-camera-enabled', String(newValue));
-
-    // Trigger custom event for other components
-    window.dispatchEvent(new CustomEvent('camera-toggle', { detail: newValue }));
-  };
-
-  // Menu items - ALL navigation here (no duplicate tabs)
-  const menuItems = [
-    { icon: Video, label: "Monitor Utama", href: "/dashboard" },
-    { icon: BarChart3, label: "Analisis & Laporan", href: "/dashboard/analytics" },
-    { icon: History, label: "Riwayat Kejadian", href: "/dashboard/alerts" },
-    { icon: MapPin, label: "Peta Lokasi", href: "/dashboard/map" },
-    { icon: Settings, label: "Pengaturan", href: "/dashboard/settings" },
-    { icon: User, label: "Profil", href: "/dashboard/profile" },
-  ];
-
-  const lokasiItems = [
-    { name: "Global Overview", active: true },
-    { name: "Zona A - Gudang", active: false },
-    { name: "Zona B - Assembly", active: false },
-    { name: "Zona C - Welding", active: false },
-    { name: "Zona D - Office", active: false },
-  ];
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('id-ID', {
@@ -94,6 +46,87 @@ export default function DashboardLayout({
       year: 'numeric'
     });
   };
+
+  return (
+    <div className="text-right">
+      <div className="text-2xl font-mono font-bold text-slate-900 tracking-tight">
+        {currentTime ? formatTime(currentTime) : "--:--:--"}
+      </div>
+      <div className="text-[10px] text-slate-500">
+        {currentTime ? formatDate(currentTime) : "Loading..."}
+      </div>
+    </div>
+  );
+}
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const [collapsed, setCollapsed] = useState(false);
+  const [cameraEnabled, setCameraEnabled] = useState(true);
+  const pathname = usePathname();
+
+  useEffect(() => {
+    // Sync camera state with AI Engine
+    const checkCameraStatus = async () => {
+      try {
+        const res = await fetch('http://localhost:8000/status');
+        const data = await res.json();
+        if (data && typeof data.camera_active === 'boolean') {
+          setCameraEnabled(data.camera_active);
+          localStorage.setItem('smartapd-camera-enabled', String(data.camera_active));
+        }
+      } catch (err) {
+        console.error('Failed to sync camera status:', err);
+        // Fallback to localStorage if API fails
+        const savedCameraState = localStorage.getItem('smartapd-camera-enabled');
+        if (savedCameraState === 'false') {
+          setCameraEnabled(false);
+        }
+      }
+    };
+
+    checkCameraStatus();
+  }, []);
+
+  // Toggle camera on/off
+  const toggleCamera = async () => {
+    // 1. Optimistic UI Update (Immediate)
+    const previousValue = cameraEnabled;
+    const newValue = !cameraEnabled;
+
+    setCameraEnabled(newValue);
+    localStorage.setItem('smartapd-camera-enabled', String(newValue));
+    window.dispatchEvent(new CustomEvent('camera-toggle', { detail: newValue }));
+
+    // 2. Call AI Engine API (Background)
+    try {
+      const endpoint = newValue ? 'start' : 'stop';
+      const res = await fetch(`http://localhost:8000/camera/${endpoint}`, { method: 'POST' });
+
+      if (!res.ok) {
+        throw new Error(`API returned ${res.status}`);
+      }
+    } catch (error) {
+      console.error('Failed to toggle AI camera, reverting UI:', error);
+      // Revert on failure
+      setCameraEnabled(previousValue);
+      localStorage.setItem('smartapd-camera-enabled', String(previousValue));
+      window.dispatchEvent(new CustomEvent('camera-toggle', { detail: previousValue }));
+    }
+  };
+
+  // Menu items - ALL navigation here (no duplicate tabs)
+  const menuItems = [
+    { icon: Video, label: "Monitor Utama", href: "/dashboard" },
+    { icon: BarChart3, label: "Analisis & Laporan", href: "/dashboard/analytics" },
+    { icon: History, label: "Riwayat Kejadian", href: "/dashboard/alerts" },
+    { icon: MapPin, label: "Peta Lokasi", href: "/dashboard/map" },
+    { icon: Settings, label: "Pengaturan", href: "/dashboard/settings" },
+    { icon: User, label: "Profil", href: "/dashboard/profile" },
+  ];
 
   return (
     <>
@@ -233,14 +266,7 @@ export default function DashboardLayout({
               <div className="h-8 w-px bg-slate-200"></div>
 
               {/* Time Widget */}
-              <div className="text-right">
-                <div className="text-2xl font-mono font-bold text-slate-900 tracking-tight">
-                  {mounted && currentTime ? formatTime(currentTime) : "--:--:--"}
-                </div>
-                <div className="text-[10px] text-slate-500">
-                  {mounted && currentTime ? formatDate(currentTime) : "Loading..."}
-                </div>
-              </div>
+              <ClockWidget />
 
               <div className="h-10 w-px bg-slate-200"></div>
 
