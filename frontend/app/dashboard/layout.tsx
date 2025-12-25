@@ -254,7 +254,7 @@ export default function DashboardLayout({
               </div>
               {!collapsed && (
                 <div className="mt-2 text-[10px] text-slate-600 font-mono">
-                  © 2024 SmartAPD • ENT V2.0
+                  © 2025 SmartAPD • ENT V2.0
                 </div>
               )}
             </div>

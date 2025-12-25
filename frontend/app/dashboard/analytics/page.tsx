@@ -166,7 +166,7 @@ export default function AnalyticsPage() {
                             // Fallback to first camera zone
                             zoneName = Object.keys(zones)[0];
                         } else {
-                            continue; // Skip if no zones available
+                            return; // Skip if no zones available
                         }
                     }
 
