@@ -80,6 +80,7 @@ export default function AnalyticsPage() {
     const [trendData, setTrendData] = useState<{ time: string; score: number }[]>([]);
     const [zoneStats, setZoneStats] = useState<ZoneStat[]>([]);
     const [teamStats, setTeamStats] = useState<TeamStat[]>([]);
+    const [cameraCount, setCameraCount] = useState(0);
 
     // Fetch real data from API and AI Engine (Optimized Parallel Fetch)
     const fetchData = async () => {
@@ -87,14 +88,20 @@ export default function AnalyticsPage() {
             setLoading(true);
 
             // Run requests in parallel to reduce wait time
-            const [aiStatsResult, detectionsData] = await Promise.all([
+            const [aiStatsResult, detectionsData, camerasData] = await Promise.all([
                 // Fetch AI Stats
                 fetch('http://localhost:8000/api/realtime-stats')
                     .then(res => res.ok ? res.json() : null)
                     .catch(() => null),
                 // Fetch Detections
-                api.getDetections(100) as unknown as Promise<Detection[]>
+                api.getDetections(100) as unknown as Promise<Detection[]>,
+                // Fetch Cameras from backend (source of truth)
+                api.getCameras()
             ]);
+
+            // Set camera count from backend (source of truth)
+            const activeCameras = (camerasData || []).filter((c: any) => c.is_active);
+            setCameraCount(activeCameras.length);
 
             // Process Stats
             if (aiStatsResult) {
@@ -307,7 +314,7 @@ export default function AnalyticsPage() {
                         <div className="p-3 bg-orange-500/10 rounded-xl text-orange-500"><Camera /></div>
                         <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
                     </div>
-                    <h3 className="text-4xl font-black text-white mb-1">4</h3>
+                    <h3 className="text-4xl font-black text-white mb-1">{cameraCount}</h3>
                     <p className="text-sm text-slate-400 font-medium">Kamera Aktif</p>
                 </div>
             </div>

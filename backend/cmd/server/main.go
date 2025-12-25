@@ -217,6 +217,29 @@ func main() {
 	triage.Delete("/:id", handlers.DeleteTriageRule)
 	triage.Post("/:id/simulate", handlers.SimulateTriageRule)
 
+	// Annotation / ML Feedback routes
+	annotations := api.Group("/annotations")
+	annotations.Get("/backlog", handlers.GetAnnotationBacklog)
+	annotations.Get("/stats", handlers.GetAnnotationStats)
+	annotations.Post("/export", handlers.ExportAnnotations)
+	annotations.Put("/:id/assign", handlers.AssignAnnotation)
+	api.Post("/detections/:id/feedback", handlers.SubmitFeedback)
+
+	// Metrics & Observability routes
+	internal := app.Group("/internal")
+	internal.Get("/metrics-summary", handlers.MetricsSummary)
+	internal.Get("/health", handlers.HealthCheck)
+	app.Get("/metrics", handlers.PrometheusMetrics)
+	app.Get("/health", handlers.HealthCheck)
+
+	// Zones routes
+	zones := api.Group("/zones")
+	zones.Get("/", handlers.GetZones)
+	zones.Get("/:id", handlers.GetZone)
+	zones.Post("/", handlers.CreateZone)
+	zones.Put("/:id", handlers.UpdateZone)
+	zones.Delete("/:id", handlers.DeleteZone)
+
 	// Email settings routes
 	email := api.Group("/email")
 	email.Get("/settings", handlers.GetEmailSettings)

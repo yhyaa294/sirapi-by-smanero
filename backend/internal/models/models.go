@@ -38,18 +38,32 @@ type Alert struct {
 // Camera represents a CCTV camera
 type Camera struct {
 	gorm.Model
-	Name       string     `json:"name"`
+	Name       string     `json:"name" gorm:"not null"`
 	Location   string     `json:"location"`
 	RTSPUrl    string     `json:"rtsp_url"`
-	Status     string     `json:"status"` // online, offline, error
-	Resolution string     `json:"resolution"`
+	Status     string     `json:"status" gorm:"default:'offline'"` // online, offline, reconnecting
+	Resolution string     `json:"resolution" gorm:"default:'1920x1080'"`
 	IsActive   bool       `json:"is_active" gorm:"default:true"`
+	Latitude   *float64   `json:"latitude"`
+	Longitude  *float64   `json:"longitude"`
 	LastSeen   *time.Time `json:"last_seen"`
-	FPS        int        `json:"fps"`
-	Latency    int        `json:"latency"` // in ms
-	Latitude   float64    `json:"latitude"`
-	Longitude  float64    `json:"longitude"`
+	FPS        int        `json:"fps" gorm:"default:0"`
+	Latency    int        `json:"latency" gorm:"default:0"` // milliseconds
 	LastError  string     `json:"last_error" gorm:"type:text"`
+	// PROMPT 8: Map & FOV
+	FOVPolygon string `json:"fov_polygon" gorm:"type:text"` // GeoJSON polygon
+	ZoneID     *uint  `json:"zone_id"`
+	Zone       *Zone  `json:"zone,omitempty" gorm:"foreignKey:ZoneID"`
+}
+
+// Zone represents a monitored area
+type Zone struct {
+	ID        uint      `gorm:"primaryKey" json:"id"`
+	Name      string    `gorm:"size:100;not null" json:"name"`
+	Polygon   string    `gorm:"type:text" json:"polygon"` // GeoJSON polygon
+	Color     string    `gorm:"size:20;default:'#3B82F6'" json:"color"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 // User represents a system user for authentication
@@ -93,6 +107,19 @@ type DetectionEvent struct {
 	ActionType  string    `gorm:"size:20" json:"action_type"` // accept, reject, assign, note
 	Notes       string    `gorm:"type:text" json:"notes"`
 	CreatedAt   time.Time `json:"created_at"`
+}
+
+// AnnotationBacklog stores samples for ML retraining
+type AnnotationBacklog struct {
+	ID          uint       `gorm:"primaryKey" json:"id"`
+	DetectionID uint       `gorm:"index" json:"detection_id"`
+	ImagePath   string     `json:"image_path"`
+	Label       string     `gorm:"size:20" json:"label"`                    // tp, fp, uncertain, null
+	Status      string     `gorm:"size:20;default:'pending'" json:"status"` // pending, labeled, exported
+	AssignedTo  *uint      `json:"assigned_to"`
+	Notes       string     `gorm:"type:text" json:"notes"`
+	CreatedAt   time.Time  `json:"created_at"`
+	ExportedAt  *time.Time `json:"exported_at"`
 }
 
 // DetectionStats for API response
