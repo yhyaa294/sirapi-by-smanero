@@ -682,7 +682,6 @@ export default function SettingsPage() {
 
     const tabs = [
         { id: "notification", label: "Notifikasi", icon: Bell },
-        { id: "telegram", label: "Telegram", icon: MessageSquare },
         { id: "camera", label: "Kamera", icon: Camera },
         { id: "security", label: "Keamanan", icon: Shield },
         { id: "system", label: "Sistem", icon: Database },
