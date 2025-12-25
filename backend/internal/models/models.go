@@ -16,6 +16,11 @@ type Detection struct {
 	Location      string    `json:"location"`
 	DetectedAt    time.Time `json:"detected_at"`
 	IsViolation   bool      `json:"is_violation"`
+	// Review Queue Fields
+	ReviewStatus string `json:"review_status" gorm:"default:'pending'"` // pending, in_review, accepted, rejected
+	Priority     int    `json:"priority" gorm:"default:3"`              // 1=Critical, 5=Low
+	AssignedTo   *uint  `json:"assigned_to"`                            // FK to users
+	ReviewNotes  string `json:"review_notes" gorm:"type:text"`
 }
 
 // Alert represents a safety alert
@@ -66,6 +71,28 @@ type RefreshToken struct {
 	Token     string    `json:"token" gorm:"unique;not null"`
 	ExpiresAt time.Time `json:"expires_at"`
 	CreatedAt time.Time `json:"created_at"`
+}
+
+// TriageRule defines conditions for prioritizing detections
+type TriageRule struct {
+	ID              uint      `gorm:"primaryKey" json:"id"`
+	Name            string    `gorm:"size:100;not null" json:"name"`
+	Conditions      string    `gorm:"type:text" json:"conditions"` // JSON: {"type":"confidence_lt","value":70}
+	Threshold       int       `gorm:"default:1" json:"threshold"`
+	CooldownSeconds int       `gorm:"default:60" json:"cooldown_seconds"`
+	Enabled         bool      `gorm:"default:true" json:"enabled"`
+	CreatedAt       time.Time `json:"created_at"`
+	UpdatedAt       time.Time `json:"updated_at"`
+}
+
+// DetectionEvent logs review actions on detections
+type DetectionEvent struct {
+	ID          uint      `gorm:"primaryKey" json:"id"`
+	DetectionID uint      `gorm:"index" json:"detection_id"`
+	UserID      uint      `json:"user_id"`
+	ActionType  string    `gorm:"size:20" json:"action_type"` // accept, reject, assign, note
+	Notes       string    `gorm:"type:text" json:"notes"`
+	CreatedAt   time.Time `json:"created_at"`
 }
 
 // DetectionStats for API response

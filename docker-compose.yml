@@ -21,9 +21,26 @@ services:
       - ./data:/app/data
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/health"]
+      test: [ "CMD", "wget", "-q", "--spider", "http://localhost:8080/health" ]
       interval: 30s
       timeout: 10s
+      retries: 3
+    depends_on:
+      - redis
+    networks:
+      - smartapd-network
+
+  # Redis for message queue
+  redis:
+    image: redis:6-alpine
+    container_name: smartapd-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
       retries: 3
     networks:
       - smartapd-network
@@ -43,7 +60,6 @@ services:
     restart: unless-stopped
     networks:
       - smartapd-network
-
   # Optional: Nginx Reverse Proxy (Production)
   # nginx:
   #   image: nginx:alpine

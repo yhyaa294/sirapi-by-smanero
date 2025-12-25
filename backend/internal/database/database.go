@@ -42,6 +42,8 @@ func Connect(databaseURL string) error {
 		&models.ReportSchedule{},
 		&models.ReportLog{},
 		&models.RefreshToken{},
+		&models.TriageRule{},
+		&models.DetectionEvent{},
 	); err != nil {
 		return err
 	}

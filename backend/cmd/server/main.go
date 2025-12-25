@@ -65,11 +65,17 @@ func main() {
 	cleanupService := services.NewCleanupService()
 	cameraHealthChecker := services.NewCameraHealthChecker()
 	cameraHealthChecker.SetBroadcastFunc(handlers.BroadcastMessage)
+	triageWorker := services.NewTriageWorker()
+	triageWorker.SetBroadcastFunc(handlers.BroadcastMessage)
+	queueConsumer := services.NewQueueConsumer()
+	queueConsumer.SetBroadcastFunc(handlers.BroadcastMessage)
 
 	// Start services
 	sched.Start()
 	cleanupService.Start()
 	cameraHealthChecker.Start()
+	triageWorker.Start()
+	queueConsumer.Start()
 
 	// Send startup notification
 	telegramService.SendSystemStatus("started", "SmartAPD Backend berhasil dijalankan")
@@ -195,6 +201,21 @@ func main() {
 	integrations.Put("/:id", handlers.UpdateIntegration)
 	integrations.Delete("/:id", handlers.DeleteIntegration)
 	integrations.Post("/test/:id", handlers.TestIntegration)
+
+	// Review Queue routes
+	review := api.Group("/review-queue")
+	review.Get("/", handlers.GetReviewQueue)
+	review.Post("/:id/action", handlers.ReviewAction)
+	review.Post("/bulk", handlers.BulkReviewAction)
+	review.Get("/:id/events", handlers.GetDetectionEvents)
+
+	// Triage Rules routes
+	triage := api.Group("/triage-rules")
+	triage.Get("/", handlers.GetTriageRules)
+	triage.Post("/", handlers.CreateTriageRule)
+	triage.Put("/:id", handlers.UpdateTriageRule)
+	triage.Delete("/:id", handlers.DeleteTriageRule)
+	triage.Post("/:id/simulate", handlers.SimulateTriageRule)
 
 	// Email settings routes
 	email := api.Group("/email")
