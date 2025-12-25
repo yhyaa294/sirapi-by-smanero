@@ -50,6 +50,11 @@ func Connect(databaseURL string) error {
 		&models.AuditLog{},
 		&models.Session{},
 		&models.SecuritySettings{},
+		// Telegram models
+		&models.TelegramChat{},
+		&models.SentMessageLog{},
+		&models.TelegramRegistration{},
+		&models.TelegramSubscription{},
 	); err != nil {
 		return err
 	}

@@ -73,6 +73,7 @@ func main() {
 	triageWorker.SetBroadcastFunc(handlers.BroadcastMessage)
 	queueConsumer := services.NewQueueConsumer()
 	queueConsumer.SetBroadcastFunc(handlers.BroadcastMessage)
+	telegramSender := services.NewTelegramSender()
 
 	// Start services
 	sched.Start()
@@ -80,6 +81,7 @@ func main() {
 	cameraHealthChecker.Start()
 	triageWorker.Start()
 	queueConsumer.Start()
+	telegramSender.Start()
 
 	// Send startup notification
 	telegramService.SendSystemStatus("started", "SmartAPD Backend berhasil dijalankan")
@@ -205,6 +207,21 @@ func main() {
 	integrations.Put("/:id", handlers.UpdateIntegration)
 	integrations.Delete("/:id", handlers.DeleteIntegration)
 	integrations.Post("/test/:id", handlers.TestIntegration)
+
+	// Telegram API routes (Central Bot)
+	telegram := api.Group("/telegram")
+	telegram.Get("/status", handlers.GetTelegramStatus)
+	telegram.Post("/registrations/create", handlers.CreateRegistration)
+	telegram.Post("/chats/manual-add", handlers.ManualAddChat)
+	telegram.Get("/chats", handlers.ListTelegramChats)
+	telegram.Post("/chats/:chat_id/test", handlers.TestTelegramChat)
+	telegram.Delete("/chats/:chat_id", handlers.RemoveTelegramChat)
+
+	// Telegram Webhook (receives updates from Telegram)
+	app.Post("/api/telegram/webhook", handlers.TelegramWebhook)
+
+	// Test notify endpoint
+	api.Post("/test/notify", handlers.TestNotify)
 
 	// Review Queue routes
 	review := api.Group("/review-queue")
