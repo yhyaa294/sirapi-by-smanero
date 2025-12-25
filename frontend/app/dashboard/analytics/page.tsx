@@ -241,26 +241,81 @@ export default function AnalyticsPage() {
 
 
 
-    // Export CSV
-    const handleExportCSV = () => {
-        const headers = ['ID', 'Timestamp', 'Camera', 'Location', 'Violation Type', 'Confidence', 'Is Violation'];
-        const rows = detections.map(d => [
-            d.id,
-            d.detected_at || d.created_at,
-            `TITIK ${String.fromCharCode(64 + (d.camera_id || 1))}`,
-            d.location,
-            d.violation_type,
-            d.confidence,
-            d.is_violation
+    // Export CSV with proper Excel formatting
+    const handleExportCSV = async () => {
+        // Fetch fresh data if needed
+        let exportData = detections;
+        if (detections.length === 0) {
+            try {
+                const freshData = await api.getDetections(500) as unknown as Detection[];
+                exportData = freshData || [];
+            } catch (e) {
+                console.error('Failed to fetch detections for export');
+            }
+        }
+
+        if (exportData.length === 0) {
+            alert('Tidak ada data deteksi untuk di-export. Pastikan AI Engine sudah berjalan dan ada deteksi.');
+            return;
+        }
+
+        // BOM for Excel UTF-8 support
+        const BOM = '\uFEFF';
+
+        // Summary section
+        const now = new Date();
+        const violations = exportData.filter(d => d.is_violation).length;
+        const summary = [
+            ['SMARTAPD - LAPORAN DETEKSI'],
+            ['Tanggal Export', now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })],
+            ['Waktu Export', now.toLocaleTimeString('id-ID')],
+            ['Total Deteksi', exportData.length.toString()],
+            ['Total Pelanggaran', violations.toString()],
+            ['Compliance Rate', `${((1 - violations / exportData.length) * 100).toFixed(1)}%`],
+            [''],
+        ];
+
+        // Headers with proper naming
+        const headers = [
+            'No',
+            'ID Deteksi',
+            'Waktu Deteksi',
+            'Kamera',
+            'Lokasi',
+            'Jenis Pelanggaran',
+            'Confidence (%)',
+            'Status',
+            'Image Path'
+        ];
+
+        // Data rows with formatting
+        const rows = exportData.map((d, idx) => [
+            (idx + 1).toString(),
+            d.id?.toString() || '',
+            new Date(d.detected_at || d.created_at).toLocaleString('id-ID'),
+            d.camera_id ? `Kamera ${d.camera_id}` : '-',
+            d.location || '-',
+            d.violation_type?.replace(/_/g, ' ').toUpperCase() || '-',
+            d.confidence ? `${(d.confidence * 100).toFixed(1)}` : '-',
+            d.is_violation ? 'PELANGGARAN' : 'AMAN',
+            d.image_path || '-'
         ]);
 
-        const csvContent = [headers, ...rows].map(row => row.join(',')).join('\n');
-        const blob = new Blob([csvContent], { type: 'text/csv' });
+        // Combine all with proper CSV formatting
+        const csvLines = [
+            ...summary.map(row => row.join(',')),
+            headers.join(','),
+            ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+        ];
+
+        const csvContent = BOM + csvLines.join('\r\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `SmartAPD_Data_${new Date().toISOString().split('T')[0]}.csv`;
+        a.download = `SmartAPD_Laporan_${now.toISOString().split('T')[0]}.csv`;
         a.click();
+        URL.revokeObjectURL(url);
         setShowDownloadMenu(false);
     };
 
