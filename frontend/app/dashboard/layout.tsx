@@ -67,7 +67,34 @@ export default function DashboardLayout({
 }) {
   const [collapsed, setCollapsed] = useState(false);
   const [cameraEnabled, setCameraEnabled] = useState(true);
+  const [backendOnline, setBackendOnline] = useState(false);
+  const [aiOnline, setAiOnline] = useState(false);
   const pathname = usePathname();
+
+  // Check Backend & AI Engine status
+  useEffect(() => {
+    const checkSystemStatus = async () => {
+      // Check Backend
+      try {
+        const backendRes = await fetch('http://localhost:8080/health', { method: 'GET' });
+        setBackendOnline(backendRes.ok);
+      } catch {
+        setBackendOnline(false);
+      }
+
+      // Check AI Engine
+      try {
+        const aiRes = await fetch('http://localhost:8000/status', { method: 'GET' });
+        setAiOnline(aiRes.ok);
+      } catch {
+        setAiOnline(false);
+      }
+    };
+
+    checkSystemStatus();
+    const interval = setInterval(checkSystemStatus, 10000); // Check every 10s
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     // Sync camera state with AI Engine
@@ -206,13 +233,23 @@ export default function DashboardLayout({
 
             {/* Sidebar Footer - System Status */}
             <div className="p-4 border-t border-white/10 mt-auto">
-              <div className="flex items-center justify-between">
-                {!collapsed && (
-                  <span className="text-[10px] text-slate-500 uppercase tracking-widest">System Status</span>
-                )}
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-lg shadow-emerald-500/50"></span>
-                  {!collapsed && <span className="text-xs text-emerald-400 font-mono">ONLINE</span>}
+              {!collapsed && (
+                <span className="text-[10px] text-slate-500 uppercase tracking-widest block mb-2">System Status</span>
+              )}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full ${backendOnline ? 'bg-emerald-500 animate-pulse shadow-lg shadow-emerald-500/50' : 'bg-red-500'}`}></span>
+                    {!collapsed && <span className="text-[10px] text-slate-400">Backend</span>}
+                  </div>
+                  {!collapsed && <span className={`text-[10px] font-mono ${backendOnline ? 'text-emerald-400' : 'text-red-400'}`}>{backendOnline ? 'ON' : 'OFF'}</span>}
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full ${aiOnline ? 'bg-emerald-500 animate-pulse shadow-lg shadow-emerald-500/50' : 'bg-red-500'}`}></span>
+                    {!collapsed && <span className="text-[10px] text-slate-400">AI Engine</span>}
+                  </div>
+                  {!collapsed && <span className={`text-[10px] font-mono ${aiOnline ? 'text-emerald-400' : 'text-red-400'}`}>{aiOnline ? 'ON' : 'OFF'}</span>}
                 </div>
               </div>
               {!collapsed && (
