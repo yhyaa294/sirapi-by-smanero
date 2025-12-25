@@ -46,6 +46,10 @@ func Connect(databaseURL string) error {
 		&models.DetectionEvent{},
 		&models.AnnotationBacklog{},
 		&models.Zone{},
+		&models.LoginActivity{},
+		&models.AuditLog{},
+		&models.Session{},
+		&models.SecuritySettings{},
 	); err != nil {
 		return err
 	}

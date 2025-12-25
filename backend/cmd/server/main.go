@@ -240,6 +240,16 @@ func main() {
 	zones.Put("/:id", handlers.UpdateZone)
 	zones.Delete("/:id", handlers.DeleteZone)
 
+	// Security routes
+	security := api.Group("/security")
+	security.Get("/login-activity", handlers.GetLoginActivity)
+	security.Get("/audit-log", handlers.GetAuditLog)
+	security.Get("/sessions", handlers.GetActiveSessions)
+	security.Delete("/sessions/:id", handlers.RevokeSession)
+	security.Delete("/sessions", handlers.RevokeAllSessions)
+	security.Get("/settings", handlers.GetSecuritySettings)
+	security.Put("/settings", handlers.UpdateSecuritySettings)
+
 	// Email settings routes
 	email := api.Group("/email")
 	email.Get("/settings", handlers.GetEmailSettings)

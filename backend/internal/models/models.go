@@ -66,6 +66,56 @@ type Zone struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+// ==================== SECURITY MODELS ====================
+
+// LoginActivity logs all login attempts
+type LoginActivity struct {
+	ID         uint      `gorm:"primaryKey" json:"id"`
+	UserID     *uint     `json:"user_id"` // nullable for failed attempts
+	Email      string    `gorm:"size:100" json:"email"`
+	IPAddress  string    `gorm:"size:45" json:"ip_address"`
+	UserAgent  string    `gorm:"size:255" json:"user_agent"`
+	Success    bool      `json:"success"`
+	FailReason string    `gorm:"size:100" json:"fail_reason,omitempty"`
+	CreatedAt  time.Time `json:"created_at"`
+}
+
+// AuditLog tracks all important actions
+type AuditLog struct {
+	ID         uint      `gorm:"primaryKey" json:"id"`
+	UserID     uint      `gorm:"index" json:"user_id"`
+	Action     string    `gorm:"size:50" json:"action"`   // create, update, delete, login, logout
+	Resource   string    `gorm:"size:50" json:"resource"` // camera, detection, user, settings
+	ResourceID *uint     `json:"resource_id,omitempty"`
+	Details    string    `gorm:"type:text" json:"details"` // JSON details
+	IPAddress  string    `gorm:"size:45" json:"ip_address"`
+	CreatedAt  time.Time `json:"created_at"`
+}
+
+// Session tracks active user sessions
+type Session struct {
+	ID         uint      `gorm:"primaryKey" json:"id"`
+	UserID     uint      `gorm:"index" json:"user_id"`
+	Token      string    `gorm:"size:255;uniqueIndex" json:"-"`
+	DeviceName string    `gorm:"size:100" json:"device_name"`
+	IPAddress  string    `gorm:"size:45" json:"ip_address"`
+	UserAgent  string    `gorm:"size:255" json:"user_agent"`
+	LastActive time.Time `json:"last_active"`
+	ExpiresAt  time.Time `json:"expires_at"`
+	CreatedAt  time.Time `json:"created_at"`
+}
+
+// SecuritySettings stores security configuration
+type SecuritySettings struct {
+	ID               uint      `gorm:"primaryKey" json:"id"`
+	MaxLoginAttempts int       `gorm:"default:5" json:"max_login_attempts"`
+	LockoutDuration  int       `gorm:"default:15" json:"lockout_duration"` // minutes
+	SessionTimeout   int       `gorm:"default:30" json:"session_timeout"`  // minutes
+	IPWhitelist      string    `gorm:"type:text" json:"ip_whitelist"`      // comma-separated IPs
+	TwoFactorEnabled bool      `gorm:"default:false" json:"two_factor_enabled"`
+	UpdatedAt        time.Time `json:"updated_at"`
+}
+
 // User represents a system user for authentication
 type User struct {
 	gorm.Model
