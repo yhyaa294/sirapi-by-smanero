@@ -405,7 +405,7 @@ export default function AnalyticsPage() {
                             {complianceChange}{stats.compliance >= 90 ? '2.4%' : '-3.1%'}
                         </span>
                     </div>
-                    <h3 className="text-4xl font-black text-white mb-1">{stats.compliance.toFixed(1)}%</h3>
+                    <h3 className="text-4xl font-black text-white mb-1">{(stats?.compliance ?? 100).toFixed(1)}%</h3>
                     <p className="text-sm text-slate-400 font-medium">Safety Score</p>
                 </div>
                 <div className="p-6 bg-slate-900/50 border border-slate-800 rounded-3xl">
