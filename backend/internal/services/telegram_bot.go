@@ -183,20 +183,29 @@ func (b *TelegramBot) handleCommand(msg *Message) {
 	switch cmd {
 	case "/start":
 		b.cmdStart(msg)
-	case "/dashboard":
+	case "/dashboard", "📊", "📊 dashboard":
 		b.cmdDashboard(msg)
-	case "/status":
+	case "/status", "📈", "📈 status":
 		b.cmdStatus(msg)
-	case "/monitor":
+	case "/monitor", "👁️", "👁️ monitor":
 		b.cmdMonitor(msg, 0)
 	case "/subscribe":
 		b.cmdSubscribe(msg, args)
 	case "/unsubscribe":
 		b.cmdUnsubscribe(msg, args)
-	case "/help":
+	case "/help", "❓", "❓ help":
 		b.cmdHelp(msg)
 	default:
-		if strings.HasPrefix(cmd, "/") {
+		// Also check for partial matches for keyboard buttons
+		if strings.Contains(strings.ToLower(text), "dashboard") {
+			b.cmdDashboard(msg)
+		} else if strings.Contains(strings.ToLower(text), "monitor") {
+			b.cmdMonitor(msg, 0)
+		} else if strings.Contains(strings.ToLower(text), "status") {
+			b.cmdStatus(msg)
+		} else if strings.Contains(strings.ToLower(text), "help") {
+			b.cmdHelp(msg)
+		} else if strings.HasPrefix(cmd, "/") {
 			b.sendReply(msg.Chat.ID, "❓ Perintah tidak dikenal. Ketik /help untuk bantuan.")
 		}
 	}
@@ -215,16 +224,44 @@ Halo %s! 👋
 
 Bot ini adalah dashboard kedua untuk memantau keselamatan APD secara real-time.
 
-<b>Perintah Tersedia:</b>
+<b>Gunakan tombol menu di bawah atau ketik:</b>
 /dashboard - Ringkasan quick view
 /monitor - Detail deteksi (paged)
 /status - Safety score singkat
-/subscribe - Terima notifikasi
 /help - Bantuan
 
-Ketik /dashboard untuk memulai! 🚀`, name)
+Tap tombol menu untuk memulai! 🚀`, name)
 
-	b.sendReply(msg.Chat.ID, text)
+	// Send with persistent reply keyboard
+	b.sendWithKeyboard(msg.Chat.ID, text)
+}
+
+// sendWithKeyboard sends message with persistent menu keyboard
+func (b *TelegramBot) sendWithKeyboard(chatID int64, text string) {
+	keyboard := map[string]interface{}{
+		"keyboard": [][]map[string]string{
+			{
+				{"text": "📊 Dashboard"},
+				{"text": "👁️ Monitor"},
+			},
+			{
+				{"text": "📈 Status"},
+				{"text": "❓ Help"},
+			},
+		},
+		"resize_keyboard": true,
+		"persistent":      true,
+	}
+	keyboardJSON, _ := json.Marshal(keyboard)
+
+	data := url.Values{}
+	data.Set("chat_id", strconv.FormatInt(chatID, 10))
+	data.Set("text", text)
+	data.Set("parse_mode", "HTML")
+	data.Set("reply_markup", string(keyboardJSON))
+
+	apiURL := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", b.service.BotToken)
+	http.PostForm(apiURL, data)
 }
 
 // cmdDashboard handles /dashboard - Quick summary
