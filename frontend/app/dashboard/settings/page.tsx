@@ -751,417 +751,421 @@ export default function SettingsPage() {
                             </div>
                         </div>
 
-                        {/* Telegram Section */}
+                        {/* Telegram - Kelola di Tab Telegram */}
                         <div className="p-5 bg-gradient-to-br from-blue-50 to-slate-50 rounded-xl border border-blue-100">
-                            <div className="flex items-center gap-3 mb-4">
+                            <div className="flex items-center gap-3">
                                 <div className="p-2 bg-blue-500 rounded-lg">
                                     <MessageSquare className="text-white" size={20} />
                                 </div>
                                 <div className="flex-1">
                                     <h4 className="font-bold text-slate-900">Telegram Bot</h4>
-                                    <p className="text-sm text-slate-500">Terima notifikasi pelanggaran via Telegram</p>
+                                    <p className="text-sm text-slate-500">Kelola pengaturan Telegram di tab khusus</p>
                                 </div>
-                                <ToggleSwitch
-                                    enabled={notifSettings.enableTelegram}
-                                    onToggle={() => updateSetting("enableTelegram", !notifSettings.enableTelegram)}
-                                />
+                                <button
+                                    onClick={() => setActiveTab("telegram")}
+                                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium transition-colors"
+                                >
+                                    Buka Tab Telegram →
+                                </button>
                             </div>
-
-                            {notifSettings.enableTelegram && (
-                                <div className="space-y-4 mt-4 pt-4 border-t border-blue-100">
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                                            Bot Token <span className="text-red-500">*</span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={notifSettings.telegramBotToken}
-                                            onChange={(e) => updateSetting("telegramBotToken", e.target.value)}
-                                            placeholder="123456789:ABCdefGHIjklMNOpqrSTUvwxYZ"
-                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-mono text-sm focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none transition-all"
-                                        />
-                                        <p className="mt-1 text-xs text-slate-500">
-                                            Dapatkan dari <a href="https://t.me/BotFather" target="_blank" className="text-blue-500 hover:underline">@BotFather</a>
-                                        </p>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                                            Chat ID <span className="text-red-500">*</span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={notifSettings.telegramChatId}
-                                            onChange={(e) => updateSetting("telegramChatId", e.target.value)}
-                                            placeholder="-1001234567890 atau 123456789"
-                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-mono text-sm focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none transition-all"
-                                        />
-                                        <p className="mt-1 text-xs text-slate-500">
-                                            ID grup atau user. Kirim pesan ke bot lalu cek via API.
-                                        </p>
-                                    </div>
-
-                                    {/* Test Connection Button */}
-                                    <button
-                                        onClick={testTelegramConnection}
-                                        disabled={testStatus === "loading"}
-                                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all ${testStatus === "success"
-                                            ? "bg-emerald-500 text-white"
-                                            : testStatus === "error"
-                                                ? "bg-red-500 text-white"
-                                                : "bg-blue-500 hover:bg-blue-600 text-white"
-                                            }`}
-                                    >
-                                        {testStatus === "loading" ? (
-                                            <>
-                                                <Loader2 size={18} className="animate-spin" />
-                                                Menguji...
-                                            </>
-                                        ) : testStatus === "success" ? (
-                                            <>
-                                                <CheckCircle size={18} />
-                                                Berhasil!
-                                            </>
-                                        ) : testStatus === "error" ? (
-                                            <>
-                                                <XCircle size={18} />
-                                                Gagal
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Send size={18} />
-                                                Test Koneksi
-                                            </>
-                                        )}
-                                    </button>
-
-                                    {testMessage && (
-                                        <p className={`text-sm ${testStatus === "success" ? "text-emerald-600" : "text-red-600"}`}>
-                                            {testMessage}
-                                        </p>
-                                    )}
-
-                                    {/* Telegram Schedule Settings */}
-                                    <div className="mt-6 pt-6 border-t border-blue-100 space-y-4">
-                                        <h5 className="font-bold text-slate-800 flex items-center gap-2">
-                                            <Clock size={16} className="text-blue-500" />
-                                            Jadwal Laporan Otomatis
-                                        </h5>
-
-                                        {/* Enable Scheduled Report */}
-                                        <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-slate-200">
-                                            <div>
-                                                <p className="font-medium text-slate-800">Aktifkan Laporan Terjadwal</p>
-                                                <p className="text-xs text-slate-500">Kirim laporan otomatis setiap hari</p>
-                                            </div>
-                                            <ToggleSwitch
-                                                enabled={notifSettings.scheduledReportEnabled}
-                                                onToggle={() => updateSetting("scheduledReportEnabled", !notifSettings.scheduledReportEnabled)}
-                                            />
-                                        </div>
-
-                                        {notifSettings.scheduledReportEnabled && (
-                                            <>
-                                                {/* Report Time */}
-                                                <div>
-                                                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                                                        Jam Kirim Laporan
-                                                    </label>
-                                                    <input
-                                                        type="time"
-                                                        value={notifSettings.scheduledReportTime}
-                                                        onChange={(e) => updateSetting("scheduledReportTime", e.target.value)}
-                                                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none"
-                                                    />
-                                                </div>
-
-                                                {/* Report Days */}
-                                                <div>
-                                                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                                                        Hari Aktif
-                                                    </label>
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {[
-                                                            { key: "monday", label: "Sen" },
-                                                            { key: "tuesday", label: "Sel" },
-                                                            { key: "wednesday", label: "Rab" },
-                                                            { key: "thursday", label: "Kam" },
-                                                            { key: "friday", label: "Jum" },
-                                                            { key: "saturday", label: "Sab" },
-                                                            { key: "sunday", label: "Min" },
-                                                        ].map((day) => (
-                                                            <button
-                                                                key={day.key}
-                                                                onClick={() => {
-                                                                    const days = notifSettings.scheduledReportDays;
-                                                                    if (days.includes(day.key)) {
-                                                                        updateSetting("scheduledReportDays", days.filter(d => d !== day.key));
-                                                                    } else {
-                                                                        updateSetting("scheduledReportDays", [...days, day.key]);
-                                                                    }
-                                                                }}
-                                                                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${notifSettings.scheduledReportDays.includes(day.key)
-                                                                    ? "bg-blue-500 text-white"
-                                                                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                                                                    }`}
-                                                            >
-                                                                {day.label}
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            </>
-                                        )}
-
-                                        {/* Send Screenshots */}
-                                        <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-slate-200">
-                                            <div>
-                                                <p className="font-medium text-slate-800">Sertakan Screenshot</p>
-                                                <p className="text-xs text-slate-500">Kirim foto pelanggaran dalam notifikasi</p>
-                                            </div>
-                                            <ToggleSwitch
-                                                enabled={notifSettings.sendScreenshotsWithNotifications}
-                                                onToggle={() => updateSetting("sendScreenshotsWithNotifications", !notifSettings.sendScreenshotsWithNotifications)}
-                                            />
-                                        </div>
-
-                                        {/* Notification Type */}
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-2">
-                                                Jenis Notifikasi
-                                            </label>
-                                            <div className="flex gap-2">
-                                                <button
-                                                    onClick={() => updateSetting("notificationType", "violations")}
-                                                    className={`flex-1 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${notifSettings.notificationType === "violations"
-                                                        ? "bg-red-500 text-white"
-                                                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                                                        }`}
-                                                >
-                                                    🚨 Pelanggaran Saja
-                                                </button>
-                                                <button
-                                                    onClick={() => updateSetting("notificationType", "all")}
-                                                    className={`flex-1 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${notifSettings.notificationType === "all"
-                                                        ? "bg-blue-500 text-white"
-                                                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                                                        }`}
-                                                >
-                                                    📊 Semua Aktivitas
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
                         </div>
 
-                        {/* Email Section */}
-                        <div className="p-5 bg-gradient-to-br from-amber-50 to-slate-50 rounded-xl border border-amber-100">
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="p-2 bg-amber-500 rounded-lg">
-                                    <Mail className="text-white" size={20} />
-                                </div>
-                                <div className="flex-1">
-                                    <h4 className="font-bold text-slate-900">Email Laporan</h4>
-                                    <p className="text-sm text-slate-500">Terima laporan harian via email</p>
-                                </div>
-                                <ToggleSwitch
-                                    enabled={notifSettings.enableEmail}
-                                    onToggle={() => updateSetting("enableEmail", !notifSettings.enableEmail)}
-                                />
-                            </div>
-
-                            {notifSettings.enableEmail && (
-                                <div className="mt-4 pt-4 border-t border-amber-100 space-y-4">
-                                    {/* Info Box */}
-                                    <div className="p-3 bg-amber-100 rounded-lg border border-amber-200">
-                                        <p className="text-sm text-amber-800 font-medium">📧 Cara menggunakan Email:</p>
-                                        <ol className="text-xs text-amber-700 mt-2 list-decimal list-inside space-y-1">
-                                            <li>Gunakan akun Gmail</li>
-                                            <li>Buat App Password di: <a href="https://myaccount.google.com/apppasswords" target="_blank" className="underline">Google App Passwords</a></li>
-                                            <li>Masukkan email dan App Password di bawah</li>
-                                        </ol>
-                                    </div>
-
-                                    {/* Email Recipient */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                                            Email Penerima Laporan
-                                        </label>
-                                        <input
-                                            type="email"
-                                            value={notifSettings.emailRecipient}
-                                            onChange={(e) => updateSetting("emailRecipient", e.target.value)}
-                                            placeholder="hse@company.com"
-                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none transition-all"
-                                        />
-                                    </div>
-
-                                    {/* Note about future feature */}
-                                    <p className="text-xs text-slate-500 italic">
-                                        * Fitur email akan mengirim laporan harian/mingguan secara otomatis ke alamat di atas.
-                                        Konfigurasi SMTP akan ditambahkan di versi selanjutnya.
+                        {/* REMOVED: Old Telegram Section - Now managed in Telegram Tab */}
+                        {false && (
+                            <div className="space-y-4 mt-4 pt-4 border-t border-blue-100">
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                        Bot Token <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={notifSettings.telegramBotToken}
+                                        onChange={(e) => updateSetting("telegramBotToken", e.target.value)}
+                                        placeholder="123456789:ABCdefGHIjklMNOpqrSTUvwxYZ"
+                                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-mono text-sm focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none transition-all"
+                                    />
+                                    <p className="mt-1 text-xs text-slate-500">
+                                        Dapatkan dari <a href="https://t.me/BotFather" target="_blank" className="text-blue-500 hover:underline">@BotFather</a>
                                     </p>
                                 </div>
-                            )}
-                        </div>
 
-                        {/* Browser Push Section */}
-                        <div className="p-5 bg-gradient-to-br from-purple-50 to-slate-50 rounded-xl border border-purple-100">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-purple-500 rounded-lg">
-                                    <Smartphone className="text-white" size={20} />
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                        Chat ID <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={notifSettings.telegramChatId}
+                                        onChange={(e) => updateSetting("telegramChatId", e.target.value)}
+                                        placeholder="-1001234567890 atau 123456789"
+                                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-mono text-sm focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none transition-all"
+                                    />
+                                    <p className="mt-1 text-xs text-slate-500">
+                                        ID grup atau user. Kirim pesan ke bot lalu cek via API.
+                                    </p>
                                 </div>
-                                <div className="flex-1">
-                                    <h4 className="font-bold text-slate-900">Push Notification</h4>
-                                    <p className="text-sm text-slate-500">Notifikasi langsung di browser</p>
-                                </div>
-                                <ToggleSwitch
-                                    enabled={notifSettings.enablePushNotification}
-                                    onToggle={() => updateSetting("enablePushNotification", !notifSettings.enablePushNotification)}
-                                />
-                            </div>
-                        </div>
 
-                        {/* Sound Section */}
-                        <div className="p-5 bg-gradient-to-br from-emerald-50 to-slate-50 rounded-xl border border-emerald-100">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-emerald-500 rounded-lg">
-                                    <Volume2 className="text-white" size={20} />
-                                </div>
-                                <div className="flex-1">
-                                    <h4 className="font-bold text-slate-900">Suara Notifikasi</h4>
-                                    <p className="text-sm text-slate-500">Bunyi alarm saat ada pelanggaran</p>
-                                </div>
-                                <ToggleSwitch
-                                    enabled={notifSettings.enableSound}
-                                    onToggle={() => updateSetting("enableSound", !notifSettings.enableSound)}
-                                />
-                            </div>
-                        </div>
-
-                        {/* Cooldown Setting */}
-                        <div className="p-5 bg-slate-50 rounded-xl border border-slate-200">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-slate-500 rounded-lg">
-                                    <Clock className="text-white" size={20} />
-                                </div>
-                                <div className="flex-1">
-                                    <h4 className="font-bold text-slate-900">Cooldown Notifikasi</h4>
-                                    <p className="text-sm text-slate-500">Jeda antar notifikasi untuk zona yang sama</p>
-                                </div>
-                                <select
-                                    value={notifSettings.cooldownSeconds}
-                                    onChange={(e) => updateSetting("cooldownSeconds", Number(e.target.value))}
-                                    className="px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm"
+                                {/* Test Connection Button */}
+                                <button
+                                    onClick={testTelegramConnection}
+                                    disabled={testStatus === "loading"}
+                                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all ${testStatus === "success"
+                                        ? "bg-emerald-500 text-white"
+                                        : testStatus === "error"
+                                            ? "bg-red-500 text-white"
+                                            : "bg-blue-500 hover:bg-blue-600 text-white"
+                                        }`}
                                 >
-                                    <option value={30}>30 detik</option>
-                                    <option value={60}>1 menit</option>
-                                    <option value={120}>2 menit</option>
-                                    <option value={300}>5 menit</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                )}
+                                    {testStatus === "loading" ? (
+                                        <>
+                                            <Loader2 size={18} className="animate-spin" />
+                                            Menguji...
+                                        </>
+                                    ) : testStatus === "success" ? (
+                                        <>
+                                            <CheckCircle size={18} />
+                                            Berhasil!
+                                        </>
+                                    ) : testStatus === "error" ? (
+                                        <>
+                                            <XCircle size={18} />
+                                            Gagal
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Send size={18} />
+                                            Test Koneksi
+                                        </>
+                                    )}
+                                </button>
 
+                                {testMessage && (
+                                    <p className={`text-sm ${testStatus === "success" ? "text-emerald-600" : "text-red-600"}`}>
+                                        {testMessage}
+                                    </p>
+                                )}
 
-                {activeTab === "telegram" && (
-                    <TelegramSettings />
-                )}
+                                {/* Telegram Schedule Settings */}
+                                <div className="mt-6 pt-6 border-t border-blue-100 space-y-4">
+                                    <h5 className="font-bold text-slate-800 flex items-center gap-2">
+                                        <Clock size={16} className="text-blue-500" />
+                                        Jadwal Laporan Otomatis
+                                    </h5>
 
-                {activeTab === "camera" && (
-                    <CameraSettingsTab />
-                )}
+                                    {/* Enable Scheduled Report */}
+                                    <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-slate-200">
+                                        <div>
+                                            <p className="font-medium text-slate-800">Aktifkan Laporan Terjadwal</p>
+                                            <p className="text-xs text-slate-500">Kirim laporan otomatis setiap hari</p>
+                                        </div>
+                                        <ToggleSwitch
+                                            enabled={notifSettings.scheduledReportEnabled}
+                                            onToggle={() => updateSetting("scheduledReportEnabled", !notifSettings.scheduledReportEnabled)}
+                                        />
+                                    </div>
 
-                {activeTab === "security" && (
-                    <div className="space-y-6">
-                        <h3 className="text-lg font-bold text-slate-900">Keamanan</h3>
+                                    {notifSettings.scheduledReportEnabled && (
+                                        <>
+                                            {/* Report Time */}
+                                            <div>
+                                                <label className="block text-sm font-medium text-slate-700 mb-2">
+                                                    Jam Kirim Laporan
+                                                </label>
+                                                <input
+                                                    type="time"
+                                                    value={notifSettings.scheduledReportTime}
+                                                    onChange={(e) => updateSetting("scheduledReportTime", e.target.value)}
+                                                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none"
+                                                />
+                                            </div>
 
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
-                                <div>
-                                    <p className="font-medium text-slate-900">Two-Factor Authentication</p>
-                                    <p className="text-sm text-slate-500">Tambahkan lapisan keamanan ekstra</p>
+                                            {/* Report Days */}
+                                            <div>
+                                                <label className="block text-sm font-medium text-slate-700 mb-2">
+                                                    Hari Aktif
+                                                </label>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {[
+                                                        { key: "monday", label: "Sen" },
+                                                        { key: "tuesday", label: "Sel" },
+                                                        { key: "wednesday", label: "Rab" },
+                                                        { key: "thursday", label: "Kam" },
+                                                        { key: "friday", label: "Jum" },
+                                                        { key: "saturday", label: "Sab" },
+                                                        { key: "sunday", label: "Min" },
+                                                    ].map((day) => (
+                                                        <button
+                                                            key={day.key}
+                                                            onClick={() => {
+                                                                const days = notifSettings.scheduledReportDays;
+                                                                if (days.includes(day.key)) {
+                                                                    updateSetting("scheduledReportDays", days.filter(d => d !== day.key));
+                                                                } else {
+                                                                    updateSetting("scheduledReportDays", [...days, day.key]);
+                                                                }
+                                                            }}
+                                                            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${notifSettings.scheduledReportDays.includes(day.key)
+                                                                ? "bg-blue-500 text-white"
+                                                                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                                                                }`}
+                                                        >
+                                                            {day.label}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
+
+                                    {/* Send Screenshots */}
+                                    <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-slate-200">
+                                        <div>
+                                            <p className="font-medium text-slate-800">Sertakan Screenshot</p>
+                                            <p className="text-xs text-slate-500">Kirim foto pelanggaran dalam notifikasi</p>
+                                        </div>
+                                        <ToggleSwitch
+                                            enabled={notifSettings.sendScreenshotsWithNotifications}
+                                            onToggle={() => updateSetting("sendScreenshotsWithNotifications", !notifSettings.sendScreenshotsWithNotifications)}
+                                        />
+                                    </div>
+
+                                    {/* Notification Type */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                                            Jenis Notifikasi
+                                        </label>
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => updateSetting("notificationType", "violations")}
+                                                className={`flex-1 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${notifSettings.notificationType === "violations"
+                                                    ? "bg-red-500 text-white"
+                                                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                                                    }`}
+                                            >
+                                                🚨 Pelanggaran Saja
+                                            </button>
+                                            <button
+                                                onClick={() => updateSetting("notificationType", "all")}
+                                                className={`flex-1 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${notifSettings.notificationType === "all"
+                                                    ? "bg-blue-500 text-white"
+                                                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                                                    }`}
+                                            >
+                                                📊 Semua Aktivitas
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
-                                <ToggleSwitch enabled={false} onToggle={() => { }} />
                             </div>
-
-                            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
-                                <div>
-                                    <p className="font-medium text-slate-900">Session Timeout</p>
-                                    <p className="text-sm text-slate-500">Auto logout setelah tidak aktif</p>
-                                </div>
-                                <select className="px-4 py-2 bg-white border border-slate-200 rounded-lg">
-                                    <option>30 menit</option>
-                                    <option>1 jam</option>
-                                    <option>4 jam</option>
-                                    <option>Tidak pernah</option>
-                                </select>
                             </div>
-                        </div>
-                    </div>
                 )}
 
-                {activeTab === "system" && (
-                    <div className="space-y-6">
-                        <h3 className="text-lg font-bold text-slate-900">Informasi Sistem</h3>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="p-4 bg-slate-50 rounded-xl">
-                                <p className="text-sm text-slate-500">Versi Aplikasi</p>
-                                <p className="text-lg font-bold text-slate-900 font-mono">v2.0.0</p>
-                            </div>
-                            <div className="p-4 bg-slate-50 rounded-xl">
-                                <p className="text-sm text-slate-500">Model AI</p>
-                                <p className="text-lg font-bold text-slate-900 font-mono">YOLOv8n</p>
-                            </div>
-                            <div className="p-4 bg-slate-50 rounded-xl">
-                                <p className="text-sm text-slate-500">Database</p>
-                                <p className="text-lg font-bold text-slate-900 font-mono">SQLite</p>
-                            </div>
-                            <div className="p-4 bg-slate-50 rounded-xl">
-                                <p className="text-sm text-slate-500">Uptime</p>
-                                <p className="text-lg font-bold text-emerald-600 font-mono">99.8%</p>
-                            </div>
+                {/* Email Section */}
+                <div className="p-5 bg-gradient-to-br from-amber-50 to-slate-50 rounded-xl border border-amber-100">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="p-2 bg-amber-500 rounded-lg">
+                            <Mail className="text-white" size={20} />
                         </div>
-
-                        <button className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-slate-700 font-medium transition-colors">
-                            <RefreshCw size={18} />
-                            Restart Sistem
-                        </button>
+                        <div className="flex-1">
+                            <h4 className="font-bold text-slate-900">Email Laporan</h4>
+                            <p className="text-sm text-slate-500">Terima laporan harian via email</p>
+                        </div>
+                        <ToggleSwitch
+                            enabled={notifSettings.enableEmail}
+                            onToggle={() => updateSetting("enableEmail", !notifSettings.enableEmail)}
+                        />
                     </div>
-                )}
 
-                {/* Save Button */}
-                <div className="mt-8 flex justify-end gap-3">
-                    {saveStatus === "success" && (
-                        <div className="flex items-center gap-2 text-emerald-600">
-                            <CheckCircle size={18} />
-                            <span className="text-sm font-medium">Tersimpan!</span>
+                    {notifSettings.enableEmail && (
+                        <div className="mt-4 pt-4 border-t border-amber-100 space-y-4">
+                            {/* Info Box */}
+                            <div className="p-3 bg-amber-100 rounded-lg border border-amber-200">
+                                <p className="text-sm text-amber-800 font-medium">📧 Cara menggunakan Email:</p>
+                                <ol className="text-xs text-amber-700 mt-2 list-decimal list-inside space-y-1">
+                                    <li>Gunakan akun Gmail</li>
+                                    <li>Buat App Password di: <a href="https://myaccount.google.com/apppasswords" target="_blank" className="underline">Google App Passwords</a></li>
+                                    <li>Masukkan email dan App Password di bawah</li>
+                                </ol>
+                            </div>
+
+                            {/* Email Recipient */}
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-2">
+                                    Email Penerima Laporan
+                                </label>
+                                <input
+                                    type="email"
+                                    value={notifSettings.emailRecipient}
+                                    onChange={(e) => updateSetting("emailRecipient", e.target.value)}
+                                    placeholder="hse@company.com"
+                                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none transition-all"
+                                />
+                            </div>
+
+                            {/* Note about future feature */}
+                            <p className="text-xs text-slate-500 italic">
+                                * Fitur email akan mengirim laporan harian/mingguan secara otomatis ke alamat di atas.
+                                Konfigurasi SMTP akan ditambahkan di versi selanjutnya.
+                            </p>
                         </div>
                     )}
-                    <button
-                        onClick={handleSave}
-                        disabled={isSaving}
-                        className="flex items-center gap-2 px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-medium shadow-lg transition-colors disabled:opacity-70"
-                    >
-                        {isSaving ? (
-                            <>
-                                <Loader2 size={18} className="animate-spin" />
-                                Menyimpan...
-                            </>
-                        ) : (
-                            <>
-                                <Save size={18} />
-                                Simpan Pengaturan
-                            </>
-                        )}
-                    </button>
+                </div>
+
+                {/* Browser Push Section */}
+                <div className="p-5 bg-gradient-to-br from-purple-50 to-slate-50 rounded-xl border border-purple-100">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-purple-500 rounded-lg">
+                            <Smartphone className="text-white" size={20} />
+                        </div>
+                        <div className="flex-1">
+                            <h4 className="font-bold text-slate-900">Push Notification</h4>
+                            <p className="text-sm text-slate-500">Notifikasi langsung di browser</p>
+                        </div>
+                        <ToggleSwitch
+                            enabled={notifSettings.enablePushNotification}
+                            onToggle={() => updateSetting("enablePushNotification", !notifSettings.enablePushNotification)}
+                        />
+                    </div>
+                </div>
+
+                {/* Sound Section */}
+                <div className="p-5 bg-gradient-to-br from-emerald-50 to-slate-50 rounded-xl border border-emerald-100">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-emerald-500 rounded-lg">
+                            <Volume2 className="text-white" size={20} />
+                        </div>
+                        <div className="flex-1">
+                            <h4 className="font-bold text-slate-900">Suara Notifikasi</h4>
+                            <p className="text-sm text-slate-500">Bunyi alarm saat ada pelanggaran</p>
+                        </div>
+                        <ToggleSwitch
+                            enabled={notifSettings.enableSound}
+                            onToggle={() => updateSetting("enableSound", !notifSettings.enableSound)}
+                        />
+                    </div>
+                </div>
+
+                {/* Cooldown Setting */}
+                <div className="p-5 bg-slate-50 rounded-xl border border-slate-200">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-slate-500 rounded-lg">
+                            <Clock className="text-white" size={20} />
+                        </div>
+                        <div className="flex-1">
+                            <h4 className="font-bold text-slate-900">Cooldown Notifikasi</h4>
+                            <p className="text-sm text-slate-500">Jeda antar notifikasi untuk zona yang sama</p>
+                        </div>
+                        <select
+                            value={notifSettings.cooldownSeconds}
+                            onChange={(e) => updateSetting("cooldownSeconds", Number(e.target.value))}
+                            className="px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm"
+                        >
+                            <option value={30}>30 detik</option>
+                            <option value={60}>1 menit</option>
+                            <option value={120}>2 menit</option>
+                            <option value={300}>5 menit</option>
+                        </select>
+                    </div>
                 </div>
             </div>
+                )}
 
+
+            {activeTab === "telegram" && (
+                <TelegramSettings />
+            )}
+
+            {activeTab === "camera" && (
+                <CameraSettingsTab />
+            )}
+
+            {activeTab === "security" && (
+                <div className="space-y-6">
+                    <h3 className="text-lg font-bold text-slate-900">Keamanan</h3>
+
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+                            <div>
+                                <p className="font-medium text-slate-900">Two-Factor Authentication</p>
+                                <p className="text-sm text-slate-500">Tambahkan lapisan keamanan ekstra</p>
+                            </div>
+                            <ToggleSwitch enabled={false} onToggle={() => { }} />
+                        </div>
+
+                        <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+                            <div>
+                                <p className="font-medium text-slate-900">Session Timeout</p>
+                                <p className="text-sm text-slate-500">Auto logout setelah tidak aktif</p>
+                            </div>
+                            <select className="px-4 py-2 bg-white border border-slate-200 rounded-lg">
+                                <option>30 menit</option>
+                                <option>1 jam</option>
+                                <option>4 jam</option>
+                                <option>Tidak pernah</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {activeTab === "system" && (
+                <div className="space-y-6">
+                    <h3 className="text-lg font-bold text-slate-900">Informasi Sistem</h3>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="p-4 bg-slate-50 rounded-xl">
+                            <p className="text-sm text-slate-500">Versi Aplikasi</p>
+                            <p className="text-lg font-bold text-slate-900 font-mono">v2.0.0</p>
+                        </div>
+                        <div className="p-4 bg-slate-50 rounded-xl">
+                            <p className="text-sm text-slate-500">Model AI</p>
+                            <p className="text-lg font-bold text-slate-900 font-mono">YOLOv8n</p>
+                        </div>
+                        <div className="p-4 bg-slate-50 rounded-xl">
+                            <p className="text-sm text-slate-500">Database</p>
+                            <p className="text-lg font-bold text-slate-900 font-mono">SQLite</p>
+                        </div>
+                        <div className="p-4 bg-slate-50 rounded-xl">
+                            <p className="text-sm text-slate-500">Uptime</p>
+                            <p className="text-lg font-bold text-emerald-600 font-mono">99.8%</p>
+                        </div>
+                    </div>
+
+                    <button className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-slate-700 font-medium transition-colors">
+                        <RefreshCw size={18} />
+                        Restart Sistem
+                    </button>
+                </div>
+            )}
+
+            {/* Save Button */}
+            <div className="mt-8 flex justify-end gap-3">
+                {saveStatus === "success" && (
+                    <div className="flex items-center gap-2 text-emerald-600">
+                        <CheckCircle size={18} />
+                        <span className="text-sm font-medium">Tersimpan!</span>
+                    </div>
+                )}
+                <button
+                    onClick={handleSave}
+                    disabled={isSaving}
+                    className="flex items-center gap-2 px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-medium shadow-lg transition-colors disabled:opacity-70"
+                >
+                    {isSaving ? (
+                        <>
+                            <Loader2 size={18} className="animate-spin" />
+                            Menyimpan...
+                        </>
+                    ) : (
+                        <>
+                            <Save size={18} />
+                            Simpan Pengaturan
+                        </>
+                    )}
+                </button>
+            </div>
         </div>
+
+        </div >
     );
 }
