@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import {
     Settings, Camera, Bell, Shield, Database, Save, RefreshCw,
     Send, CheckCircle, XCircle, Loader2, MessageSquare, Mail,
-    Smartphone, Volume2, Clock, Wifi,
+    Smartphone, Volume2, Clock, Wifi, Plus, Cpu, Power, Video, Webcam, Trash2, Edit, Edit2, ExternalLink,
     HardDrive, Activity, Eye, Focus, Maximize, AlertCircle, Signal, Map, List
 } from "lucide-react";
 
