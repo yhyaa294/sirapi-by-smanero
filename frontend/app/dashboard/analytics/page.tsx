@@ -241,8 +241,12 @@ export default function AnalyticsPage() {
 
 
 
-    // Export CSV with proper Excel formatting
-    const handleExportCSV = async () => {
+    // Export XLSX with professional styling
+    const handleExportXLSX = async () => {
+        // Dynamic import to avoid SSR issues
+        const ExcelJS = (await import('exceljs')).default;
+        const { saveAs } = await import('file-saver');
+
         // Fetch fresh data if needed
         let exportData = detections;
         if (detections.length === 0) {
@@ -259,63 +263,103 @@ export default function AnalyticsPage() {
             return;
         }
 
-        // BOM for Excel UTF-8 support
-        const BOM = '\uFEFF';
+        const workbook = new ExcelJS.Workbook();
+        workbook.creator = 'SmartAPD';
+        workbook.created = new Date();
 
-        // Summary section
+        const worksheet = workbook.addWorksheet('Laporan Deteksi', {
+            properties: { tabColor: { argb: 'FF7C3AED' } }
+        });
+
+        // Column definitions
+        worksheet.columns = [
+            { header: 'No', key: 'no', width: 6 },
+            { header: 'ID Deteksi', key: 'id', width: 12 },
+            { header: 'Waktu Deteksi', key: 'time', width: 22 },
+            { header: 'Kamera', key: 'camera', width: 15 },
+            { header: 'Lokasi', key: 'location', width: 20 },
+            { header: 'Jenis Pelanggaran', key: 'violation', width: 20 },
+            { header: 'Confidence', key: 'confidence', width: 12 },
+            { header: 'Status', key: 'status', width: 15 },
+        ];
+
+        // Title Row (merged)
+        worksheet.insertRow(1, []);
+        worksheet.mergeCells('A1:H1');
+        const titleCell = worksheet.getCell('A1');
+        titleCell.value = 'SMARTAPD - LAPORAN DETEKSI PPE';
+        titleCell.font = { bold: true, size: 18, color: { argb: 'FFFFFFFF' } };
+        titleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF97316' } }; // Orange
+        titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+        worksheet.getRow(1).height = 35;
+
+        // Info rows
         const now = new Date();
         const violations = exportData.filter(d => d.is_violation).length;
-        const summary = [
-            ['SMARTAPD - LAPORAN DETEKSI'],
-            ['Tanggal Export', now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })],
-            ['Waktu Export', now.toLocaleTimeString('id-ID')],
-            ['Total Deteksi', exportData.length.toString()],
-            ['Total Pelanggaran', violations.toString()],
-            ['Compliance Rate', `${((1 - violations / exportData.length) * 100).toFixed(1)}%`],
-            [''],
+        const infoData = [
+            ['Tanggal Export:', now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })],
+            ['Total Deteksi:', exportData.length],
+            ['Total Pelanggaran:', violations],
+            ['Compliance Rate:', `${((1 - violations / exportData.length) * 100).toFixed(1)}%`],
         ];
 
-        // Headers with proper naming
-        const headers = [
-            'No',
-            'ID Deteksi',
-            'Waktu Deteksi',
-            'Kamera',
-            'Lokasi',
-            'Jenis Pelanggaran',
-            'Confidence (%)',
-            'Status',
-            'Image Path'
-        ];
+        infoData.forEach((info, idx) => {
+            worksheet.insertRow(2 + idx, []);
+            worksheet.getCell(`A${2 + idx}`).value = info[0];
+            worksheet.getCell(`A${2 + idx}`).font = { bold: true };
+            worksheet.getCell(`B${2 + idx}`).value = info[1];
+        });
 
-        // Data rows with formatting
-        const rows = exportData.map((d, idx) => [
-            (idx + 1).toString(),
-            d.id?.toString() || '',
-            new Date(d.detected_at || d.created_at).toLocaleString('id-ID'),
-            d.camera_id ? `Kamera ${d.camera_id}` : '-',
-            d.location || '-',
-            d.violation_type?.replace(/_/g, ' ').toUpperCase() || '-',
-            d.confidence ? `${(d.confidence * 100).toFixed(1)}` : '-',
-            d.is_violation ? 'PELANGGARAN' : 'AMAN',
-            d.image_path || '-'
-        ]);
+        // Empty row
+        worksheet.insertRow(6, []);
 
-        // Combine all with proper CSV formatting
-        const csvLines = [
-            ...summary.map(row => row.join(',')),
-            headers.join(','),
-            ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
-        ];
+        // Header row styling (now row 7)
+        const headerRow = worksheet.getRow(7);
+        worksheet.getRow(7).values = ['No', 'ID Deteksi', 'Waktu Deteksi', 'Kamera', 'Lokasi', 'Jenis Pelanggaran', 'Confidence', 'Status'];
+        headerRow.eachCell((cell) => {
+            cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E293B' } }; // Dark slate
+            cell.alignment = { horizontal: 'center', vertical: 'middle' };
+            cell.border = { bottom: { style: 'medium', color: { argb: 'FFF97316' } } };
+        });
+        headerRow.height = 25;
 
-        const csvContent = BOM + csvLines.join('\r\n');
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `SmartAPD_Laporan_${now.toISOString().split('T')[0]}.csv`;
-        a.click();
-        URL.revokeObjectURL(url);
+        // Data rows
+        exportData.forEach((d, idx) => {
+            const rowNum = 8 + idx;
+            const row = worksheet.addRow({
+                no: idx + 1,
+                id: d.id,
+                time: new Date(d.detected_at || d.created_at).toLocaleString('id-ID'),
+                camera: d.camera_id ? `Kamera ${d.camera_id}` : '-',
+                location: d.location || '-',
+                violation: d.violation_type?.replace(/_/g, ' ').toUpperCase() || '-',
+                confidence: d.confidence ? `${(d.confidence * 100).toFixed(1)}%` : '-',
+                status: d.is_violation ? 'PELANGGARAN' : 'AMAN',
+            });
+
+            // Zebra striping
+            const bgColor = idx % 2 === 0 ? 'FFF8FAFC' : 'FFFFFFFF'; // Light gray / white
+            row.eachCell((cell) => {
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgColor } };
+                cell.border = { bottom: { style: 'thin', color: { argb: 'FFE2E8F0' } } };
+            });
+
+            // Status cell coloring
+            const statusCell = row.getCell('status');
+            if (d.is_violation) {
+                statusCell.font = { bold: true, color: { argb: 'FFDC2626' } }; // Red
+                statusCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEE2E2' } }; // Light red
+            } else {
+                statusCell.font = { bold: true, color: { argb: 'FF16A34A' } }; // Green
+                statusCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDCFCE7' } }; // Light green
+            }
+        });
+
+        // Generate and download
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        saveAs(blob, `SmartAPD_Laporan_${now.toISOString().split('T')[0]}.xlsx`);
         setShowDownloadMenu(false);
     };
 
@@ -589,11 +633,11 @@ export default function AnalyticsPage() {
                                 <p className="text-xs text-slate-500">Last 30 days</p>
                             </div>
                         </button>
-                        <button onClick={handleExportCSV} className="p-3 bg-slate-800 hover:bg-slate-700 rounded-xl flex items-center gap-3 transition-colors text-left group">
+                        <button onClick={handleExportXLSX} className="p-3 bg-slate-800 hover:bg-slate-700 rounded-xl flex items-center gap-3 transition-colors text-left group">
                             <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-500 group-hover:text-white group-hover:bg-emerald-500 transition-colors"><FileSpreadsheet size={18} /></div>
                             <div>
-                                <p className="text-white font-bold text-sm">CSV Data</p>
-                                <p className="text-xs text-slate-500">Raw Data</p>
+                                <p className="text-white font-bold text-sm">Excel Data</p>
+                                <p className="text-xs text-slate-500">Styled XLSX</p>
                             </div>
                         </button>
                     </div>
