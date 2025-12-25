@@ -126,24 +126,26 @@ export default function UnifiedAlertsPage() {
   useEffect(() => {
     if (!isDemo) {
       api.getDetections(50).then(detections => {
-        if (detections.length > 0) {
-          const backendIncidents: Incident[] = detections.map((det: any, idx: number) => ({
-            id: det.id,
-            timestamp: new Date(det.timestamp),
-            type: det.type.toLowerCase().replace(" ", "_") as Incident["type"],
-            severity: det.severity === "BAHAYA" ? "critical" : det.severity === "PERINGATAN" ? "high" : "medium",
-            location: `Camera ${det.cameraId}`,
-            cameraId: det.cameraId,
-            description: `Detection: ${det.type}`,
-            status: det.acknowledged ? "resolved" : "open",
-            read: det.acknowledged,
-            confidence: 90,
-            imageUrl: det.imageUrl ? (det.imageUrl.startsWith('http') ? det.imageUrl : `http://localhost:8000/${det.imageUrl}`) : undefined,
-          }));
-          setIncidents(prev => prev.length === 0 ? backendIncidents : prev);
+        if (detections && detections.length > 0) {
+          const backendIncidents: Incident[] = detections
+            .filter((det: any) => det.is_violation) // Only show violations
+            .map((det: any, idx: number) => ({
+              id: String(det.id),
+              timestamp: new Date(det.detected_at || det.created_at),
+              type: (det.violation_type || 'no_helmet').toLowerCase().replace(' ', '_') as Incident["type"],
+              severity: det.priority === 1 ? 'critical' : det.priority === 2 ? 'high' : 'medium',
+              location: det.location || `Kamera ${det.camera_id}`,
+              cameraId: String(det.camera_id),
+              description: `AI Detection: ${(det.violation_type || 'Unknown').replace(/_/g, ' ')}. Confidence: ${((det.confidence || 0) * 100).toFixed(1)}%`,
+              status: det.review_status === 'accepted' ? 'resolved' : det.review_status === 'rejected' ? 'resolved' : 'open',
+              read: det.review_status !== 'pending',
+              confidence: (det.confidence || 0) * 100,
+              imageUrl: det.image_path ? (det.image_path.startsWith('http') ? det.image_path : `http://localhost:8000/${det.image_path}`) : undefined,
+            }));
+          setIncidents(backendIncidents);
         }
-      }).catch(() => {
-        console.log("Backend not available for alerts");
+      }).catch((err) => {
+        console.log("Backend not available for alerts:", err);
       });
     }
   }, [isDemo]);
