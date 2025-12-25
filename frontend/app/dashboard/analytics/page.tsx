@@ -81,6 +81,7 @@ export default function AnalyticsPage() {
     const [zoneStats, setZoneStats] = useState<ZoneStat[]>([]);
     const [teamStats, setTeamStats] = useState<TeamStat[]>([]);
     const [cameraCount, setCameraCount] = useState(0);
+    const [riskCurveData, setRiskCurveData] = useState<{ hour: string; risk: number; activity: number }[]>([]);
 
     // Fetch real data from API and AI Engine (Optimized Parallel Fetch)
     const fetchData = async () => {
@@ -207,6 +208,22 @@ export default function AnalyticsPage() {
             setTrendData(trend.length > 0 ? trend : [
                 { time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }), score: aiStatsResult?.compliance_rate || 100 }
             ]);
+
+            // Calculate Risk Curve from real detection data
+            const riskCurve = Array.from({ length: 24 }, (_, i) => {
+                const hourKey = `${i.toString().padStart(2, '0')}:00`;
+                const hourData = hourlyCompliance[hourKey];
+                const totalDetections = hourData?.total || 0;
+                const violations = hourData?.violations || 0;
+
+                // Risk = % of violations (0-100)
+                const risk = totalDetections > 0 ? Math.round((violations / totalDetections) * 100) : 0;
+                // Activity = detection count normalized to 0-100
+                const activity = Math.min(100, totalDetections * 10);
+
+                return { hour: hourKey, risk, activity };
+            });
+            setRiskCurveData(riskCurve);
 
             setLastUpdate(new Date());
         } catch (error) {
@@ -458,11 +475,7 @@ export default function AnalyticsPage() {
 
                     <div className="h-[250px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={Array.from({ length: 24 }, (_, i) => ({
-                                hour: `${i.toString().padStart(2, '0')}:00`,
-                                risk: (i > 8 && i < 17) ? 40 + Math.random() * 40 : 10 + Math.random() * 20, // Higher risk during work hours
-                                activity: (i > 7 && i < 18) ? 60 + Math.random() * 40 : 20 + Math.random() * 20
-                            }))}>
+                            <AreaChart data={riskCurveData.length > 0 ? riskCurveData : Array.from({ length: 24 }, (_, i) => ({ hour: `${i.toString().padStart(2, '0')}:00`, risk: 0, activity: 0 }))}>
                                 <defs>
                                     <linearGradient id="colorRisk" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />
