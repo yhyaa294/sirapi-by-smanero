@@ -75,6 +75,9 @@ import { api, Camera as ApiCamera } from "@/services/api";
 
 import { useSearchParams, useRouter } from "next/navigation";
 
+// Telegram Settings Component
+import TelegramSettings from "./components/TelegramSettings";
+
 function CameraSettingsTab() {
     const [cameras, setCameras] = useState<ApiCamera[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -679,6 +682,7 @@ export default function SettingsPage() {
 
     const tabs = [
         { id: "notification", label: "Notifikasi", icon: Bell },
+        { id: "telegram", label: "Telegram", icon: MessageSquare },
         { id: "camera", label: "Kamera", icon: Camera },
         { id: "security", label: "Keamanan", icon: Shield },
         { id: "system", label: "Sistem", icon: Database },
@@ -1060,6 +1064,11 @@ export default function SettingsPage() {
                             </div>
                         </div>
                     </div>
+                )}
+
+
+                {activeTab === "telegram" && (
+                    <TelegramSettings />
                 )}
 
                 {activeTab === "camera" && (
