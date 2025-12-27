@@ -70,6 +70,17 @@ func (h *DetectionHandler) CreateDetection(c *fiber.Ctx) error {
 		return c.Status(400).JSON(fiber.Map{"error": "Invalid request body"})
 	}
 
+	// SECURITY: Input Validation
+	if detection.CameraID == 0 {
+		return c.Status(400).JSON(fiber.Map{"error": "Invalid camera_id"})
+	}
+	if detection.Confidence < 0 || detection.Confidence > 1 {
+		return c.Status(400).JSON(fiber.Map{"error": "Confidence must be between 0 and 1"})
+	}
+	if detection.ViolationType == "" {
+		return c.Status(400).JSON(fiber.Map{"error": "Violation type is required"})
+	}
+
 	detection.DetectedAt = time.Now()
 
 	// Use service to process detection (handles alerts, stats, db save)
@@ -120,5 +131,28 @@ func (h *DetectionHandler) GetDetectionStats(c *fiber.Ctx) error {
 			ComplianceRate:  complianceRate,
 			ByViolationType: byType,
 		},
+	})
+}
+
+// DeleteDetection deletes a detection record by ID
+func (h *DetectionHandler) DeleteDetection(c *fiber.Ctx) error {
+	id := c.Params("id")
+	db := database.GetDB()
+
+	var detection models.Detection
+	// Check if exists first
+	if err := db.First(&detection, id).Error; err != nil {
+		return c.Status(404).JSON(fiber.Map{"error": "Detection not found"})
+	}
+
+	// Delete record
+	if err := db.Delete(&detection).Error; err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "Failed to delete detection"})
+	}
+
+	return c.JSON(fiber.Map{
+		"success": true,
+		"message": "Detection deleted successfully",
+		"id":      id,
 	})
 }

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/jung-kurt/gofpdf"
 	"github.com/smartapd/backend/internal/database"
 	"github.com/smartapd/backend/internal/models"
 )
@@ -129,14 +130,133 @@ func GetWeeklyReport(c *fiber.Ctx) error {
 	})
 }
 
-// ExportReport exports report data (placeholder)
+// ExportReport exports report data
 func ExportReport(c *fiber.Ctx) error {
-	format := c.Query("format", "json")
+	format := c.Params("format")
+	db := database.GetDB()
 
-	// For now, just return JSON
-	// TODO: Add CSV/PDF export
+	// Get last 7 days data
+	endDate := time.Now()
+	startDate := endDate.AddDate(0, 0, -7)
+	var detections []models.Detection
+	db.Where("detected_at >= ? AND is_violation = ?", startDate, true).Order("detected_at DESC").Find(&detections)
+
+	if format == "excel" || format == "csv" {
+		// Generate CSV content
+		csvContent := "Time,Type,Location,Confidence\n"
+		for _, d := range detections {
+			csvContent += fmt.Sprintf("%s,%s,%s,%.2f\n",
+				d.DetectedAt.Format("2006-01-02 15:04:05"),
+				d.ViolationType,
+				d.Location,
+				d.Confidence,
+			)
+		}
+
+		c.Set("Content-Type", "text/csv")
+		c.Set("Content-Disposition", "attachment; filename=report_pelanggaran.csv")
+		return c.SendString(csvContent)
+
+	} else if format == "pdf" {
+		pdf := gofpdf.New("P", "mm", "A4", "")
+		pdf.AddPage()
+
+		// 1. Header & Title
+		pdf.SetFont("Helvetica", "B", 20)
+		pdf.CellFormat(190, 15, "Laporan Pelanggaran K3 - SmartAPD", "", 1, "C", false, 0, "")
+
+		pdf.SetFont("Helvetica", "I", 10)
+		pdf.CellFormat(190, 8, fmt.Sprintf("Periode: %s s/d %s", startDate.Format("02 Jan 2006"), endDate.Format("02 Jan 2006")), "B", 1, "C", false, 0, "")
+		pdf.Ln(5)
+
+		// 2. Statistics Summary
+		pdf.SetFont("Helvetica", "B", 12)
+		pdf.Cell(0, 10, "Ringkasan Statistik")
+		pdf.Ln(8)
+
+		pdf.SetFont("Helvetica", "", 10)
+		pdf.CellFormat(90, 8, fmt.Sprintf("Total Pelanggaran: %d", len(detections)), "", 0, "", false, 0, "")
+		pdf.CellFormat(90, 8, fmt.Sprintf("Dicetak Pada: %s", time.Now().Format("02 Jan 2006 15:04")), "", 1, "", false, 0, "")
+		pdf.Ln(10)
+
+		// 3. Violation List Loop
+		pdf.SetFont("Helvetica", "B", 12)
+		pdf.Cell(0, 10, "Daftar Insiden Terperinci")
+		pdf.Ln(10)
+
+		pdf.SetFont("Helvetica", "", 10)
+
+		// Define Base Path for Images (Assuming backend is running in 'backend' dir and ai-engine is sibling)
+		// Need to adjust this based on actual deployment.
+		// For verification: 'd:/PROJECT PROJECT KU/smartapd/ai-engine'
+		// We can try to use relative path first.
+		basePath := "../ai-engine"
+
+		for i, d := range detections {
+			// Card Container
+			yStart := pdf.GetY()
+
+			// Check page break
+			if yStart > 240 {
+				pdf.AddPage()
+				yStart = pdf.GetY()
+			}
+
+			// A. Text Details (Left Side - 60%)
+			pdf.SetFont("Helvetica", "B", 10)
+			pdf.CellFormat(110, 6, fmt.Sprintf("#%d - %s", i+1, d.ViolationType), "", 1, "", false, 0, "")
+
+			pdf.SetFont("Helvetica", "", 9)
+			pdf.CellFormat(30, 6, "Waktu", "", 0, "", false, 0, "")
+			pdf.CellFormat(80, 6, ": "+d.DetectedAt.Format("Monday, 02 Jan 2006 15:04:05"), "", 1, "", false, 0, "")
+
+			pdf.CellFormat(30, 6, "Lokasi", "", 0, "", false, 0, "")
+			pdf.CellFormat(80, 6, ": "+d.Location, "", 1, "", false, 0, "")
+
+			pdf.CellFormat(30, 6, "Akurasi AI", "", 0, "", false, 0, "")
+			pdf.CellFormat(80, 6, fmt.Sprintf(": %.1f%%", d.Confidence*100), "", 1, "", false, 0, "")
+
+			// B. Image Evidence (Right Side - 40%)
+			if d.ImagePath != "" {
+				// Clean path: /data/screenshots/x.jpg -> data/screenshots/x.jpg
+				cleanPath := d.ImagePath
+				if cleanPath[0] == '/' || cleanPath[0] == '\\' {
+					cleanPath = cleanPath[1:]
+				}
+
+				fullPath := fmt.Sprintf("%s/%s", basePath, cleanPath)
+
+				// Try to add image
+				// x=130 (left margin 10 + 120), y=yStart, w=60, h=45 (4:3 aspect)
+				// We use ImageOptions to fail gracefully if not found
+				opt := gofpdf.ImageOptions{
+					ImageType: "JPG",
+					ReadDpi:   true,
+				}
+				pdf.ImageOptions(fullPath, 130, yStart, 60, 0, false, opt, 0, "")
+			} else {
+				// No Image Placeholder
+				pdf.Rect(130, yStart, 60, 40, "D")
+				pdf.Text(145, yStart+20, "No Image Evidence")
+			}
+
+			// Separator Line
+			pdf.SetDrawColor(200, 200, 200)
+			pdf.Line(10, yStart+45, 200, yStart+45)
+			pdf.SetDrawColor(0, 0, 0) // Reset
+
+			// Move cursor for next item
+			pdf.SetY(yStart + 50)
+		}
+
+		c.Set("Content-Type", "application/pdf")
+		c.Set("Content-Disposition", "attachment; filename=report_pelanggaran_k3.pdf")
+
+		return pdf.Output(c.Response().BodyWriter())
+	}
+
 	return c.JSON(fiber.Map{
 		"success": true,
-		"message": fmt.Sprintf("Export in %s format - Coming soon", format),
+		"message": fmt.Sprintf("Format %s not supported", format),
 	})
 }

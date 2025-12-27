@@ -1,7 +1,6 @@
 package services
 
 import (
-	"log"
 	"sync"
 	"time"
 
@@ -93,19 +92,22 @@ func (s *DetectionService) ProcessNewDetection(detection *models.Detection) erro
 	s.mu.Unlock()
 
 	// Send Telegram alert for violations
-	if detection.IsViolation && s.telegram != nil {
-		go func() {
-			err := s.telegram.SendViolationAlert(
-				detection.ViolationType,
-				detection.Location,
-				detection.Confidence,
-				detection.ImagePath,
-			)
-			if err != nil {
-				log.Printf("Failed to send Telegram alert: %v", err)
-			}
-		}()
-	}
+	// NOTE: Disabled to prevent double notifications (AI Engine already sends alerts with photos)
+	/*
+		if detection.IsViolation && s.telegram != nil {
+			go func() {
+				err := s.telegram.SendViolationAlert(
+					detection.ViolationType,
+					detection.Location,
+					detection.Confidence,
+					detection.ImagePath,
+				)
+				if err != nil {
+					log.Printf("Failed to send Telegram alert: %v", err)
+				}
+			}()
+		}
+	*/
 
 	// Create alert record
 	if detection.IsViolation {

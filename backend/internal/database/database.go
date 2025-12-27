@@ -1,8 +1,10 @@
+```go
 package database
 
 import (
 	"log"
 	"strings"
+	"time"
 
 	"github.com/glebarez/sqlite"
 	"gorm.io/driver/postgres"
@@ -31,7 +33,20 @@ func Connect(databaseURL string) error {
 		return err
 	}
 
-	log.Println("✅ Database connected successfully")
+	// Configure connection pool
+	sqlDB, err := DB.DB()
+	if err != nil {
+		return err
+	}
+
+	// SetMaxIdleConns sets the maximum number of connections in the idle connection pool.
+	sqlDB.SetMaxIdleConns(10)
+	// SetMaxOpenConns sets the maximum number of open connections to the database.
+	sqlDB.SetMaxOpenConns(100)
+	// SetConnMaxLifetime sets the maximum amount of time a connection may be reused.
+	sqlDB.SetConnMaxLifetime(time.Hour)
+
+	log.Println("✅ Database connected successfully (Pool: 10/100)")
 
 	// Auto migrate models
 	if err := DB.AutoMigrate(

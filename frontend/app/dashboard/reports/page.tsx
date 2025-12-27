@@ -153,10 +153,16 @@ export default function ReportsPage() {
               </div>
 
               <div className="mt-auto pt-6 flex gap-2">
-                <button className="flex-1 py-3 bg-red-500 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-red-600 transition">
+                <button
+                  onClick={() => window.open(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1'}/reports/export/pdf`, '_blank')}
+                  className="flex-1 py-3 bg-red-500 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-red-600 transition"
+                >
                   <FileText size={16} /> PDF
                 </button>
-                <button className="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-emerald-600 transition">
+                <button
+                  onClick={() => window.open(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1'}/reports/export/excel`, '_blank')}
+                  className="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-emerald-600 transition"
+                >
                   <FileSpreadsheet size={16} /> Excel
                 </button>
               </div>

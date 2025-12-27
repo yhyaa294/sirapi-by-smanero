@@ -120,7 +120,7 @@ export default function AnalyticsPage() {
                     { name: "No boots", count: aiStatsResult.no_boots || 0 },
                 ].filter((v: any) => v.count > 0).sort((a: any, b: any) => b.count - a.count));
             } else {
-                console.log('AI Engine not available, falling back to backend');
+                // console.log('AI Engine not available, falling back to backend');
                 const statsData = await api.getDetectionStats();
                 setStats(statsData);
             }
@@ -256,7 +256,7 @@ export default function AnalyticsPage() {
 
     useEffect(() => {
         fetchData();
-        const interval = setInterval(fetchData, 5000); // Faster update for "Live" feel
+        const interval = setInterval(fetchData, 15000); // Optimized to 15s to reduce server load
         return () => clearInterval(interval);
     }, []);
 
@@ -553,7 +553,10 @@ export default function AnalyticsPage() {
                                 <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
                                 <XAxis dataKey="time" stroke="#64748b" fontSize={12} />
                                 <YAxis stroke="#64748b" fontSize={12} domain={[0, 100]} />
-                                <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', color: '#fff' }} />
+                                <Tooltip
+                                    contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', color: '#fff', borderRadius: '12px' }}
+                                    wrapperStyle={{ outline: 'none', zIndex: 100 }}
+                                />
                                 <Area type="monotone" dataKey="score" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorScore)" />
                             </AreaChart>
                         </ResponsiveContainer>
@@ -616,8 +619,10 @@ export default function AnalyticsPage() {
                                 <XAxis dataKey="hour" stroke="#64748b" fontSize={10} interval={2} />
                                 <YAxis stroke="#64748b" fontSize={10} />
                                 <Tooltip
-                                    contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', color: '#fff' }}
+                                    contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', color: '#fff', borderRadius: '12px' }}
                                     itemStyle={{ fontSize: 12 }}
+                                    cursor={{ stroke: '#334155', strokeWidth: 1 }}
+                                    wrapperStyle={{ outline: 'none', zIndex: 100 }}
                                 />
                                 <Area type="monotone" dataKey="risk" name="Risk Level" stroke="#ef4444" strokeWidth={3} fillOpacity={1} fill="url(#colorRisk)" />
                                 <Area type="monotone" dataKey="activity" name="Activity" stroke="#3b82f6" strokeWidth={2} fillOpacity={1} fill="url(#colorActivity)" strokeDasharray="5 5" />

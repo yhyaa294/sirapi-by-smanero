@@ -51,12 +51,32 @@ const formatDateTime = (value: string) => {
   return parsed.toLocaleString("id-ID", { hour12: false });
 };
 
-const formatCountdown = (value?: number) => {
-  if (value === undefined || value === null) return "-";
-  if (value <= 0) return "Menunggu eskalasi";
-  const minutes = Math.floor(value / 60);
-  const seconds = Math.max(0, value % 60);
-  return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+const CountdownTimer = ({ seconds, onExpire }: { seconds: number, onExpire?: () => void }) => {
+  const [timeLeft, setTimeLeft] = useState(seconds);
+
+  useEffect(() => {
+    if (timeLeft <= 0) {
+      onExpire?.();
+      return;
+    }
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          onExpire?.();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [timeLeft, onExpire]);
+
+  if (timeLeft <= 0) return <span>Menunggu eskalasi</span>;
+
+  const m = Math.floor(timeLeft / 60);
+  const s = timeLeft % 60;
+  return <span>{m.toString().padStart(2, "0")}:{s.toString().padStart(2, "0")}</span>;
 };
 
 const AlertsWorkflow = () => {
@@ -73,7 +93,6 @@ const AlertsWorkflow = () => {
   const [resolutionEvidence, setResolutionEvidence] = useState<Record<number, EvidencePayload | undefined>>({});
   const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [countdowns, setCountdowns] = useState<Record<number, number>>({});
   const [autoTriggered, setAutoTriggered] = useState<number[]>([]);
 
   const fetchAlerts = useCallback(async () => {
@@ -130,42 +149,7 @@ const AlertsWorkflow = () => {
     [fetchActions, fetchAlerts],
   );
 
-  useEffect(() => {
-    if (alerts.length === 0) {
-      setSelectedId(null);
-      setCountdowns({});
-      return;
-    }
-
-    const timer = window.setInterval(() => {
-      const triggeredSet = new Set(autoTriggered);
-      const nextCountdowns: Record<number, number> = {};
-      const readyToEscalate: WorkflowAlert[] = [];
-
-      alerts.forEach((alert) => {
-        if (alert.status === "resolved") return;
-        const config = AUTO_ESCALATION_CONFIG[alert.severity];
-        if (!config.seconds) return;
-        const parsed = new Date(alert.time);
-        if (Number.isNaN(parsed.getTime())) return;
-        const elapsed = (Date.now() - parsed.getTime()) / 1000;
-        const remaining = Math.ceil(config.seconds - elapsed);
-        nextCountdowns[alert.id] = remaining <= 0 ? 0 : remaining;
-        if (remaining <= 0 && !triggeredSet.has(alert.id)) {
-          readyToEscalate.push(alert);
-        }
-      });
-
-      setCountdowns(nextCountdowns);
-      if (readyToEscalate.length > 0) {
-        readyToEscalate.forEach((alert) => {
-          triggerAutoEscalation(alert);
-        });
-      }
-    }, 1000);
-
-    return () => window.clearInterval(timer);
-  }, [alerts, autoTriggered, triggerAutoEscalation]);
+  // Countdown logic moved to CountdownTimer component
 
   const filteredAlerts = useMemo(() => {
     return alerts.filter((alert) => {
@@ -268,7 +252,7 @@ const AlertsWorkflow = () => {
 
   const selectedAlert = filteredAlerts.find((alert) => alert.id === selectedId) ?? null;
   const selectedTimeline = selectedAlert ? actionsByAlert[selectedAlert.id] ?? [] : [];
-  const countdownValue = selectedAlert ? countdowns[selectedAlert.id] : undefined;
+  // const countdownValue = selectedAlert ? countdowns[selectedAlert.id] : undefined; // Removed unused
   const autoConfig = selectedAlert ? AUTO_ESCALATION_CONFIG[selectedAlert.severity] : undefined;
   const autoActive = Boolean(selectedAlert && autoConfig?.seconds && selectedAlert.status === "unresolved");
 
@@ -363,35 +347,31 @@ const AlertsWorkflow = () => {
           ) : (
             <div className="divide-y divide-gray-100">
               {filteredAlerts.map((alert) => {
-                const thisCountdown = countdowns[alert.id];
                 const config = AUTO_ESCALATION_CONFIG[alert.severity];
                 return (
                   <button
                     key={alert.id}
                     type="button"
                     onClick={() => setSelectedId(alert.id)}
-                    className={`flex w-full flex-col gap-3 px-6 py-5 text-left transition hover:bg-orange-50/40 ${
-                      selectedId === alert.id ? "bg-orange-50/60" : "bg-white"
-                    }`}
+                    className={`flex w-full flex-col gap-3 px-6 py-5 text-left transition hover:bg-orange-50/40 ${selectedId === alert.id ? "bg-orange-50/60" : "bg-white"
+                      }`}
                   >
                     <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
                       <span
-                        className={`rounded-full border px-3 py-1 ${
-                          alert.severity === "high"
-                            ? "border-red-200 bg-red-100 text-red-700"
-                            : alert.severity === "medium"
+                        className={`rounded-full border px-3 py-1 ${alert.severity === "high"
+                          ? "border-red-200 bg-red-100 text-red-700"
+                          : alert.severity === "medium"
                             ? "border-orange-200 bg-orange-100 text-orange-700"
                             : "border-yellow-200 bg-yellow-100 text-yellow-700"
-                        }`}
+                          }`}
                       >
                         {alert.severity.toUpperCase()}
                       </span>
                       <span
-                        className={`rounded-full border px-3 py-1 ${
-                          alert.status === "resolved"
-                            ? "border-green-200 bg-green-100 text-green-700"
-                            : "border-red-200 bg-red-50 text-red-700"
-                        }`}
+                        className={`rounded-full border px-3 py-1 ${alert.status === "resolved"
+                          ? "border-green-200 bg-green-100 text-green-700"
+                          : "border-red-200 bg-red-50 text-red-700"
+                          }`}
                       >
                         {alert.status.toUpperCase()}
                       </span>
@@ -417,7 +397,14 @@ const AlertsWorkflow = () => {
                           <Timer className="h-3.5 w-3.5" />
                           Auto escalation ({config.label})
                         </div>
-                        <span className="font-semibold">{formatCountdown(thisCountdown)}</span>
+                        <span className="font-semibold">
+                          {(() => {
+                            const parsed = new Date(alert.time);
+                            const elapsed = (Date.now() - parsed.getTime()) / 1000;
+                            const remaining = Math.max(0, Math.ceil((config.seconds || 0) - elapsed));
+                            return <CountdownTimer seconds={remaining} onExpire={() => triggerAutoEscalation(alert)} />;
+                          })()}
+                        </span>
                       </div>
                     )}
                   </button>
@@ -434,11 +421,10 @@ const AlertsWorkflow = () => {
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-semibold text-gray-900">Detail Alert</h3>
                   <span
-                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                      selectedAlert.status === "resolved"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-red-100 text-red-700"
-                    }`}
+                    className={`rounded-full px-3 py-1 text-xs font-semibold ${selectedAlert.status === "resolved"
+                      ? "bg-green-100 text-green-700"
+                      : "bg-red-100 text-red-700"
+                      }`}
                   >
                     {selectedAlert.status.toUpperCase()}
                   </span>
@@ -476,7 +462,18 @@ const AlertsWorkflow = () => {
                   <span className="font-semibold flex items-center gap-2">
                     <Timer className="h-4 w-4" /> Auto Escalation Countdown
                   </span>
-                  <span className="font-semibold">{autoActive ? formatCountdown(countdownValue) : "Tidak aktif"}</span>
+                  <span className="font-semibold">
+                    {autoActive ? (
+                      (() => {
+                        const parsed = new Date(selectedAlert.time);
+                        const elapsed = (Date.now() - parsed.getTime()) / 1000;
+                        const remaining = Math.max(0, Math.ceil((autoConfig?.seconds || 0) - elapsed));
+                        return <CountdownTimer seconds={remaining} onExpire={() => { /* Trigger auto escalation if needed, or rely on other triggers */ }} />;
+                      })()
+                    ) : (
+                      "Tidak aktif"
+                    )}
+                  </span>
                 </div>
                 {autoActive ? (
                   <p className="mt-2 text-xs text-orange-600">
@@ -510,7 +507,7 @@ const AlertsWorkflow = () => {
                             <a
                               href={item.evidence}
                               target="_blank"
-                              rel="noreferrer"
+                              rel="noopener noreferrer"
                               className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-orange-600 hover:underline"
                             >
                               <ExternalLink className="h-3 w-3" /> Lihat bukti

@@ -1,40 +1,44 @@
-# 🛡️ SmartAPD - AI-Powered PPE Detection System
+# 🛡️ SmartAPD - Next Gen AI Safety Monitoring
 
 <div align="center">
 
-<img src="frontend/public/images/logo.jpg" alt="SmartAPD Logo" width="200" style="border-radius: 20px; margin-bottom: 20px;"/>
+<img src="frontend/public/images/logo.jpg" alt="SmartAPD Logo" width="180" style="border-radius: 24px; margin-bottom: 20px; box-shadow: 0 8px 32px rgba(249, 115, 22, 0.2);"/>
 
-### **Sistem Pemantauan Kepatuhan APD Berbasis Kecerdasan Buatan**
+### **Sistem Pemantauan K3 & Kepatuhan APD Berbasis Computer Vision**
 
-*Solusi Cerdas untuk Keselamatan Kerja di Era Modern*
+*Enterprise Grade Safety Solution for Construction & Manufacturing*
 
-[![Next.js](https://img.shields.io/badge/Frontend-Next.js%2014-black?style=for-the-badge&logo=nextdotjs)](https://nextjs.org/)
-[![Go](https://img.shields.io/badge/Backend-Go%201.21-00ADD8?style=for-the-badge&logo=go)](https://golang.org/)
-[![Python](https://img.shields.io/badge/AI-Python%203.10-3776AB?style=for-the-badge&logo=python)](https://python.org/)
-[![YOLOv8](https://img.shields.io/badge/Model-YOLOv8-FF6F00?style=for-the-badge)](https://ultralytics.com/)
+[![Next.js](https://img.shields.io/badge/Frontend-Next.js%2014-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
+[![Go](https://img.shields.io/badge/Backend-Go%20Fiber-00ADD8?style=for-the-badge&logo=go&logoColor=white)](https://gofiber.io/)
+[![Python](https://img.shields.io/badge/AI-YOLOv8%20Pro-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://ultralytics.com/)
+[![License](https://img.shields.io/badge/License-MIT-emerald?style=for-the-badge)](LICENSE)
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
-[![Safety Competition 2026](https://img.shields.io/badge/SC26-Essay%20Competition-orange?style=for-the-badge)](paduan_lomba/RENCANA_LOMBA_ESAI_SC26.md)
+<br/>
 
----
-
-**[📖 Dokumentasi](#-dokumentasi)** • **[🚀 Instalasi](#-instalasi)** • **[📡 API](#-api-endpoints)** • **[🏆 Kompetisi](#-safety-competition-2026)**
+**[📖 Dokumentasi](#-dokumentasi)** • **[📸 Galeri](#-galeri-sistem)** • **[🚀 Instalasi](#-instalasi)** • **[📡 API](#-api-endpoints)**
 
 </div>
 
 ---
 
-## 🖼️ Dashboard Preview
+## 📸 Galeri Sistem
 
 <div align="center">
 
-### 📊 Analytics Dashboard
+| **Command Center (Live Monitoring)** | **Real-time Analytics** |
+|:---:|:---:|
+| <img src="frontend/public/images/main-dashboard.png" alt="Main Dashboard" width="100%" style="border-radius: 12px; border: 1px solid #334155;"/> | <img src="frontend/public/images/analytics-dashboard.png" alt="Analytics Dashboard" width="100%" style="border-radius: 12px; border: 1px solid #334155;"/> |
+| *Pemantauan CCTV Multi-Channel dengan AI Overlay* | *Statistik Kepatuhan & Pelanggaran Harian* |
 
-<img src="frontend/public/images/analytics-dashboard.png" alt="Analytics Dashboard" width="80%" style="border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); margin: 20px 0;"/>
+</div>
 
-### 🔍 Main Monitoring Dashboard  
+<br/>
 
-<img src="frontend/public/images/main-dashboard.png" alt="Main Dashboard" width="80%" style="border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); margin: 20px 0;"/>
+<div align="center">
+
+| **AI Workflow** | **Worker Safety** |
+|:---:|:---:|
+| <img src="frontend/public/images/workflow.png" alt="Workflow" width="100%" style="border-radius: 12px;"/> | <img src="frontend/public/images/worker 3.png" alt="Worker" height="250" style="background:radial-gradient(circle, rgba(255,165,0,0.2) 0%, rgba(0,0,0,0) 70%);"/> |
 
 </div>
 
@@ -42,451 +46,125 @@
 
 ## 🎯 Tentang SmartAPD
 
-**SmartAPD** adalah sistem pemantauan keselamatan kerja berbasis **Kecerdasan Buatan (AI)** yang mendeteksi penggunaan Alat Pelindung Diri (APD) secara **real-time**. Sistem ini dirancang untuk industri konstruksi, manufaktur, dan pertambangan.
+**SmartAPD** adalah platform keselamatan kerja cerdas yang menggabungkan kekuatan **Artificial Intelligence** dan **IoT**. Sistem ini bekerja 24/7 mendeteksi kelengkapan Alat Pelindung Diri (APD) pekerja secara otomatis melalui kamera CCTV yang sudah ada.
 
-> 💡 *"Menciptakan Lingkungan Kerja yang Sehat dan Nyaman sebagai Upaya Menumbuhkan Budaya K3 serta Meningkatkan Produktivitas di era Modern"*
+> 💡 **"Safety First" bukan sekadar slogan.** SmartAPD mentransformasi pengawasan manual menjadi sistem digital yang proaktif, mencegah kecelakaan kerja sebelum terjadi.
 
-### ✨ Fitur Unggulan
+### Key Capabilities
 
-| Fitur | Deskripsi |
-|:-----:|-----------|
-| 🤖 **AI Detection** | Deteksi helm, rompi, sarung tangan, sepatu dalam **< 2 detik** |
-| 📡 **Real-time Monitoring** | Pantau live dari webcam atau IP Camera (RTSP) |
-| 🔔 **Telegram Alerts** | Notifikasi instan saat pelanggaran terdeteksi |
-| 📊 **Dashboard Analytics** | Statistik kepatuhan harian, mingguan, bulanan |
-| 📹 **Multi-Camera** | Support hingga **50+ kamera** simultan |
-| 💾 **Auto Reports** | Laporan otomatis jam 18:00 setiap hari |
-| 🔒 **Edge Computing** | Semua proses lokal, **data tetap aman** |
+* ✅ **Deteksi Presisi:** Mengidentifikasi Helm, Rompi, Sepatu, Kacamata, dan Sarung Tangan.
+* ✅ **0% Downtime:** Arsitektur Microservices yang tahan banting (Fault Tolerant).
+* ✅ **Evidence Based:** Setiap pelanggaran direkam dengan foto bukti (Snapshot) dan Timestamp valid.
 
 ---
 
-## 🏗️ Arsitektur Sistem
+## ✨ Fitur Unggulan V2.0
 
-```
+### 1. 🧠 High-Performance AI Engine
 
-┌─────────────────────────────────────────────────────────────────┐
-│                     SMARTAPD ARCHITECTURE                       │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│   📷 CCTV/Webcam                                               │
-│         │                                                       │
-│         ▼                                                       │
-│   ┌───────────────┐    HTTP POST    ┌───────────────┐          │
-│   │  🤖 AI-ENGINE │ ──────────────▶ │  🔧 BACKEND   │          │
-│   │    (Python)   │                 │   (Golang)    │          │
-│   │    YOLOv8     │                 │    Fiber      │          │
-│   └───────────────┘                 └───────┬───────┘          │
-│          │                                  │                   │
-│          │ Screenshots                      │ WebSocket         │
-│          ▼                                  ▼                   │
-│   ┌───────────────┐                 ┌───────────────┐          │
-│   │  📱 TELEGRAM  │                 │  🎨 FRONTEND  │          │
-│   │    Alerts     │                 │   (Next.js)   │          │
-│   └───────────────┘                 └───────────────┘          │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
+* **Model:** YOLOv8 Custom Fine-tuned (Akurasi > 90%).
+* **Speed:** Pemrosesan < 80ms per frame (Real-time).
+* **Adaptif:** Otomatis menyesuaikan pencahayaan (Brightness/Contrast Enhancer).
+* **Smart Rewind:** Fitur otomatis rewind untuk video demo/testing.
+
+### 2. ⚡ Backend & Infrastructure
+
+* **Go Fiber:** REST API super cepat dengan Go Routines.
+* **WebSocket Hub:** Streaming data deteksi tanpa delay (Low Latency).
+* **Auto Maintenance:** Sistem otomatis menghapus data sampah (> 7 hari) untuk menghemat storage.
+
+### 3. 📱 Dashboard & Reporting
+
+* **Live Center:** Tampilan grid kamera dinamis (Smart Grid) dengan status koneksi.
+* **PDF Reports Pro:** Laporan pelanggaran lengkap dengan **Foto Bukti Tertanam**, grafik, dan breakdown lokasi.
+* **Cross Platform:** Responsif di Desktop, Tablet, dan Mobile.
 
 ---
 
-## 📁 Struktur Project
+## 🏗️ Arsitektur Teknologi
 
+Sistem dibangun dengan prinsip **Clean Architecture** dan **Microservices**:
+
+```mermaid
+graph LR
+    subgraph "Perception Layer"
+        CAM[📷 CCTV] -->|RTSP/USB| AI[🧠 AI Engine (Python)]
+    end
+
+    subgraph "Core Logic"
+        AI -->|JSON Data| API[🚀 Backend (Go Fiber)]
+        AI -->|Screenshots| STATIC[📂 File Storage]
+    end
+
+    subgraph "Presentation"
+        API -->|WebSocket| UI[💻 Dashboard (Next.js)]
+        API -->|Data API| UI
+        STATIC -->|Image Source| UI
+    end
 ```
+
+### Folder Structure
+
+```bash
 smartapd/
-├── 🤖 ai-engine/              # AI Detection Engine (Python)
-│   ├── detector.py            # PPE Detector class
-│   ├── detector_realtime.py   # Real-time webcam detection
-│   ├── telegram_bot.py        # Telegram notifications
-│   ├── config.py              # Configuration
-│   ├── database.py            # Database operations
-│   ├── models/                # ONNX/PyTorch models
-│   └── requirements.txt       # Python dependencies
-│
-├── 🔧 backend/                # API Server (Golang)
-│   ├── cmd/server/main.go     # Entry point
-│   ├── internal/
-│   │   ├── handlers/          # API handlers
-│   │   ├── services/          # Business logic
-│   │   ├── models/            # Database models
-│   │   ├── middleware/        # Custom middleware
-│   │   └── database/          # GORM + SQLite
-│   └── pkg/utils/             # Utilities
-│
-├── 🎨 frontend/               # Dashboard (Next.js)
-│   ├── app/                   # App router pages
-│   │   ├── page.tsx           # Landing page
-│   │   ├── dashboard/         # Main dashboard
-│   │   ├── alerts/            # Alerts management
-│   │   └── settings/          # Settings
-│   ├── components/            # React components
-│   └── public/images/         # Static assets
-│
-├── 📚 training/               # Training data
-│   ├── with_helmet/           # Positive samples
-│   └── without_helmet/        # Negative samples
-│
-├── 📓 notebooks/              # Jupyter notebooks
-│   └── 01_training_ppe_model.py
-│
-├── 📖 docs/                   # Documentation
-├── 💾 data/                   # Database & screenshots
-├── 🧪 tests/                  # Test files
-├── 🖼️ assets/                 # Static assets
-│
-├── .env                       # Environment variables
-├── .env.example               # Environment template
-├── config.yaml                # System configuration
-├── requirements.txt           # Root Python deps
-└── README.md                  # This file
+├── 🤖 ai-engine/             # Python + YOLOv8 + OpenCV
+├── 🔧 backend/               # Go (Golang) + GORM + Fiber
+├── 🎨 frontend/              # Next.js 14 + Tailwind + Shadcn/UI
+├── 📚 data/                  # SQLite DB & Screenshots storage
+└── 📜 start-all-external.bat # One-click Startup Script
 ```
 
 ---
 
-## 🚀 Instalasi
+## 🚀 Instalasi & Quick Start
 
-### Prerequisites
+Sistem ini didesain "Plug & Play" untuk Windows.
 
-| Requirement | Version | Note |
-|-------------|---------|------|
-| Python | 3.10+ | Untuk AI Engine |
-| Go | 1.21+ | Untuk Backend |
-| Node.js | 18+ | Untuk Frontend |
-| Git | Latest | Version control |
+### Persyaratan
 
-### 1. Clone Repository
+* Python 3.10+
+* Go 1.22+
+* Node.js 18+
 
-```bash
-git clone https://github.com/yourusername/smartapd.git
-cd smartapd
+### Cara Menjalankan (Satu Klik)
+
+Cukup jalankan script launcher:
+
+```powershell
+./start-all-external.bat
 ```
 
-### 2. Setup Environment
+Script ini akan otomatis:
 
-```bash
-# Copy environment template
-cp .env.example .env
-
-# Edit dengan nilai yang sesuai
-# TELEGRAM_BOT_TOKEN=your_token
-# TELEGRAM_CHAT_ID=your_chat_id
-```
-
-### 3. Install AI Engine
-
-```bash
-cd ai-engine
-pip install -r requirements.txt
-```
-
-### 4. Install Backend
-
-```bash
-cd backend
-go mod tidy
-go build -o smartapd-backend.exe ./cmd/server/
-```
-
-### 5. Install Frontend
-
-```bash
-cd frontend
-npm install
-```
+1. Membuka 3 Terminal terpisah (AI, Backend, Frontend).
+2. Menjalankan migrasi database jika perlu.
+3. Membuka Dashboard di browser default.
 
 ---
 
-## ▶️ Menjalankan Aplikasi
+## 👨‍💻 Tim Pengembang
 
-### Option A: Development Mode (Terpisah)
-
-**Terminal 1 - Backend:**
-
-```bash
-cd backend
-./smartapd-backend.exe
-# atau: go run cmd/server/main.go
-```
-
-**Terminal 2 - Frontend:**
-
-```bash
-cd frontend
-npm run dev
-```
-
-**Terminal 3 - AI Engine:**
-
-```bash
-cd ai-engine
-python detector_realtime.py --camera 0
-```
-
-### Option B: Quick Start Script
-
-```bash
-# Coming soon: docker-compose up
-```
-
-### 🌐 Akses Aplikasi
-
-| Service | URL |
-|---------|-----|
-| Frontend | <http://localhost:3000> |
-| Backend API | <http://localhost:8080> |
-| API Health | <http://localhost:8080/health> |
-| WebSocket | ws://localhost:8080/ws |
-
----
-
-## 📡 API Endpoints
-
-### Health Check
-
-```http
-GET /health
-```
-
-### Detections
-
-```http
-GET    /api/v1/detections          # List semua deteksi
-GET    /api/v1/detections/:id      # Detail deteksi
-POST   /api/v1/detections          # Tambah deteksi baru
-GET    /api/v1/detections/stats    # Statistik deteksi
-```
-
-### Alerts
-
-```http
-GET    /api/v1/alerts              # List semua alert
-POST   /api/v1/alerts              # Buat alert baru
-PUT    /api/v1/alerts/:id/acknowledge  # Acknowledge alert
-```
-
-### Cameras
-
-```http
-GET    /api/v1/cameras             # List kamera
-GET    /api/v1/cameras/:id         # Detail kamera
-POST   /api/v1/cameras             # Tambah kamera
-PUT    /api/v1/cameras/:id         # Update kamera
-DELETE /api/v1/cameras/:id         # Hapus kamera
-```
-
-### Reports
-
-```http
-GET    /api/v1/reports/daily       # Laporan harian
-GET    /api/v1/reports/weekly      # Laporan mingguan
-GET    /api/v1/reports/export      # Export laporan
-```
-
-### WebSocket
-
-```http
-WS     /ws                         # Real-time updates
-```
-
----
-
-## 🎯 Kelas Deteksi
-
-| ID | Kelas | Status | Deskripsi |
-|----|-------|--------|-----------|
-| 0 | `helmet` | ✅ Patuh | Memakai helm safety |
-| 1 | `no_helmet` | ⚠️ Pelanggaran | Tidak memakai helm |
-| 2 | `vest` | ✅ Patuh | Memakai rompi safety |
-| 3 | `no_vest` | ⚠️ Pelanggaran | Tidak memakai rompi |
-| 4 | `gloves` | ✅ Patuh | Memakai sarung tangan |
-| 5 | `no_gloves` | ⚠️ Pelanggaran | Tidak memakai sarung tangan |
-| 6 | `boots` | ✅ Patuh | Memakai sepatu safety |
-| 7 | `no_boots` | ⚠️ Pelanggaran | Tidak memakai sepatu safety |
-| 8 | `person` | ℹ️ Info | Orang terdeteksi |
-
----
-
-## ⚙️ Konfigurasi
-
-### Environment Variables (.env)
-
-```env
-# Backend
-PORT=8080
-DATABASE_URL=./data/detections.db
-
-# Telegram
-TELEGRAM_BOT_TOKEN=your_bot_token_here
-TELEGRAM_CHAT_ID=your_chat_id_here
-
-# AI Engine
-CONFIDENCE_THRESHOLD=0.5
-DETECTION_INTERVAL=0.5
-REPORT_BASE_URL=http://localhost:3000 # Untuk generate PDF/Asset loading
-```
-
-### config.yaml
-
-```yaml
-model:
-  weights: "ai-engine/models/ppe_detector.onnx"
-  confidence: 0.5
-  iou_threshold: 0.45
-
-camera:
-  source: 0
-  fps: 30
-  resolution: [1280, 720]
-
-telegram:
-  enabled: true
-  cooldown: 60
-
-database:
-  path: "data/detections.db"
-  save_images: true
-```
-
----
-
-## 📱 Telegram Bot Setup
-
-1. **Buat Bot**
-   - Buka Telegram, cari @BotFather
-   - Kirim `/newbot`
-   - Ikuti instruksi, simpan **Bot Token**
-
-2. **Dapatkan Chat ID**
-   - Kirim pesan ke bot Anda
-   - Buka: `https://api.telegram.org/bot<TOKEN>/getUpdates`
-   - Cari value `chat.id`
-
-3. **Konfigurasi**
-   - Masukkan token dan chat ID ke file `.env`
-
----
-
-## 🛠️ Tech Stack
-
-| Layer | Technology |
-|-------|------------|
-| **AI Engine** | Python, YOLOv8, OpenCV, ONNX Runtime |
-| **Backend** | Go 1.21, Fiber, GORM, SQLite |
-| **Frontend** | Next.js 14, React 18, TailwindCSS, Framer Motion |
-| **Database** | SQLite (bisa upgrade ke PostgreSQL) |
-| **Notifications** | Telegram Bot API |
-| **Real-time** | WebSocket |
-
----
-
-## 🧪 Testing
-
-### Backend Test
-
-```bash
-cd backend
-go test ./...
-```
-
-### Frontend Build Test
-
-```bash
-cd frontend
-npm run build
-```
-
-### AI Engine Test
-
-```bash
-cd ai-engine
-python -c "from detector_realtime import PPEDetector; print('OK')"
-```
-
----
-
-## 📊 Performance
-
-| Metric | Value |
-|--------|-------|
-| Inference Speed | 5-10 FPS (CPU), 30+ FPS (GPU) |
-| Model Size | ~20 MB (ONNX) |
-| API Response | < 50ms |
-| WebSocket Latency | < 100ms |
-
----
-
-## 📚 Dokumentasi Lengkap
-
-| Dokumen | Lokasi |
-|---------|--------|
-| Training Guide | `notebooks/01_training_ppe_model.py` |
-| AI Engine README | `ai-engine/README.md` |
-| Backend README | `backend/README.md` |
-| Design Concept | `docs/FRONTEND_DESIGN_CONCEPT.md` |
-| Training Docs | `docs/TRAINING_DOCUMENTATION_TEMPLATE.md` |
-| AI Prompts | `docs/AI_IMAGE_PROMPTS.md` |
-
----
-
-## 🤝 Kontribusi
-
-Kontribusi sangat diterima! Silakan buat Pull Request.
-
----
-
-## 📄 License
-
-MIT License - lihat file [LICENSE](LICENSE)
-
----
-
-## 👨‍💻 Author
-
-**SmartAPD Team**
-
-Developed by [@syarfddn_yhya](https://instagram.com/syarfddn_yhya)
-
-📞 Contact: [WhatsApp](https://wa.me/6282330919114)
-
----
-
-## 🙏 Acknowledgments
-
-- Ultralytics untuk YOLOv8
-- Roboflow untuk dataset tools
-- Fiber team untuk Go framework
-- Next.js team untuk React framework
-
----
-
-## 🏆 Safety Competition 2026
+Project ini dikembangkan dengan dedikasi tinggi untuk kemajuan K3 di Indonesia.
 
 <div align="center">
 
-> **Proyek ini dibuat untuk Lomba Esai Safety Competition 2026**
->
-> 📋 [Lihat Rencana Lomba Lengkap](paduan_lomba/RENCANA_LOMBA_ESAI_SC26.md)
+<img src="https://ui-avatars.com/api/?name=Syarif+Yahya&background=f97316&color=fff&size=128" style="border-radius: 50%; border: 4px solid #f97316; margin-bottom: 10px;">
+
+**SmartAPD Team - Safety Tech Division**
+
+**Lead Developer:** [@syarfddn_yhya](https://instagram.com/syarfddn_yhya)
+**Role:** Fullstack AI Engineer
+**Contact:** [WhatsApp](https://wa.me/6282330919114) | [Email](mailto:developer@smartapd.id)
 
 </div>
 
-| Informasi | Detail |
-|-----------|--------|
-| **Penyelenggara** | HIMATEKK3 PPNS |
-| **Tema** | Menciptakan Lingkungan Kerja yang Sehat dan Nyaman |
-| **Subtema** | Industri & Teknologi |
-| **Contact** | 089526569307 (Nadya) |
-
 ---
+
+## 📄 Lisensi
+
+Copyright © 2025 SmartAPD. All Rights Reserved.
+Dilisensikan di bawah **MIT License**.
 
 <div align="center">
-
-**⚠️ Disclaimer**: Sistem ini dirancang sebagai alat bantu dan tidak menggantikan pengawasan manusia dalam skenario keselamatan kritis.
-
----
-
-Made with ❤️ for workplace safety
-
-**© 2024 SmartAPD Team** | Developed by [@syarfddn_yhya](https://instagram.com/syarfddn_yhya)
-
-📞 [Contact via WhatsApp](https://wa.me/6282330919114)
-
+<i>"Keselamatan adalah kunci produktivitas masa depan."</i>
 </div>

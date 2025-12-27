@@ -5,7 +5,7 @@ import {
     Settings, Camera, Bell, Shield, Database, Save, RefreshCw,
     Send, CheckCircle, XCircle, Loader2, MessageSquare, Mail,
     Smartphone, Volume2, Clock, Wifi, Plus, Cpu, Power, Video, Webcam, Trash2, Edit, Edit2, ExternalLink,
-    HardDrive, Activity, Eye, Focus, Maximize, AlertCircle, Signal, Map, List
+    HardDrive, Activity, Eye, Focus, Maximize, AlertCircle, AlertTriangle, Signal, Map, List
 } from "lucide-react";
 
 import dynamic from 'next/dynamic';
@@ -576,7 +576,31 @@ export default function SettingsPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [saveStatus, setSaveStatus] = useState<"idle" | "success" | "error">("idle");
     const [testStatus, setTestStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+    const [testStatus, setTestStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
     const [testMessage, setTestMessage] = useState("");
+
+    // Reset Data States
+    const [showResetConfirm, setShowResetConfirm] = useState(false);
+    const [isResetting, setIsResetting] = useState(false);
+
+    const handleResetData = async () => {
+        setIsResetting(true);
+        try {
+            const res = await fetch("http://localhost:8000/api/cleanup", { method: "DELETE" });
+            if (res.ok) {
+                alert("Data berhasil dibersihkan!");
+                setShowResetConfirm(false);
+                // Optional: Force reload to clear cached images/stats
+                window.location.reload();
+            } else {
+                alert("Gagal membersihkan data.");
+            }
+        } catch (e) {
+            alert("Error: Backend tidak merespon.");
+        } finally {
+            setIsResetting(false);
+        }
+    };
 
     // Load settings from localStorage on mount
     useEffect(() => {
@@ -774,7 +798,7 @@ export default function SettingsPage() {
                                             className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-mono text-sm focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none transition-all"
                                         />
                                         <p className="mt-1 text-xs text-slate-500">
-                                            Dapatkan dari <a href="https://t.me/BotFather" target="_blank" className="text-blue-500 hover:underline">@BotFather</a>
+                                            Dapatkan dari <a href="https://t.me/BotFather" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">@BotFather</a>
                                         </p>
                                     </div>
 
@@ -972,7 +996,7 @@ export default function SettingsPage() {
                                         <p className="text-sm text-amber-800 font-medium">📧 Cara menggunakan Email:</p>
                                         <ol className="text-xs text-amber-700 mt-2 list-decimal list-inside space-y-1">
                                             <li>Gunakan akun Gmail</li>
-                                            <li>Buat App Password di: <a href="https://myaccount.google.com/apppasswords" target="_blank" className="underline">Google App Passwords</a></li>
+                                            <li>Buat App Password di: <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer" className="underline">Google App Passwords</a></li>
                                             <li>Masukkan email dan App Password di bawah</li>
                                         </ol>
                                     </div>
@@ -1120,10 +1144,57 @@ export default function SettingsPage() {
                             </div>
                         </div>
 
-                        <button className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-slate-700 font-medium transition-colors">
-                            <RefreshCw size={18} />
-                            Restart Sistem
-                        </button>
+                        <div className="flex flex-col gap-3">
+                            <div className="p-4 bg-red-50 border border-red-100 rounded-xl">
+                                <h4 className="font-bold text-red-800 mb-1">Danger Zone</h4>
+                                <p className="text-sm text-red-600 mb-4">Tindakan ini tidak dapat dibatalkan.</p>
+
+                                <button
+                                    onClick={() => setShowResetConfirm(true)}
+                                    className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-colors"
+                                >
+                                    <Trash2 size={18} />
+                                    Bersihkan Data & Riwayat
+                                </button>
+                            </div>
+
+                            <button className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-slate-700 font-medium transition-colors w-fit">
+                                <RefreshCw size={18} />
+                                Restart Sistem
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Reset Confirmation Modal */}
+                {showResetConfirm && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                        <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl animate-in fade-in zoom-in duration-200">
+                            <div className="flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mx-auto mb-4">
+                                <AlertTriangle className="w-8 h-8 text-red-600" />
+                            </div>
+                            <h3 className="text-xl font-bold text-center text-slate-900 mb-2">Hapus Semua Data?</h3>
+                            <p className="text-center text-slate-500 mb-6">
+                                Tindakan ini akan menghapus semua <strong>foto bukti pelanggaran</strong> dan <strong>riwayat statistik</strong>. Data yang dihapus tidak dapat dikembalikan.
+                            </p>
+
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setShowResetConfirm(false)}
+                                    className="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    onClick={handleResetData}
+                                    disabled={isResetting}
+                                    className="flex-1 px-4 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+                                >
+                                    {isResetting ? <Loader2 className="animate-spin" /> : <Trash2 size={18} />}
+                                    Ya, Hapus
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 )}
 

@@ -18,8 +18,8 @@ import (
 // CreateRegistration creates a new registration link
 // POST /api/v1/telegram/registrations/create
 func CreateRegistration(c *fiber.Ctx) error {
-	// Get admin user from context (simplified - in production use auth middleware)
-	adminID := uint(1) // TODO: Get from auth context
+	// Get admin user from context
+	adminID := c.Locals("user_id").(uint)
 
 	// Generate token
 	token := models.GenerateRegistrationToken()
@@ -122,7 +122,7 @@ func ManualAddChat(c *fiber.Ctx) error {
 		}
 	}
 
-	adminID := uint(1) // TODO: Get from auth context
+	adminID := c.Locals("user_id").(uint)
 
 	chat := models.TelegramChat{
 		ChatID:    result.Result.ID,

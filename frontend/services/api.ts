@@ -58,6 +58,32 @@ export interface DetectionStats {
   workersActive: number;
 }
 
+export interface Violation {
+  id: number;
+  camera_id: number;
+  violation: string;
+  worker: string;
+  location: string;
+  time: string;
+  status: 'resolved' | 'unresolved';
+  image: string;
+  video: string;
+  evidence?: string;
+}
+
+export interface AlertAction {
+  id?: number;
+  alert_id: number;
+  action: string;
+  level?: string;
+  notes?: string;
+  actor: string;
+  severity: string;
+  auto?: boolean;
+  evidence?: string;
+  timestamp: string;
+}
+
 // API Functions
 export const api = {
   // Stats
@@ -87,6 +113,18 @@ export const api = {
     } catch (error) {
       console.error('API Error:', error);
       return [];
+    }
+  },
+
+  async deleteDetection(id: number): Promise<boolean> {
+    try {
+      const res = await fetch(`${API_BASE}/detections/${id}`, {
+        method: 'DELETE',
+      });
+      return res.ok;
+    } catch (error) {
+      console.error('API Error:', error);
+      return false;
     }
   },
 
@@ -184,6 +222,45 @@ export const api = {
       return null;
     }
   },
+
+  // Alerts Workflow Adapter
+  async getViolations(limit: number = 50): Promise<Violation[]> {
+    try {
+      const detections = await this.getDetections(limit);
+      return detections
+        .filter(d => d.is_violation)
+        .map(d => ({
+          id: d.id,
+          camera_id: d.camera_id,
+          violation: d.violation_type,
+          worker: 'Unknown Worker', // Placeholder until face rec is active
+          location: d.location || 'Area 1',
+          time: d.detected_at,
+          status: d.review_status === 'resolved' ? 'resolved' : 'unresolved',
+          image: d.image_path ? `http://localhost:8000${d.image_path}` : '/placeholder.jpg',
+          video: '',
+        }));
+    } catch (error) {
+      console.error('API Error:', error);
+      return [];
+    }
+  },
+
+  async getAlertActions(): Promise<AlertAction[]> {
+    // Mock for now, or implement backend endpoint
+    return [];
+  },
+
+  async createAlertAction(action: Partial<AlertAction>): Promise<boolean> {
+    // Mock call
+    console.log('Action created:', action);
+    return true;
+  },
+
+  async resolveAlert(data: { alert_id: number; actor: string; notes?: string; evidence?: string }): Promise<boolean> {
+    // Map to backend delete/update
+    return this.deleteDetection(data.alert_id);
+  }
 };
 
 // WebSocket Connection for Real-time Updates
@@ -194,7 +271,8 @@ export class RealtimeConnection {
   private listeners: Map<string, Function[]> = new Map();
 
   connect() {
-    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8080/ws';
+    const token = localStorage.getItem('auth-token');
+    const wsUrl = (process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8080/ws') + (token ? `?token=${token}` : '');
 
     try {
       this.ws = new WebSocket(wsUrl);
@@ -207,8 +285,9 @@ export class RealtimeConnection {
 
       this.ws.onmessage = (event) => {
         try {
-          const data = JSON.parse(event.data);
-          this.emit(data.type, data.payload);
+          const msg = JSON.parse(event.data);
+          // Backend sends 'data', internal mocks might use 'payload'. Support both.
+          this.emit(msg.type, msg.data || msg.payload);
         } catch (e) {
           console.error('Failed to parse WebSocket message:', e);
         }
@@ -223,6 +302,7 @@ export class RealtimeConnection {
       this.ws.onerror = (error) => {
         console.error('WebSocket error:', error);
         this.emit('error', error);
+        console.warn("WS Error - ensure Backend is running on port 8080");
       };
     } catch (error) {
       console.error('Failed to connect WebSocket:', error);

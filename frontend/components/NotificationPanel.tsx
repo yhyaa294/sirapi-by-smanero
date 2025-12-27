@@ -36,7 +36,7 @@ export default function NotificationPanel() {
 
     useEffect(() => {
         fetchAlerts();
-        const interval = setInterval(fetchAlerts, 10000); // Poll every 10s
+        const interval = setInterval(fetchAlerts, 60000); // Poll every 60s
         return () => clearInterval(interval);
     }, []);
 
@@ -96,7 +96,7 @@ export default function NotificationPanel() {
                             <div key={alert.ID} className="p-4 border-b border-slate-50 hover:bg-slate-50 transition-colors group relative">
                                 <div className="flex gap-3">
                                     <div className={`mt-1 w-2 h-2 rounded-full shrink-0 ${alert.Severity === 'critical' ? 'bg-red-500' :
-                                            alert.Severity === 'high' ? 'bg-orange-500' : 'bg-yellow-500'
+                                        alert.Severity === 'high' ? 'bg-orange-500' : 'bg-yellow-500'
                                         }`} />
                                     <div className="flex-1">
                                         <p className="text-sm font-medium text-slate-900 leading-snug mb-1">{alert.Message}</p>

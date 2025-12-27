@@ -13,7 +13,11 @@ import (
 func getJWTSecret() []byte {
 	secret := os.Getenv("JWT_SECRET")
 	if secret == "" {
-		return []byte("smartapd-secret-key-2024")
+		if os.Getenv("GO_ENV") == "production" {
+			log.Fatal("FATAL: JWT_SECRET must be set in production")
+		}
+		log.Println("⚠️ WARNING: Using weak default secret for development")
+		return []byte("smartapd-secret-key-2024") // Only for dev
 	}
 	return []byte(secret)
 }
@@ -163,7 +167,7 @@ func APIKeyAuth(validAPIKey string) fiber.Handler {
 // CORS middleware for cross-origin requests
 func CORS() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		c.Set("Access-Control-Allow-Origin", "*")
+		c.Set("Access-Control-Allow-Origin", "http://localhost:3000") // SECURED: Only allow frontend
 		c.Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 		c.Set("Access-Control-Allow-Headers", "Origin, Content-Type, Accept, Authorization, X-API-Key")
 

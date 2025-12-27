@@ -24,10 +24,11 @@ func WebSocketHandler(c *fiber.Ctx) error {
 	tokenString := c.Query("token")
 
 	if tokenString == "" {
-		// Also allow strict mode where we don't proceed without token
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": "Missing auth token",
-		})
+		// DEVELOPMENT MODE: Allow connection without token for localhost/dev
+		// return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+		// 	"error": "Missing auth token",
+		// })
+		// TODO: Re-enable strict check for production
 	}
 
 	// Verify token

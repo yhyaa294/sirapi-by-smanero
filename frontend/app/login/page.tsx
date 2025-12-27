@@ -60,7 +60,7 @@ export default function LoginPage() {
         const data = await response.json();
 
         // Debug response
-        console.log("Login response:", data);
+        // console.log("Login response:", data);
 
         // Determine token from various possible structures
         const accessToken = data.access_token || data.token || (data.data && data.data.token);

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import { api, realtime } from "@/services/api";
 import {
   AlertTriangle,
   Bell,
@@ -25,7 +26,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useDemoMode, DemoDetection } from "@/hooks/useDemoMode";
-import { api } from "@/services/api";
+
 
 // Types
 interface Incident {
@@ -85,7 +86,7 @@ export default function UnifiedAlertsPage() {
   useEffect(() => {
     const fetchScreenshots = async () => {
       try {
-        const res = await fetch('http://localhost:8000/screenshots');
+        const res = await fetch('http://localhost:8000/list_screenshots');
         if (res.ok) {
           const data = await res.json();
           setScreenshots(data.screenshots || []);
@@ -113,42 +114,70 @@ export default function UnifiedAlertsPage() {
           }
         }
       } catch (err) {
-        console.log('AI Engine screenshots not available');
+        // console.log('AI Engine screenshots not available');
       }
     };
 
     fetchScreenshots();
-    const interval = setInterval(fetchScreenshots, 10000); // Refresh every 10 seconds
+    const interval = setInterval(fetchScreenshots, 30000); // Refresh every 30 seconds for better performance
     return () => clearInterval(interval);
   }, [isDemo]);
 
   // Fetch from backend if not in demo mode
   useEffect(() => {
     if (!isDemo) {
-      api.getDetections(50).then(detections => {
+      // 1. Initial Load
+      api.getDetections(200).then(detections => {
         if (detections && detections.length > 0) {
           const backendIncidents: Incident[] = detections
-            .filter((det: any) => det.is_violation) // Only show violations
-            .map((det: any, idx: number) => ({
-              id: String(det.id),
-              timestamp: new Date(det.detected_at || det.created_at),
-              type: (det.violation_type || 'no_helmet').toLowerCase().replace(' ', '_') as Incident["type"],
-              severity: det.priority === 1 ? 'critical' : det.priority === 2 ? 'high' : 'medium',
-              location: det.location || `Kamera ${det.camera_id}`,
-              cameraId: String(det.camera_id),
-              description: `AI Detection: ${(det.violation_type || 'Unknown').replace(/_/g, ' ')}. Confidence: ${((det.confidence || 0) * 100).toFixed(1)}%`,
-              status: det.review_status === 'accepted' ? 'resolved' : det.review_status === 'rejected' ? 'resolved' : 'open',
-              read: det.review_status !== 'pending',
-              confidence: (det.confidence || 0) * 100,
-              imageUrl: det.image_path ? (det.image_path.startsWith('http') ? det.image_path : `http://localhost:8000/${det.image_path}`) : undefined,
-            }));
+            .filter((det: any) => det.is_violation)
+            .map((det: any) => mapDetectionToIncident(det));
           setIncidents(backendIncidents);
         }
       }).catch((err) => {
-        console.log("Backend not available for alerts:", err);
+        // console.log("Backend not available for alerts:", err);
       });
+
+      // 2. Real-time Listener
+      realtime.connect();
+
+      const handleRealtimeDetection = (det: any) => {
+        if (!det.is_violation) return;
+
+        const newIncident = mapDetectionToIncident(det);
+
+        setIncidents(prev => {
+          // Prevent duplicates
+          if (prev.find(i => i.id === newIncident.id)) return prev;
+          return [newIncident, ...prev];
+        });
+
+        // Optional: Play alert sound here if needed
+      };
+
+      realtime.on('detection', handleRealtimeDetection);
+
+      return () => {
+        realtime.off('detection', handleRealtimeDetection);
+        // Don't disconnect here if other components use it, but for now it's safe or we leave it open
+      };
     }
   }, [isDemo]);
+
+  // Helper to map API detection to Incident
+  const mapDetectionToIncident = (det: any): Incident => ({
+    id: String(det.id),
+    timestamp: new Date(det.detected_at || det.created_at || new Date()), // Fallback to now
+    type: (det.violation_type || 'no_helmet').toLowerCase().replace(' ', '_') as Incident["type"],
+    severity: det.priority === 1 ? 'critical' : det.priority === 2 ? 'high' : 'medium', // Default to medium if unknown
+    location: det.location || `Kamera ${det.camera_id}`,
+    cameraId: String(det.camera_id),
+    description: `AI Detection: ${(det.violation_type || 'Unknown').replace(/_/g, ' ')}. Confidence: ${((det.confidence || 0) * 100).toFixed(1)}%`,
+    status: det.review_status === 'accepted' ? 'resolved' : det.review_status === 'rejected' ? 'resolved' : 'open',
+    read: det.review_status !== 'pending',
+    confidence: (det.confidence || 0) * 100,
+    imageUrl: det.image_path ? (det.image_path.startsWith('http') ? det.image_path : `http://localhost:8000/${det.image_path.replace(/\\/g, '/')}`) : undefined,
+  });
 
   // Stats
   const totalToday = incidents.length;
@@ -160,20 +189,38 @@ export default function UnifiedAlertsPage() {
     i => !i.read || (i.severity === "critical" || i.severity === "high") && i.status === "open"
   ).slice(0, 5);
 
-  // Filtered incidents for table
-  const filteredIncidents = incidents.filter(incident => {
-    if (statusFilter !== "all" && incident.status !== statusFilter) return false;
-    if (typeFilter !== "all" && incident.type !== typeFilter) return false;
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      return (
-        incident.description.toLowerCase().includes(query) ||
-        incident.location.toLowerCase().includes(query) ||
-        incident.id.toLowerCase().includes(query)
-      );
-    }
-    return true;
-  });
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // Filtered incidents for table - Memoized
+  const filteredIncidents = useMemo(() => {
+    return incidents.filter(incident => {
+      if (statusFilter !== "all" && incident.status !== statusFilter) return false;
+      if (typeFilter !== "all" && incident.type !== typeFilter) return false;
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        return (
+          incident.description.toLowerCase().includes(query) ||
+          incident.location.toLowerCase().includes(query) ||
+          incident.id.toLowerCase().includes(query)
+        );
+      }
+      return true;
+    });
+  }, [incidents, statusFilter, typeFilter, searchQuery]);
+
+  // Pagination Logic
+  const totalPages = Math.ceil(filteredIncidents.length / itemsPerPage);
+  const paginatedIncidents = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredIncidents.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredIncidents, currentPage]);
+
+  // Reset page when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter, typeFilter, searchQuery]);
 
   // Helper functions
   const getTypeIcon = (type: string) => {
@@ -270,9 +317,9 @@ export default function UnifiedAlertsPage() {
                   </h3>
                   <p className="text-slate-300 text-xs">Rekaman Insiden #INC-{String(selectedScreenshot.timestamp).slice(-4)}</p>
                 </div>
-                <div className="bg-red-600/20 backdrop-blur-md px-3 py-1 rounded-full border border-red-500/50 flex items-center gap-2">
-                  <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-                  <span className="text-xs font-bold text-red-100 uppercase">Replay Mode</span>
+                <div className="bg-orange-600/20 backdrop-blur-md px-3 py-1 rounded-full border border-orange-500/50 flex items-center gap-2">
+                  <Camera className="w-3 h-3 text-orange-400" />
+                  <span className="text-xs font-bold text-orange-100 uppercase">Snapshot Viewer</span>
                 </div>
               </div>
 
@@ -293,32 +340,18 @@ export default function UnifiedAlertsPage() {
                 </button>
               </div>
 
-              {/* Video Controls (Mock) */}
-              <div className="p-4 bg-slate-900/90 border-t border-slate-800 backdrop-blur">
-                {/* Timeline Bar */}
-                <div className="w-full h-1.5 bg-slate-700 rounded-full mb-4 relative cursor-pointer group/timeline">
-                  <div className="absolute top-0 left-0 w-[40%] h-full bg-orange-500 rounded-full relative">
-                    <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-lg scale-0 group-hover/timeline:scale-100 transition-transform"></div>
-                  </div>
-                  {/* Incident Marker */}
-                  <div className="absolute top-1/2 left-[40%] -translate-y-1/2 w-4 h-4 bg-red-500 rounded-full border-2 border-slate-900 z-10" title="Incident Encountered"></div>
+              <div className="p-4 bg-slate-900/90 border-t border-slate-800 backdrop-blur flex justify-between items-center">
+                <div className="flex items-center gap-3 text-sm text-slate-300">
+                  <Clock className="w-4 h-4 text-orange-500" />
+                  <span>Captured at: {selectedScreenshot.timestamp ? new Date(selectedScreenshot.timestamp).toLocaleTimeString() : '--:--'}</span>
                 </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <button className="text-white hover:text-orange-500 transition"><Search className="rotate-180" size={20} /></button> {/* Rewind */}
-                    <button className="w-10 h-10 bg-white text-black rounded-full flex items-center justify-center hover:bg-slate-200 transition">
-                      <div className="w-0 h-0 border-t-[6px] border-t-transparent border-l-[10px] border-l-black border-b-[6px] border-b-transparent ml-1"></div>
-                    </button>
-                    <button className="text-white hover:text-orange-500 transition"><Search size={20} /></button> {/* Forward */}
-                    <span className="text-xs font-mono text-slate-400">00:14 / 00:45</span>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <button className="px-3 py-1.5 rounded-lg bg-slate-800 text-xs text-white hover:bg-slate-700 font-medium">1x Speed</button>
-                    <button className="p-2 text-slate-400 hover:text-white"><Download size={18} /></button>
-                  </div>
-                </div>
+                <a
+                  href={selectedScreenshot.url}
+                  download={`evidence_${selectedScreenshot.filename || 'incident'}.jpg`}
+                  className="flex items-center gap-2 px-4 py-2 bg-white text-slate-900 hover:bg-slate-200 rounded-lg text-sm font-bold transition-colors"
+                >
+                  <Download size={16} /> Download Bukti
+                </a>
               </div>
             </div>
 
@@ -607,7 +640,7 @@ export default function UnifiedAlertsPage() {
               <p className="text-slate-400">Tidak ada data yang cocok</p>
             </div>
           ) : (
-            filteredIncidents.map((incident) => (
+            paginatedIncidents.map((incident) => (
               <div key={incident.id} className="grid grid-cols-1 md:grid-cols-12 gap-4 px-4 py-4 hover:bg-slate-800/30 transition-colors">
                 {/* Time */}
                 <div className="md:col-span-2">
@@ -697,13 +730,22 @@ export default function UnifiedAlertsPage() {
         {/* Table Footer */}
         <div className="p-4 border-t border-slate-800 flex items-center justify-between">
           <p className="text-sm text-slate-500">
-            Menampilkan {filteredIncidents.length} dari {incidents.length} insiden
+            Menampilkan {(currentPage - 1) * itemsPerPage + 1}-{Math.min(currentPage * itemsPerPage, filteredIncidents.length)} dari {filteredIncidents.length} insiden
           </p>
           <div className="flex items-center gap-2">
-            <button className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs text-slate-300 transition-colors">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-xs text-slate-300 transition-colors"
+            >
               Previous
             </button>
-            <button className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs text-slate-300 transition-colors">
+            <span className="text-xs text-slate-500">Page {currentPage} of {Math.max(1, totalPages)}</span>
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={currentPage >= totalPages}
+              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-xs text-slate-300 transition-colors"
+            >
               Next
             </button>
           </div>

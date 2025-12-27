@@ -136,12 +136,19 @@ func main() {
 	detections.Get("/stats", detectionHandler.GetDetectionStats)
 	detections.Get("/:id", detectionHandler.GetDetection)
 	detections.Post("/", detectionHandler.CreateDetection)
+	detections.Delete("/:id", detectionHandler.DeleteDetection)
 
 	// Alert routes
 	alerts := api.Group("/alerts")
 	alerts.Get("/", handlers.GetAlerts)
 	alerts.Post("/", handlers.CreateAlert)
 	alerts.Put("/:id/acknowledge", handlers.AcknowledgeAlert)
+
+	// Report routes
+	reports := api.Group("/reports")
+	reports.Get("/daily", handlers.GetDailyReport)
+	reports.Get("/weekly", handlers.GetWeeklyReport)
+	reports.Get("/export/:format", handlers.ExportReport)
 
 	// Camera routes
 	cameras := api.Group("/cameras")
@@ -151,12 +158,6 @@ func main() {
 	cameras.Put("/:id", handlers.UpdateCamera)
 	cameras.Delete("/:id", handlers.DeleteCamera)
 	cameras.Post("/:id/reconnect", handlers.ReconnectCamera)
-
-	// Report routes
-	reports := api.Group("/reports")
-	reports.Get("/daily", handlers.GetDailyReport)
-	reports.Get("/weekly", handlers.GetWeeklyReport)
-	reports.Get("/export", handlers.ExportReport)
 
 	// Auth routes
 	auth := api.Group("/auth")
@@ -210,6 +211,7 @@ func main() {
 
 	// Telegram API routes (Central Bot)
 	telegram := api.Group("/telegram")
+	telegram.Use(middleware.Protected()) // SECURED: Require login
 	telegram.Get("/status", handlers.GetTelegramStatus)
 	telegram.Post("/registrations/create", handlers.CreateRegistration)
 	telegram.Post("/chats/manual-add", handlers.ManualAddChat)

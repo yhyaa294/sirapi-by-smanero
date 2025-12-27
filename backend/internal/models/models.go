@@ -10,16 +10,16 @@ import (
 type Detection struct {
 	gorm.Model
 	CameraID      uint      `json:"camera_id" gorm:"index"`
-	ViolationType string    `json:"violation_type"` // no_helmet, no_vest, no_gloves
+	ViolationType string    `json:"violation_type" gorm:"index"` // no_helmet, no_vest, no_gloves
 	Confidence    float64   `json:"confidence"`
 	ImagePath     string    `json:"image_path"`
 	Location      string    `json:"location"`
-	DetectedAt    time.Time `json:"detected_at"`
-	IsViolation   bool      `json:"is_violation"`
+	DetectedAt    time.Time `json:"detected_at" gorm:"index"`
+	IsViolation   bool      `json:"is_violation" gorm:"index"`
 	// Review Queue Fields
-	ReviewStatus string `json:"review_status" gorm:"default:'pending'"` // pending, in_review, accepted, rejected
-	Priority     int    `json:"priority" gorm:"default:3"`              // 1=Critical, 5=Low
-	AssignedTo   *uint  `json:"assigned_to"`                            // FK to users
+	ReviewStatus string `json:"review_status" gorm:"default:'pending';index"` // pending, in_review, accepted, rejected
+	Priority     int    `json:"priority" gorm:"default:3"`                    // 1=Critical, 5=Low
+	AssignedTo   *uint  `json:"assigned_to"`                                  // FK to users
 	ReviewNotes  string `json:"review_notes" gorm:"type:text"`
 }
 

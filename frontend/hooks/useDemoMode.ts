@@ -158,6 +158,8 @@ export function useDemoMode() {
                 });
 
                 // Save to backend database
+                // DISABLED: Demo mode should not pollute production database
+                /*
                 const cameraIndex = cameras.findIndex(c => c.id === newDetection.cameraId);
                 api.createDetection({
                     camera_id: cameraIndex >= 0 ? cameraIndex + 1 : 1,
@@ -166,6 +168,7 @@ export function useDemoMode() {
                     location: newDetection.location,
                     is_violation: true,
                 }).catch(err => console.log("Backend save skipped:", err));
+                */
             }
         }, 5000 + Math.random() * 5000); // 5-10 seconds
 

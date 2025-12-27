@@ -4,9 +4,9 @@ import { useState, useEffect, useMemo, memo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, AlertTriangle, Video, TrendingUp, Eye, EyeOff, Maximize2, Volume2, Zap, Plus, Settings2, Grid, LayoutGrid, Box } from "lucide-react";
-import { api, Stats, Camera, Alert, realtime } from "@/services/api";
-import { useDemoMode } from "@/hooks/useDemoMode";
+import { ShieldCheck, AlertTriangle, Video, TrendingUp, Eye, EyeOff, Maximize2, Volume2, Zap, Plus, Settings2, Grid, LayoutGrid, Box, Trash2 } from "lucide-react";
+import { api, DetectionStats as Stats, Camera, realtime } from "@/services/api";
+// import { useDemoMode } from "@/hooks/useDemoMode";
 
 // Status badge component
 const StatusBadge = ({ status, color }: { status: string; color: string }) => {
@@ -25,7 +25,7 @@ const StatusBadge = ({ status, color }: { status: string; color: string }) => {
 };
 
 // Camera card component - Memoized for performance
-const CameraCard = memo(function CameraCard({ camera, currentTime, isScreenOn, onToggleScreen }: { camera: any; currentTime: string, isScreenOn: boolean, onToggleScreen: (id: string | number) => void }) {
+const CameraCard = memo(function CameraCard({ camera, isScreenOn, onToggleScreen }: { camera: any; isScreenOn: boolean, onToggleScreen: (id: string | number) => void }) {
   const [isHovered, setIsHovered] = useState(false);
 
   const borderColors: Record<string, string> = {
@@ -130,8 +130,8 @@ const CameraCard = memo(function CameraCard({ camera, currentTime, isScreenOn, o
 
         {/* Timestamp */}
         <div className="absolute bottom-3 right-3 z-20">
-          <span className="text-white/50 text-[10px] font-mono" suppressHydrationWarning>
-            {currentTime || "--:--:--"}
+          <span className="text-white/50 text-[10px] font-mono">
+            LIVE
           </span>
         </div>
 
@@ -184,15 +184,10 @@ export default function DashboardPage() {
   const [cameras, setCameras] = useState<any[]>([]);
   const [recentAlerts, setRecentAlerts] = useState<any[]>([]);
   const [wsConnected, setWsConnected] = useState(false);
-  const [time, setTime] = useState<string>("");
-
-  useEffect(() => {
-    setTime(new Date().toLocaleTimeString('id-ID'));
-    const timer = setInterval(() => {
-      setTime(new Date().toLocaleTimeString('id-ID'));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
+  // Time is managed by Layout or individual components if needed.
+  // Removing redundant 1s interval to improve performance.
+  // const [time, setTime] = useState<string>(""); 
+  // useEffect removed.
 
   // Screen Visibility & Grid State
   const [screenVisibility, setScreenVisibility] = useState<Record<string, boolean>>({});
@@ -229,8 +224,8 @@ export default function DashboardPage() {
     localStorage.setItem('dashboard_grid_cols', cols.toString());
   };
 
-  // Demo Mode integration
-  const { isDemo, detections, violations, stats: demoStats } = useDemoMode();
+  // Demo Mode Removed for Production
+  // const { isDemo, detections, violations, stats: demoStats } = useDemoMode();
 
   // Initial Data Fetch
   useEffect(() => {
@@ -266,6 +261,7 @@ export default function DashboardPage() {
         if (alertsData && alertsData.length > 0) {
           const violations = alertsData.filter((d: any) => d.is_violation);
           const transformed = violations.slice(0, 3).map((alert: any) => ({
+            id: alert.id,
             time: new Date(alert.detected_at).toLocaleTimeString('id-ID'),
             type: alert.violation_type.replace('_', ' ').toUpperCase(),
             location: alert.location,
@@ -282,10 +278,25 @@ export default function DashboardPage() {
     fetchData();
   }, []);
 
+  const handleDeleteAlert = async (id: number) => {
+    if (!confirm('Apakah Anda yakin ingin menghapus deteksi ini?')) return;
+
+    try {
+      const success = await api.deleteDetection(id);
+      if (success) {
+        setRecentAlerts(prev => prev.filter(alert => alert.id !== id));
+      } else {
+        alert('Gagal menghapus deteksi');
+      }
+    } catch (error) {
+      console.error('Failed to delete detection:', error);
+      alert('Terjadi kesalahan saat menghapus deteksi');
+    }
+  };
+
   // Real-time WebSocket Handler
   useEffect(() => {
-    if (isDemo) return;
-
+    // Production Mode: Always Connect
     realtime.connect();
 
     realtime.on('connected', () => setWsConnected(true));
@@ -317,6 +328,7 @@ export default function DashboardPage() {
         }, 5000);
 
         const newAlert = {
+          id: data.id, // Add ID for deletion
           time: "Baru Saja",
           type: data.violation_type.replace('_', ' ').toUpperCase(),
           location: data.location,
@@ -327,47 +339,9 @@ export default function DashboardPage() {
     });
 
     return () => realtime.disconnect();
-  }, [isDemo]);
+  }, []);
 
-  // Demo Mode Effect
-  useEffect(() => {
-    if (!isDemo || detections.length === 0) return;
 
-    setStats(prev => ({
-      ...prev,
-      compliance: demoStats.compliance,
-      violationsToday: violations.length,
-      totalDetections: detections.length
-    }));
-
-    // Demo alerts logic...
-    const demoAlerts = violations.slice(0, 5).map((detection) => {
-      const now = new Date();
-      const diffMs = now.getTime() - detection.timestamp.getTime();
-      const diffMins = Math.floor(diffMs / 60000);
-      const timeAgo = diffMins > 0 ? `${diffMins} menit lalu` : `Baru Saja`;
-
-      return {
-        time: timeAgo,
-        type: detection.type.replace('_', ' ').toUpperCase(),
-        location: `${detection.camera} - ${detection.location}`,
-        severity: detection.severity === 'critical' || detection.severity === 'high' ? 'BAHAYA' : 'PERINGATAN',
-      };
-    });
-
-    if (demoAlerts.length > 0) {
-      setRecentAlerts(demoAlerts);
-    }
-
-    setCameras(prev => prev.map(cam => {
-      const camViolations = violations.filter(v => v.cameraId === cam.id);
-      if (camViolations.length > 0) {
-        return { ...cam, status: 'BAHAYA', statusColor: 'red' };
-      }
-      return { ...cam, status: 'AMAN', statusColor: 'emerald' };
-    }));
-
-  }, [isDemo, detections.length, violations.length]);
 
 
   return (
@@ -382,11 +356,7 @@ export default function DashboardPage() {
           <div>
             <div className="flex items-center gap-2">
               <h3 className="text-xl font-bold text-slate-900">Global Overview</h3>
-              {isDemo ? (
-                <span className="px-2 py-1 bg-orange-500 text-white text-[10px] font-bold rounded animate-pulse flex items-center gap-1">
-                  <Zap size={10} /> DEMO
-                </span>
-              ) : wsConnected && (
+              {wsConnected && (
                 <span className="px-2 py-1 bg-emerald-500 text-white text-[10px] font-bold rounded flex items-center gap-1">
                   <Zap size={10} /> LIVE
                 </span>
@@ -540,7 +510,6 @@ export default function DashboardPage() {
           <CameraCard
             key={camera.id}
             camera={camera}
-            currentTime={time}
             isScreenOn={getScreenStatus(camera.id)}
             onToggleScreen={toggleScreen}
           />
@@ -575,6 +544,16 @@ export default function DashboardPage() {
                 <p className="text-sm text-slate-500">{alert.location}</p>
               </div>
               <span className="text-xs text-slate-400 font-mono">{alert.time}</span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteAlert(alert.id);
+                }}
+                className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                title="Hapus Deteksi"
+              >
+                <Trash2 size={16} />
+              </button>
             </div>
           )) : (
             <p className="text-center text-slate-400 py-4 italic">Belum ada deteksi hari ini.</p>

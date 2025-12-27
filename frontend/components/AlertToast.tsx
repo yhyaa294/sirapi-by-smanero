@@ -180,9 +180,11 @@ export function AlertToastContainer({ maxAlerts = 5 }: AlertToastContainerProps)
     if (alerts.length === 0) return null;
 
     return (
-        <div className="fixed top-20 right-4 z-50 flex flex-col gap-3">
-            {alerts.map((alert) => (
-                <AlertToast key={alert.id} alert={alert} onDismiss={dismissAlert} />
+        <div className="fixed top-20 right-4 z-50 flex flex-col gap-3 pointer-events-none">
+            {alerts.filter(a => a && a.id).map((alert) => (
+                <div key={alert.id} className="pointer-events-auto">
+                    <AlertToast alert={alert} onDismiss={dismissAlert} />
+                </div>
             ))}
         </div>
     );
