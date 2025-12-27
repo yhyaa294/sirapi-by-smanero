@@ -36,9 +36,7 @@
 
 <div align="center">
 
-| **AI Workflow** | **Worker Safety** |
-|:---:|:---:|
-| <img src="frontend/public/images/workflow.png" alt="Workflow" width="100%" style="border-radius: 12px;"/> | <img src="frontend/public/images/worker 3.png" alt="Worker" height="250" style="background:radial-gradient(circle, rgba(255,165,0,0.2) 0%, rgba(0,0,0,0) 70%);"/> |
+<img src="frontend/public/images/DESAIN/landing-hero.png" alt="System Hero" width="100%" style="border-radius: 12px; border: 1px solid #334155; margin-top: 20px;"/>
 
 </div>
 
@@ -88,16 +86,16 @@ Sistem dibangun dengan prinsip **Clean Architecture** dan **Microservices**:
 ```mermaid
 graph LR
     subgraph "Perception Layer"
-        CAM[📷 CCTV] -->|RTSP/USB| AI[🧠 AI Engine (Python)]
+        CAM["📷 CCTV"] -->|RTSP/USB| AI["🧠 AI Engine (Python)"]
     end
 
     subgraph "Core Logic"
-        AI -->|JSON Data| API[🚀 Backend (Go Fiber)]
-        AI -->|Screenshots| STATIC[📂 File Storage]
+        AI -->|JSON Data| API["🚀 Backend (Go Fiber)"]
+        AI -->|Screenshots| STATIC["📂 File Storage"]
     end
 
     subgraph "Presentation"
-        API -->|WebSocket| UI[💻 Dashboard (Next.js)]
+        API -->|WebSocket| UI["💻 Dashboard (Next.js)"]
         API -->|Data API| UI
         STATIC -->|Image Source| UI
     end
