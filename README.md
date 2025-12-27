@@ -21,24 +21,36 @@
 
 ---
 
-## 📸 Galeri Sistem
+## 🔄 Alur Kerja Sistem (Workflow)
 
-<div align="center">
+```mermaid
+sequenceDiagram
+    participant Worker as 👷 Worker
+    participant CCTV as 📷 CCTV
+    participant AI as 🧠 AI Engine
+    participant Backend as 🚀 Server
+    participant DB as 💾 Database
+    participant Dashboard as 💻 Admin UI
+    participant TG as 📱 Telegram Bot
 
-| **Command Center (Live Monitoring)** | **Real-time Analytics** |
-|:---:|:---:|
-| <img src="frontend/public/images/main-dashboard.png" alt="Main Dashboard" width="100%" style="border-radius: 12px; border: 1px solid #334155;"/> | <img src="frontend/public/images/analytics-dashboard.png" alt="Analytics Dashboard" width="100%" style="border-radius: 12px; border: 1px solid #334155;"/> |
-| *Pemantauan CCTV Multi-Channel dengan AI Overlay* | *Statistik Kepatuhan & Pelanggaran Harian* |
+    Worker->>CCTV: Masuk Area Kerja
+    CCTV->>AI: Streaming Video (RTSP)
+    
+    rect rgb(20, 20, 20)
+        Note over AI: Deteksi APD (YOLOv8)
+        AI->>AI: Cek Helm, Rompi, Sepatu
+    end
 
-</div>
-
-<br/>
-
-<div align="center">
-
-<img src="frontend/public/images/DESAIN/landing-hero.png" alt="System Hero" width="100%" style="border-radius: 12px; border: 1px solid #334155; margin-top: 20px;"/>
-
-</div>
+    alt Pelanggaran Terdeteksi
+        AI->>Backend: Kirim Data Pelanggaran + Foto
+        Backend->>DB: Simpan Record
+        Backend->>Dashboard: Alert WebSocket (Real-time)
+        Backend->>TG: Kirim Notifikasi & Bukti Foto
+    else Patuh APD
+        AI->>Backend: Kirim Data Kepatuhan
+        Backend->>DB: Log Kepatuhan
+    end
+```
 
 ---
 
