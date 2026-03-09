@@ -14,7 +14,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata = {
-  title: "SmartAPD | HSE Command Center",
+  title: "SiRapi | HSE Command Center",
   description: "Enterprise Safety Monitoring System",
 };
 

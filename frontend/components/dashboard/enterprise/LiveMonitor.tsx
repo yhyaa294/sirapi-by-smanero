@@ -46,7 +46,7 @@ export default function LiveMonitor() {
                         <div className="absolute inset-0 border-2 border-critical animate-pulse pointer-events-none flex items-center justify-center">
                             <div className="bg-critical/90 text-white px-4 py-2 rounded-sm font-bold flex items-center gap-2 backdrop-blur-md">
                                 <ShieldAlert className="w-5 h-5" />
-                                DETECTED: NO HELMET
+                                DETECTED: TIDAK BERTOPI
                             </div>
                         </div>
                     )}

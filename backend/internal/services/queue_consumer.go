@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/redis/go-redis/v9"
-	"github.com/smartapd/backend/internal/database"
-	"github.com/smartapd/backend/internal/models"
+	"github.com/sirapi/backend/internal/database"
+	"github.com/sirapi/backend/internal/models"
 )
 
 // DetectionMessage is the message format from AI Engine

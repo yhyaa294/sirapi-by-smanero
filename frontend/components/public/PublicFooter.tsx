@@ -8,7 +8,7 @@ export default function PublicFooter() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">SmartAPD</h3>
+            <h3 className="text-lg font-semibold">SiRapi</h3>
             <p className="text-sm text-gray-300">
               Solusi K3 4.0 berbasis AI untuk menciptakan lingkungan kerja yang lebih aman dan produktif.
             </p>
@@ -99,8 +99,8 @@ export default function PublicFooter() {
               </li>
               <li className="flex">
                 <Mail className="flex-shrink-0 h-5 w-5 text-gray-400" />
-                <a href="mailto:info@smartapd.id" className="ml-3 text-sm text-gray-300 hover:text-white">
-                  info@smartapd.id
+                <a href="mailto:info@sirapi.id" className="ml-3 text-sm text-gray-300 hover:text-white">
+                  info@sirapi.id
                 </a>
               </li>
             </ul>
@@ -109,7 +109,7 @@ export default function PublicFooter() {
 
         <div className="mt-12 border-t border-gray-800 pt-8">
           <p className="text-sm text-center text-gray-400">
-            &copy; {new Date().getFullYear()} SmartAPD. All rights reserved.
+            &copy; {new Date().getFullYear()} SiRapi. All rights reserved.
           </p>
         </div>
       </div>

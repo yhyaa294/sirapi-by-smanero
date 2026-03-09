@@ -8,7 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/websocket/v2"
 
-	"github.com/smartapd/backend/internal/middleware"
+	"github.com/sirapi/backend/internal/middleware"
 )
 
 // ==================== WEBSOCKET HANDLER ====================
@@ -67,7 +67,7 @@ func handleWebSocket(c *websocket.Conn) {
 	// Send welcome message
 	c.WriteJSON(fiber.Map{
 		"type":    "connection",
-		"message": "Connected to SmartAPD real-time feed",
+		"message": "Connected to SiRapi real-time feed",
 		"time":    time.Now(),
 	})
 

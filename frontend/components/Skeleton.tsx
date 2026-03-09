@@ -1,6 +1,6 @@
 "use client";
 
-// Skeleton Loading Components for SmartAPD
+// Skeleton Loading Components for SiRapi
 // Provides instant visual feedback while content loads
 
 interface SkeletonProps {

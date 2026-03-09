@@ -32,12 +32,12 @@ import { useDemoMode, DemoDetection } from "@/hooks/useDemoMode";
 interface Incident {
   id: string;
   timestamp: Date;
-  type: "no_helmet" | "no_vest" | "no_gloves" | "no_boots" | "danger_zone" | "system";
+  type: "no_topi" | "no_dasi" | "no_sabuk" | "no_sepatu" | "danger_zone" | "system";
   severity: "critical" | "high" | "medium" | "low" | "info";
   location: string;
   cameraId: string;
   description: string;
-  status: "open" | "investigating" | "resolved";
+  status: "open" | "indasiigating" | "resolved";
   read: boolean;
   confidence?: number;
   imageUrl?: string;
@@ -53,7 +53,7 @@ interface Screenshot {
 export default function UnifiedAlertsPage() {
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | "open" | "investigating" | "resolved">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "open" | "indasiigating" | "resolved">("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [showFilters, setShowFilters] = useState(false);
   const [screenshots, setScreenshots] = useState<Screenshot[]>([]);
@@ -95,13 +95,13 @@ export default function UnifiedAlertsPage() {
           if (!isDemo && data.screenshots?.length > 0) {
             const screenshotIncidents: Incident[] = data.screenshots.slice(0, 20).map((ss: Screenshot, idx: number) => {
               const parts = ss.filename.replace('.jpg', '').split('_');
-              const violationType = parts[0] || 'no_helmet';
+              const violationType = parts[0] || 'no_topi';
               return {
                 id: `AI-${idx + 1}`,
                 timestamp: new Date(ss.timestamp),
                 type: violationType as Incident["type"],
-                severity: violationType === 'no_helmet' ? 'critical' : 'high',
-                location: `TITIK ${String.fromCharCode(65 + (idx % 4))} - ${parts[0]?.includes('helmet') ? 'Gudang Utama' : 'Loading Dock'}`,
+                severity: violationType === 'no_topi' ? 'critical' : 'high',
+                location: `TITIK ${String.fromCharCode(65 + (idx % 4))} - ${parts[0]?.includes('topi') ? 'Gudang Utama' : 'Loading Dock'}`,
                 cameraId: String.fromCharCode(65 + (idx % 4)),
                 description: `AI Detection: ${violationType.replace('_', ' ')} di area kerja.`,
                 status: idx < 3 ? 'open' : 'resolved',
@@ -168,7 +168,7 @@ export default function UnifiedAlertsPage() {
   const mapDetectionToIncident = (det: any): Incident => ({
     id: String(det.id),
     timestamp: new Date(det.detected_at || det.created_at || new Date()), // Fallback to now
-    type: (det.violation_type || 'no_helmet').toLowerCase().replace(' ', '_') as Incident["type"],
+    type: (det.violation_type || 'no_topi').toLowerCase().replace(' ', '_') as Incident["type"],
     severity: det.priority === 1 ? 'critical' : det.priority === 2 ? 'high' : 'medium', // Default to medium if unknown
     location: det.location || `Kamera ${det.camera_id}`,
     cameraId: String(det.camera_id),
@@ -225,10 +225,10 @@ export default function UnifiedAlertsPage() {
   // Helper functions
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case "no_helmet": return <HardHat className="w-4 h-4" />;
-      case "no_vest": return <Shirt className="w-4 h-4" />;
-      case "no_gloves": return <Hand className="w-4 h-4" />;
-      case "no_boots": return <Footprints className="w-4 h-4" />;
+      case "no_topi": return <HardHat className="w-4 h-4" />;
+      case "no_dasi": return <Shirt className="w-4 h-4" />;
+      case "no_sabuk": return <Hand className="w-4 h-4" />;
+      case "no_sepatu": return <Footprints className="w-4 h-4" />;
       case "danger_zone": return <AlertTriangle className="w-4 h-4" />;
       case "system": return <Shield className="w-4 h-4" />;
       default: return <Bell className="w-4 h-4" />;
@@ -237,10 +237,10 @@ export default function UnifiedAlertsPage() {
 
   const getTypeLabel = (type: string) => {
     switch (type) {
-      case "no_helmet": return "No Helmet";
-      case "no_vest": return "No Vest";
-      case "no_gloves": return "No Gloves";
-      case "no_boots": return "No Boots";
+      case "no_topi": return "Tidak Bertopi";
+      case "no_dasi": return "Tidak Berdasi";
+      case "no_sabuk": return "No Sabuk";
+      case "no_sepatu": return "No Sepatu";
       case "danger_zone": return "Danger Zone";
       case "system": return "System";
       default: return type;
@@ -261,7 +261,7 @@ export default function UnifiedAlertsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "open": return "bg-red-500/10 text-red-400 border-red-500/30";
-      case "investigating": return "bg-amber-500/10 text-amber-400 border-amber-500/30";
+      case "indasiigating": return "bg-amber-500/10 text-amber-400 border-amber-500/30";
       case "resolved": return "bg-emerald-500/10 text-emerald-400 border-emerald-500/30";
       default: return "bg-slate-500/10 text-slate-400 border-slate-500/30";
     }
@@ -282,7 +282,7 @@ export default function UnifiedAlertsPage() {
     setIncidents(prev => prev.map(i => i.id === id ? { ...i, read: true } : i));
   };
 
-  const updateStatus = (id: string, status: "open" | "investigating" | "resolved") => {
+  const updateStatus = (id: string, status: "open" | "indasiigating" | "resolved") => {
     setIncidents(prev => prev.map(i => i.id === id ? { ...i, status, read: true } : i));
   };
 
@@ -366,7 +366,7 @@ export default function UnifiedAlertsPage() {
               <div className="space-y-3">
                 <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
                   <p className="text-xs text-red-400 font-bold uppercase mb-1">Terdeteksi AI</p>
-                  <p className="text-white font-medium">Pekerja Tidak Menggunakan Helm (No Helmet)</p>
+                  <p className="text-white font-medium">Pekerja Tidak Menggunakan Helm (Tidak Bertopi)</p>
                   <p className="text-xs text-slate-400 mt-2">Confidence: <span className="text-emerald-400">92.4%</span></p>
                 </div>
               </div>
@@ -406,7 +406,7 @@ export default function UnifiedAlertsPage() {
 
               <div className="mt-auto">
                 <button className="w-full py-3 bg-orange-600 hover:bg-orange-500 text-white font-bold rounded-xl transition-colors shadow-lg shadow-orange-600/20">
-                  Investigasi Lebih Lanjut
+                  Indasiigasi Lebih Lanjut
                 </button>
               </div>
             </div>
@@ -596,7 +596,7 @@ export default function UnifiedAlertsPage() {
               >
                 <option value="all">Semua Status</option>
                 <option value="open">Open</option>
-                <option value="investigating">Investigating</option>
+                <option value="indasiigating">Indasiigating</option>
                 <option value="resolved">Resolved</option>
               </select>
               <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
@@ -610,10 +610,10 @@ export default function UnifiedAlertsPage() {
                 className="appearance-none px-4 py-2.5 pr-10 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-orange-500 cursor-pointer"
               >
                 <option value="all">Semua Jenis</option>
-                <option value="no_helmet">No Helmet</option>
-                <option value="no_vest">No Vest</option>
-                <option value="no_gloves">No Gloves</option>
-                <option value="no_boots">No Boots</option>
+                <option value="no_topi">Tidak Bertopi</option>
+                <option value="no_dasi">Tidak Berdasi</option>
+                <option value="no_sabuk">No Sabuk</option>
+                <option value="no_sepatu">No Sepatu</option>
                 <option value="danger_zone">Danger Zone</option>
                 <option value="system">System</option>
               </select>
@@ -705,7 +705,7 @@ export default function UnifiedAlertsPage() {
                     className={`px-3 py-1.5 rounded-lg text-xs font-bold border cursor-pointer ${getStatusColor(incident.status)}`}
                   >
                     <option value="open">Open</option>
-                    <option value="investigating">Investigating</option>
+                    <option value="indasiigating">Indasiigating</option>
                     <option value="resolved">Resolved</option>
                   </select>
                 </div>
@@ -756,7 +756,7 @@ export default function UnifiedAlertsPage() {
       <div className="mt-8 text-center text-sm text-slate-500">
         <p>
           Data diperbarui secara real-time •{" "}
-          <span className="text-orange-500">SmartAPD</span> Unified Incident Center
+          <span className="text-orange-500">SiRapi</span> Unified Incident Center
         </p>
       </div>
     </div>

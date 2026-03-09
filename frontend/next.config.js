@@ -7,6 +7,8 @@ const nextConfig = {
   experimental: {
     // Optimize package imports (tree-shaking)
     optimizePackageImports: ['lucide-react', 'framer-motion', 'recharts', 'date-fns'],
+    // Externalize server-only packages to avoid webpack bundling issues
+    serverComponentsExternalPackages: ['puppeteer', 'handlebars'],
   },
 
   // 🖼️ Image Optimization
@@ -48,6 +50,14 @@ const nextConfig = {
         ],
       },
     ];
+  },
+  // 🔧 Webpack Externals (don't bundle server-only packages)
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.externals = config.externals || [];
+      config.externals.push('puppeteer', 'puppeteer-core');
+    }
+    return config;
   },
 }
 

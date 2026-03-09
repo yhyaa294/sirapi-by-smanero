@@ -174,7 +174,7 @@ export default function MobileSidebar({ isOpen, onToggle, onClose }: MobileSideb
                 <Activity className="w-6 h-6" />
               </div>
               <div>
-                <h2 className="text-lg font-bold">SmartAPD™</h2>
+                <h2 className="text-lg font-bold">SiRapi™</h2>
                 <p className="text-xs opacity-90">Mobile Navigation</p>
               </div>
             </div>

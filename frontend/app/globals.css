@@ -5,87 +5,75 @@
 @layer base {
   :root {
     /* 
-     * HSE COMMAND CENTER - STRICT PALETTE 
-     * Theme: Industrial Navy & Safety Orange
+     * SIRAPI - SMART DISCIPLINE SYSTEM
+     * Theme: Premium Glassmorphism UI
      */
-    
-    /* BACKGROUNDS (Slate-950 base) */
-    --background: 222 47% 5%;       /* #020617 Slate-950 */
-    --surface: 222 47% 11%;         /* #0f172a Slate-900 */
-    --surface-highlight: 215 28% 17%; /* #1e293b Slate-800 */
-    
+
+    /* BACKGROUNDS */
+    --background: 220 33% 98%;
+    /* Very light airy blue/gray */
+    --surface: 0 0% 100%;
+    /* White */
+
     /* FOREGROUNDS/TEXT */
-    --foreground: 210 40% 98%;      /* #f8fafc Slate-50 */
-    --foreground-muted: 215 20% 65%; /* #94a3b8 Slate-400 */
-    --foreground-dim: 215 16% 47%;  /* #64748b Slate-500 */
+    --foreground: 222 47% 15%;
+    /* Dark Slate */
+    --foreground-muted: 215 16% 50%;
+    /* Medium Slate */
 
-    /* SEMANTIC ACCENTS */
-    --primary: 24 95% 53%;          /* #f97316 Orange-500 (Safety/Action) */
-    --primary-hover: 24 95% 45%;    /* Darker Orange */
-    
-    --safe: 158 64% 52%;            /* #34d399 Emerald-400 (Compliance) */
-    --warning: 45 93% 47%;          /* #eab308 Yellow-500 (Caution) */
-    --critical: 0 84% 60%;          /* #ef4444 Red-500 (Violation/Danger) */
-    --info: 217 91% 60%;            /* #3b82f6 Blue-500 (System Status) */
+    /* BRAND COLORS (Inspired by analytical reference) */
+    --primary: 245 80% 65%;
+    /* Soft Purple/Indigo */
+    --primary-hover: 245 80% 55%;
 
-    /* BORDERS */
-    --border: 217 19% 27%;          /* Slate-700/50 mix */
-    --border-subtle: 217 19% 20%;   /* Slate-800 mostly */
+    --secondary: 199 89% 50%;
+    /* Cyan / Light Blue */
+    --accent: 142 70% 55%;
+    /* Mint Green */
+
+    /* SEMANTIC STATUS */
+    --safe: 142 71% 45%;
+    /* Green */
+    --warning: 35 90% 60%;
+    /* Orange */
+    --critical: 0 84% 65%;
+    /* Soft Coral Red */
+    --info: 210 100% 60%;
+    /* Bright Blue */
   }
 
   body {
-    @apply bg-[hsl(var(--background))] text-[hsl(var(--foreground))] antialiased selection:bg-orange-500/30 selection:text-orange-100;
+    @apply bg-[hsl(var(--background))] text-[hsl(var(--foreground))] antialiased selection:bg-indigo-200 selection:text-indigo-900 overflow-x-hidden;
+  }
+}
+
+@layer utilities {
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }
 
 @layer components {
-  /* 
-   * GLASS PANEL (Subtle, professional)
-   * Replacing high-gloss generic glassmorphism 
-   */
-  .glass-panel {
-    @apply bg-[hsl(var(--surface))]/80 backdrop-blur-md border border-[hsl(var(--border))] rounded-sm;
+
+  /* Premium Glassmorphism Utilities */
+  .glass {
+    @apply bg-white/60 backdrop-blur-xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)];
   }
 
-  .glass-panel-hover {
-    @apply hover:border-orange-500/50 hover:shadow-[0_0_15px_rgba(249,115,22,0.1)] transition-all duration-300;
+  .glass-card {
+    @apply bg-white/70 backdrop-blur-md border border-white/60 rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.03)] hover:shadow-[0_15px_50px_rgba(0,0,0,0.06)] transition-all duration-300;
   }
 
-  /* 
-   * DATA DISPLAY
-   * High density, monospace numbers 
-   */
-  .data-value {
-    @apply font-mono tracking-tight text-[hsl(var(--foreground))];
+  .glass-dark {
+    @apply bg-slate-900/60 backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.2)];
   }
-
-  .label-text {
-    @apply text-[10px] uppercase tracking-[0.15em] text-[hsl(var(--foreground-dim))] font-bold;
-  }
-
-  /*
-   * STATUS INDICATORS
-   */
-  .status-dot {
-    @apply w-2 h-2 rounded-full inline-block mr-2;
-  }
-  
-  .status-dot-safe { @apply bg-[hsl(var(--safe))] shadow-[0_0_8px_hsl(var(--safe))]; }
-  .status-dot-critical { @apply bg-[hsl(var(--critical))] shadow-[0_0_8px_hsl(var(--critical))] animate-pulse; }
-}
-
-/* Custom Scrollbar for Dashboard */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: hsl(var(--background)); 
-}
-::-webkit-scrollbar-thumb {
-  background: hsl(var(--surface-highlight)); 
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--primary)); 
 }

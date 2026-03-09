@@ -64,6 +64,7 @@ backend/*.exe
 next-env.d.ts
 
 # Python specific
+*.pt
 *.egg-info/
 .eggs/
 dist/

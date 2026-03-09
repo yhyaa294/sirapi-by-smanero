@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/smartapd/backend/internal/database"
-	"github.com/smartapd/backend/internal/models"
+	"github.com/sirapi/backend/internal/database"
+	"github.com/sirapi/backend/internal/models"
 )
 
 type CleanupService struct {

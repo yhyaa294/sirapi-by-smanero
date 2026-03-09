@@ -1,6 +1,6 @@
-# 🗺️ SmartAPD System Flowcharts
+# 🗺️ SiRapi System Flowcharts
 
-Dokumentasi ini berisi diagram alur (flowchart) lengkap yang menjelaskan cara kerja sistem internal SmartAPD, mulai dari input kamera, pemrosesan AI, hingga notifikasi ke pengguna.
+Dokumentasi ini berisi diagram alur (flowchart) lengkap yang menjelaskan cara kerja sistem internal SiRapi, mulai dari input kamera di gerbang sekolah, pemrosesan AI, hingga notifikasi ke manajemen sekolah.
 
 ---
 
@@ -11,12 +11,12 @@ Gambaran umum bagaimana semua komponen sistem terhubung.
 ```mermaid
 graph TB
     subgraph "External World"
-        Worker[👷 Worker]
-        Camera[📷 CCTV/Webcam]
-        Admin[👤 Safety Admin]
+        Student[👨‍🎓 Siswa]
+        Camera[📷 CCTV Gerbang]
+        Admin[👤 Guru / Admin]
     end
 
-    subgraph "SmartAPD System"
+    subgraph "SiRapi System"
         direction TB
         
         subgraph "AI Processing Unit"
@@ -37,8 +37,8 @@ graph TB
         end
     end
 
-    Worker -- "Activity" --> Camera
-    Camera -- "RTSP/USB Stream" --> ImgCap
+    Student -- "Berjalan Masuk" --> Camera
+    Camera -- "RTSP Stream" --> ImgCap
     ImgCap -- "Frames" --> YOLO
     YOLO -- "Detections" --> Logic
     Logic -- "POST /detections" --> API
@@ -56,7 +56,7 @@ graph TB
 
 ## 🤖 2. Alur Proses AI Engine (Python)
 
-Detail bagaimana sistem melakukan deteksi dan menentukan pelanggaran.
+Detail bagaimana sistem melakukan deteksi dan menentukan pelanggaran seragam sekolah.
 
 ```mermaid
 flowchart TD
@@ -72,8 +72,8 @@ flowchart TD
     
     Filter --> Classify{Check Classes}
     
-    Classify -- "No Helmet/Vest" --> Violation[⚠️ Violation Detected]
-    Classify -- "Full PPE" --> Compliance[✅ Compliant]
+    Classify -- "Tanpa Dasi/Topi/Sabuk" --> Violation[⚠️ Pelanggaran Terdeteksi]
+    Classify -- "Atribut Lengkap" --> Compliance[✅ Patuh]
     
     Violation --> Draw[✏️ Draw Red Box & Label]
     Compliance --> DrawGreen[✏️ Draw Green Box]
@@ -100,7 +100,7 @@ flowchart TD
 
 ## 🔧 3. Alur Data Backend (Golang)
 
-Bagaimana backend menerima data deteksi dan menyebarkannya.
+Bagaimana backend menerima data deteksi pelanggaran seragam dan menyebarkannya.
 
 ```mermaid
 sequenceDiagram
@@ -134,7 +134,7 @@ sequenceDiagram
 
 ## 📱 4. Alur Notifikasi & Tindakan
 
-Bagaimana sistem menangani insiden kritis.
+Bagaimana sistem menangani insiden pelanggaran kedisiplinan.
 
 ```mermaid
 stateDiagram-v2
@@ -144,17 +144,17 @@ stateDiagram-v2
     state "⚠️ Pelanggaran Terdeteksi" as Violation
     state "📢 Alert Generation" as Alert
     state "📱 Notifikasi Terkirim" as Sent
-    state "👮 Tindakan Admin" as Action
+    state "👮 Tindakan Guru" as Action
     
-    Monitoring --> Violation: AI detects 'no_helmet'
+    Monitoring --> Violation: AI detects 'no_tie' or 'no_belt'
     Violation --> Alert: Capture Evidence (Photo)
     Alert --> Sent: Send to Telegram & Dashboard
     
-    Sent --> Action: Admin receives alert
+    Sent --> Action: Guru piket menerima alert
     
     state Action {
         [*] --> Review: Buka Dashboard/HP
-        Review --> Acknowledge: Klik "Acknowledge"
+        Review --> Acknowledge: Klik "Tindak Lanjuti"
         Review --> Ignore: Abaikan (False Alarm)
     }
     
@@ -186,7 +186,7 @@ erDiagram
         string camera_id FK
         timestamp created_at
         float confidence
-        string type "helmet|vest|gloves|boots"
+        string type "topi|dasi|sabuk|bed|sepatu"
         boolean is_compliant
     }
 

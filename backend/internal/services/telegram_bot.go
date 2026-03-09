@@ -12,8 +12,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/smartapd/backend/internal/database"
-	"github.com/smartapd/backend/internal/models"
+	"github.com/sirapi/backend/internal/database"
+	"github.com/sirapi/backend/internal/models"
 )
 
 // Import database and models using runtime access
@@ -218,11 +218,11 @@ func (b *TelegramBot) cmdStart(msg *Message) {
 		name = msg.From.FirstName
 	}
 
-	text := fmt.Sprintf(`🛡️ <b>Selamat Datang di SmartAPD Bot!</b>
+	text := fmt.Sprintf(`🛡️ <b>Selamat Datang di SiRapi Bot!</b>
 
 Halo %s! 👋
 
-Bot ini adalah dashboard kedua untuk memantau keselamatan APD secara real-time.
+Bot ini adalah dashboard kedua untuk memantau keselamatan seragam secara real-time.
 
 <b>Gunakan tombol menu di bawah atau ketik:</b>
 /dashboard - Ringkasan quick view
@@ -289,7 +289,7 @@ func (b *TelegramBot) cmdDashboard(msg *Message) {
 
 	now := time.Now().Format("02 Jan 2006 15:04")
 
-	text := fmt.Sprintf(`⚠️ <b>SmartAPD — Ringkasan</b> (%s)
+	text := fmt.Sprintf(`⚠️ <b>SiRapi — Ringkasan</b> (%s)
 
 ━━━━━━━━━━━━━━━━━━━━━
 📊 <b>Safety Score:</b> %.1f%%
@@ -435,7 +435,7 @@ func (b *TelegramBot) cmdSubscribe(msg *Message, args []string) {
 Filter: <code>%s</code>
 
 Anda akan menerima notifikasi untuk:
-• Pelanggaran APD terdeteksi
+• Pelanggaran seragam terdeteksi
 • Laporan harian (08:00)
 • Status sistem kritis
 
@@ -451,7 +451,7 @@ func (b *TelegramBot) cmdUnsubscribe(msg *Message, args []string) {
 
 // cmdHelp handles /help
 func (b *TelegramBot) cmdHelp(msg *Message) {
-	text := `📚 <b>Panduan SmartAPD Bot</b>
+	text := `📚 <b>Panduan SiRapi Bot</b>
 
 <b>Perintah Utama:</b>
 /dashboard - Ringkasan KPI dengan tombol aksi
@@ -470,7 +470,7 @@ func (b *TelegramBot) cmdHelp(msg *Message) {
 • 🔕 Mute - Hentikan notifikasi sementara
 • 🔄 Refresh - Update data terbaru
 
-<i>SmartAPD - AI Safety Monitoring</i>`
+<i>SiRapi - AI Safety Monitoring</i>`
 
 	b.sendReply(msg.Chat.ID, text)
 }
@@ -634,7 +634,7 @@ func (b *TelegramBot) refreshDashboard(chatID int64, messageID int64) {
 
 	now := time.Now().Format("02 Jan 2006 15:04")
 
-	text := fmt.Sprintf(`⚠️ <b>SmartAPD — Ringkasan</b> (%s)
+	text := fmt.Sprintf(`⚠️ <b>SiRapi — Ringkasan</b> (%s)
 
 ━━━━━━━━━━━━━━━━━━━━━
 📊 <b>Safety Score:</b> %.1f%%

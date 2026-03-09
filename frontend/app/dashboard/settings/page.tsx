@@ -1,1231 +1,545 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
-    Settings, Camera, Bell, Shield, Database, Save, RefreshCw,
-    Send, CheckCircle, XCircle, Loader2, MessageSquare, Mail,
-    Smartphone, Volume2, Clock, Wifi, Plus, Cpu, Power, Video, Webcam, Trash2, Edit, Edit2, ExternalLink,
-    HardDrive, Activity, Eye, Focus, Maximize, AlertCircle, AlertTriangle, Signal, Map, List
+    Settings,
+    Building,
+    Link2,
+    Brain,
+    Bell,
+    Save,
+    Check,
+    Loader2,
+    Camera,
+    MessageSquare,
+    Wifi,
+    Clock,
+    Users,
+    Shield,
+    GraduationCap,
+    Eye,
+    Footprints,
+    Shirt,
+    CalendarDays
 } from "lucide-react";
 
-import dynamic from 'next/dynamic';
-const MapView = dynamic(() => import('@/components/MapView'), {
-    ssr: false,
-    loading: () => <div className="h-[400px] w-full bg-slate-100 rounded-xl flex items-center justify-center animate-pulse">Loading Map...</div>
-});
-
-interface NotificationSettings {
-    telegramBotToken: string;
-    telegramChatId: string;
-    emailRecipient: string;
-    enableTelegram: boolean;
-    enableEmail: boolean;
-    enablePushNotification: boolean;
-    enableSound: boolean;
-    notifyOnViolation: boolean;
-    notifyOnCritical: boolean;
-    cooldownSeconds: number;
-    // Telegram Schedule Settings
-    scheduledReportEnabled: boolean;
-    scheduledReportTime: string;
-    scheduledReportDays: string[];
-    sendScreenshotsWithNotifications: boolean;
-    notificationType: "violations" | "all";
-}
-
-const defaultNotificationSettings: NotificationSettings = {
-    telegramBotToken: "",
-    telegramChatId: "",
-    emailRecipient: "",
-    enableTelegram: true,
-    enableEmail: false,
-    enablePushNotification: true,
-    enableSound: true,
-    notifyOnViolation: true,
-    notifyOnCritical: true,
-    cooldownSeconds: 60,
-    scheduledReportEnabled: false,
-    scheduledReportTime: "08:00",
-    scheduledReportDays: ["monday", "tuesday", "wednesday", "thursday", "friday"],
-    sendScreenshotsWithNotifications: true,
-    notificationType: "violations",
-};
-
-// Camera Configuration
-interface CameraConfig {
-    id: string;
-    name: string;
-    location: string;
-    sourceType: "webcam" | "rtsp" | "ip" | "mjpeg";
-    sourceUrl: string;
-    webcamId?: number;
-    enabled: boolean;
-    aiEnabled: boolean;
-}
-
-const defaultCameras: CameraConfig[] = [
-    { id: "A", name: "TITIK A", location: "Gudang Utama", sourceType: "webcam", sourceUrl: "0", webcamId: 0, enabled: true, aiEnabled: true },
-    { id: "B", name: "TITIK B", location: "Area Assembly", sourceType: "rtsp", sourceUrl: "rtsp://192.168.1.102:554/stream", enabled: false, aiEnabled: false },
-    { id: "C", name: "TITIK C", location: "Welding Bay", sourceType: "rtsp", sourceUrl: "rtsp://192.168.1.103:554/stream", enabled: false, aiEnabled: false },
-    { id: "D", name: "TITIK D", location: "Loading Dock", sourceType: "rtsp", sourceUrl: "rtsp://192.168.1.104:554/stream", enabled: false, aiEnabled: false },
+// Tab Configuration
+const TABS = [
+    { id: "umum", label: "Umum", icon: Building },
+    { id: "integrasi", label: "Integrasi", icon: Link2 },
+    { id: "ai", label: "Konfigurasi AI", icon: Brain },
+    { id: "notifikasi", label: "Notifikasi", icon: Bell },
 ];
 
-// Camera Settings Tab Component
-import { api, Camera as ApiCamera } from "@/services/api";
+export default function SettingsPage() {
+    const [activeTab, setActiveTab] = useState("umum");
+    const [isSaving, setIsSaving] = useState(false);
+    const [testingConnection, setTestingConnection] = useState(false);
+    const [connectionSuccess, setConnectionSuccess] = useState(false);
 
-import { useSearchParams, useRouter } from "next/navigation";
+    // Form States
+    const [schoolName, setSchoolName] = useState("SMAN Ngoro Jombang");
+    const [jamMasuk, setJamMasuk] = useState("07:00");
+    const [jamPulang, setJamPulang] = useState("15:00");
+    const [maxViolation, setMaxViolation] = useState("3");
+    const [activeDays, setActiveDays] = useState<Record<string, boolean>>({
+        senin: true,
+        selasa: true,
+        rabu: true,
+        kamis: true,
+        jumat: true,
+        sabtu: false,
+        minggu: false,
+    });
 
-// Telegram Settings Component
-import TelegramSettings from "./components/TelegramSettings";
+    const [botToken, setBotToken] = useState("••••••••••••••••");
+    const [chatId, setChatId] = useState("-1001234567890");
+    const [rtspUrl, setRtspUrl] = useState("rtsp://192.168.1.100:554/stream1");
 
-function CameraSettingsTab() {
-    const [cameras, setCameras] = useState<ApiCamera[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [editingCamera, setEditingCamera] = useState<Partial<ApiCamera> & { sourceType?: string; webCamId?: number } | null>(null);
-    const [testingCamera, setTestingCamera] = useState<number | null>(null);
-    const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+    const [sensitivity, setSensitivity] = useState(75);
+    const [detectTie, setDetectTie] = useState(true);
+    const [detectBelt, setDetectBelt] = useState(true);
+    const [detectShoes, setDetectShoes] = useState(true);
+    const [detectHat, setDetectHat] = useState(true);
 
-    const searchParams = useSearchParams();
-    const router = useRouter();
+    const [dailyReport, setDailyReport] = useState(true);
+    const [realtimeAlert, setRealtimeAlert] = useState(true);
 
-    // Load cameras from Backend
-    const fetchCameras = async () => {
-        setIsLoading(true);
-        const data = await api.getCameras();
-        setCameras(data);
-        setIsLoading(false);
+    const handleTestConnection = () => {
+        setTestingConnection(true);
+        setConnectionSuccess(false);
+        setTimeout(() => {
+            setTestingConnection(false);
+            setConnectionSuccess(true);
+            setTimeout(() => setConnectionSuccess(false), 3000);
+        }, 2000);
     };
 
-    useEffect(() => {
-        fetchCameras();
-    }, []);
-
-    // Check for "add" action in URL
-    useEffect(() => {
-        const action = searchParams.get('action');
-        if (action === 'add') {
-            // Delay slightly to ensure component is ready, then open modal
-            setTimeout(() => addCamera(), 100);
-
-            // Clear the param so it doesn't reopen on refresh
-            router.replace('/dashboard/settings?tab=camera', { scroll: false });
-        }
-    }, [searchParams]);
-
-    // Add new camera
-    const addCamera = () => {
-        const newCamera: Partial<ApiCamera> & { sourceType?: string; webCamId?: number } = {
-            name: "New Camera",
-            location: "Unknown Location",
-            rtsp_url: "0",
-            status: "offline",
-            resolution: "1920x1080",
-            is_active: false,
-            latitude: -7.5595, // Default coordinate (example)
-            longitude: 112.4353,
-            // UI helper fields
-            sourceType: "webcam",
-            webCamId: 0
-        };
-        setEditingCamera(newCamera);
-    };
-
-    const handleReconnect = async (id: number) => {
-        if (!confirm("Force reconnect camera stream?")) return;
-        const success = await api.reconnectCamera(id);
-        if (success) {
-            alert("Reconnection initiated");
-            fetchCameras();
-        } else {
-            alert("Failed to trigger reconnection");
-        }
-    };
-
-    // Save (Create or Update)
-    const handleSaveCamera = async () => {
-        if (!editingCamera) return;
-
-        // map UI fields back to rtsp_url if needed
-        let finalUrl = editingCamera.rtsp_url;
-        if (editingCamera.sourceType === 'webcam') {
-            finalUrl = editingCamera.webCamId?.toString() || "0";
-        }
-
-        const payload: Partial<ApiCamera> = {
-            name: editingCamera.name,
-            location: editingCamera.location,
-            rtsp_url: finalUrl,
-            status: editingCamera.status || "offline",
-            resolution: editingCamera.resolution || "1920x1080",
-            is_active: editingCamera.is_active,
-            latitude: Number(editingCamera.latitude) || 0,
-            longitude: Number(editingCamera.longitude) || 0,
-        };
-
-        let success = false;
-        if (editingCamera.ID) {
-            success = await api.updateCamera(editingCamera.ID, payload);
-        } else {
-            success = await api.createCamera(payload);
-        }
-
-        if (success) {
-            setEditingCamera(null);
-            fetchCameras();
-        } else {
-            alert("Gagal menyimpan kamera");
-        }
-    };
-
-    // Delete camera
-    const deleteCamera = async (id: number) => {
-        if (confirm(`Hapus kamera?`)) {
-            const success = await api.deleteCamera(id);
-            if (success) fetchCameras();
-            else alert("Gagal menghapus kamera");
-        }
-    };
-
-    // Toggle camera enabled
-    const toggleCamera = async (cam: Camera) => {
-        const success = await api.updateCamera(cam.ID, { ...cam, is_active: !cam.is_active });
-        if (success) fetchCameras();
-    };
-
-    // Test camera connection (mock test)
-    const testCamera = async (camera: Camera) => {
-        setTestingCamera(camera.ID);
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        setTestingCamera(null);
-        alert(`Kamera ${camera.name} ${camera.is_active ? 'terhubung!' : 'dimatikan'}`);
-    };
-
-    const getSourceType = (url: string) => {
-        if (!url) return "unknown";
-        if (url.startsWith("rtsp")) return "rtsp";
-        if (url.startsWith("http")) return "ip";
-        if (!isNaN(Number(url))) return "webcam";
-        return "mjpeg";
-    };
-
-    const sourceTypeLabels: Record<string, string> = {
-        webcam: "Webcam USB",
-        rtsp: "RTSP Stream",
-        ip: "IP Camera",
-        mjpeg: "MJPEG Stream",
-        unknown: "Unknown Source"
+    const handleSave = () => {
+        setIsSaving(true);
+        setTimeout(() => setIsSaving(false), 1500);
     };
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h3 className="text-lg font-bold text-slate-900">Konfigurasi Kamera</h3>
-                    <p className="text-sm text-slate-500">Kelola sumber video untuk deteksi AI</p>
-                </div>
-                <div className="flex gap-2">
-                    <button
-                        onClick={fetchCameras}
-                        className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
-                        title="Refresh List"
-                    >
-                        <RefreshCw size={18} className={isLoading ? "animate-spin" : ""} />
-                    </button>
-                    <div className="flex bg-slate-100 p-1 rounded-lg mr-2">
-                        <button
-                            onClick={() => setViewMode('list')}
-                            className={`p-1.5 rounded-md transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-400 hover:text-slate-600'}`}
-                        >
-                            <List size={18} />
-                        </button>
-                        <button
-                            onClick={() => setViewMode('map')}
-                            className={`p-1.5 rounded-md transition-all ${viewMode === 'map' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-400 hover:text-slate-600'}`}
-                        >
-                            <Map size={18} />
-                        </button>
-                    </div>
-                    <button
-                        onClick={addCamera}
-                        className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-medium transition-colors"
-                    >
-                        <Plus size={18} />
-                        Tambah Kamera
-                    </button>
-                </div>
-            </div>
+        <div className="max-w-[1400px] mx-auto pb-10">
 
-            {/* Camera List */}
-            {isLoading ? (
-                <div className="text-center py-12">
-                    <Loader2 className="w-8 h-8 animate-spin mx-auto text-orange-500 mb-2" />
-                    <p className="text-slate-500">Memuat data kamera...</p>
+            {/* Header */}
+            <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                <div>
+                    <div className="flex items-center gap-3 mb-1">
+                        <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center shadow-inner">
+                            <Settings size={22} className="text-primary" />
+                        </div>
+                        <h1 className="text-2xl md:text-3xl font-bold text-slate-800 tracking-tight">
+                            Pengaturan Sistem
+                        </h1>
+                    </div>
+                    <p className="text-slate-500 mt-1 text-sm font-medium ml-14">
+                        Konfigurasi integrasi, AI detection, dan notifikasi
+                    </p>
                 </div>
-            ) : viewMode === 'map' ? (
-                <MapView cameras={cameras} />
-            ) : (
-                <div className="grid gap-4">
-                    {cameras.map((cam) => {
-                        const type = getSourceType(cam.rtsp_url);
-                        return (
-                            <div
-                                key={cam.ID}
-                                className={`p-4 rounded-xl border transition-all ${cam.is_active
-                                    ? "bg-white border-emerald-200 shadow-sm"
-                                    : "bg-slate-50 border-slate-200 opacity-75"
+                <button
+                    onClick={handleSave}
+                    disabled={isSaving}
+                    className="flex items-center gap-2 px-6 py-3 bg-primary text-white font-bold rounded-xl hover:bg-blue-700 transition-all text-sm shadow-[0_4px_12px_rgba(37,99,235,0.3)] hover:-translate-y-0.5 disabled:opacity-50"
+                >
+                    {isSaving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+                    {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
+                </button>
+            </header>
+
+            {/* Main Content: Sidebar Tabs + Content */}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+
+                {/* Sidebar Tabs */}
+                <div className="lg:col-span-1">
+                    <nav className="glass-card p-3 space-y-1">
+                        {TABS.map((tab) => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-left transition-all text-sm font-bold ${activeTab === tab.id
+                                    ? "bg-primary text-white shadow-md relative overflow-hidden"
+                                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
                                     }`}
                             >
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-4">
-                                        <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${cam.is_active ? "bg-slate-900" : "bg-slate-300"
-                                            }`}>
-                                            {type === "webcam" ? (
-                                                <Video className="text-white" size={24} />
-                                            ) : (
-                                                <Camera className="text-white" size={24} />
-                                            )}
-                                        </div>
+                                {activeTab === tab.id && (
+                                    <div className="absolute top-0 right-0 w-16 h-16 bg-white/10 blur-xl rounded-full translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
+                                )}
+                                <tab.icon size={20} className={`relative z-10 ${activeTab === tab.id ? "text-white" : "text-slate-400"}`} />
+                                <span className="relative z-10 tracking-wide">{tab.label}</span>
+                            </button>
+                        ))}
+                    </nav>
+                </div>
 
-                                        <div className="flex-1 px-4">
-                                            <div className="flex items-center gap-3 mb-1">
-                                                <h4 className="font-bold text-slate-900 text-lg">{cam.name}</h4>
-                                                {cam.is_active ? (
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[10px] font-bold uppercase tracking-wide flex items-center gap-1">
-                                                            <Activity size={10} /> LIVE STREAM
-                                                        </span>
-                                                        <span className="px-2 py-0.5 bg-orange-100 text-orange-700 rounded text-[10px] font-bold uppercase tracking-wide flex items-center gap-1">
-                                                            <Cpu size={10} /> AI ANALYSIS
-                                                        </span>
-                                                    </div>
-                                                ) : (
-                                                    <span className="px-2 py-0.5 bg-slate-100 text-slate-500 rounded text-[10px] font-bold uppercase tracking-wide">
-                                                        STANDBY
-                                                    </span>
-                                                )}
-                                            </div>
+                {/* Tab Content */}
+                <div className="lg:col-span-3 glass-card p-8">
 
-                                            <div className="grid grid-cols-2 gap-4 mt-3">
-                                                <div>
-                                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Connection</p>
-                                                    <div className="flex items-center gap-2 text-sm text-slate-600 font-mono bg-slate-50 p-1.5 rounded border border-slate-100">
-                                                        {type === 'webcam' ? <Webcam size={14} className="text-purple-500" /> :
-                                                            type === 'rtsp' ? <Wifi size={14} className="text-blue-500" /> :
-                                                                <HardDrive size={14} className="text-amber-500" />}
-                                                        <span className="truncate max-w-[150px]" title={cam.rtsp_url}>{cam.rtsp_url || "N/A"}</span>
-                                                    </div>
-                                                </div>
-                                                <div>
-                                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Zone Area</p>
-                                                    <div className="flex items-center gap-2 text-sm text-slate-600 bg-slate-50 p-1.5 rounded border border-slate-100">
-                                                        <Focus size={14} className="text-slate-400" />
-                                                        <span>{cam.location || "Default Zone"}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
+                    {/* TAB 1: UMUM */}
+                    {activeTab === "umum" && (
+                        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <div>
+                                <h2 className="text-xl font-bold text-slate-800 mb-1 tracking-wide">Profil Sekolah</h2>
+                                <p className="text-sm font-medium text-slate-500">Informasi dasar tentang institusi Anda</p>
+                            </div>
 
-                                            {cam.is_active && (
-                                                <div className="flex items-center gap-4 mt-3 pt-3 border-t border-slate-100 text-xs text-slate-500">
-                                                    <div className="flex items-center gap-1">
-                                                        <Maximize size={12} />
-                                                        <span>{cam.resolution || '1920x1080'}</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-1" title="Frames Per Second">
-                                                        <Activity size={12} />
-                                                        <span className="font-mono">{cam.fps || 0} FPS</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-1" title="Network Latency">
-                                                        <Signal size={12} />
-                                                        <span className="font-mono">{cam.latency || 0}ms</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-1 text-slate-400">
-                                                        <Clock size={12} />
-                                                        <span>Last: {cam.last_seen ? new Date(cam.last_seen).toLocaleTimeString() : '-'}</span>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Nama Sekolah</label>
+                                    <input
+                                        type="text"
+                                        value={schoolName}
+                                        onChange={(e) => setSchoolName(e.target.value)}
+                                        className="w-full px-5 py-3 rounded-xl border border-slate-200 text-sm font-medium focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all bg-white/50 outline-none"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Kuota Pelanggaran Maksimal</label>
+                                    <div className="relative">
+                                        <input
+                                            type="number"
+                                            value={maxViolation}
+                                            onChange={(e) => setMaxViolation(e.target.value)}
+                                            className="w-full px-5 py-3 rounded-xl border border-slate-200 text-sm font-medium focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all bg-white/50 outline-none"
+                                        />
+                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 bg-slate-100 px-2.5 py-1 rounded-md">x Peringatan</span>
                                     </div>
-                                    <div className="flex flex-col gap-2 border-l border-slate-100 pl-4 items-center justify-center">
-                                        {/* Status Indicator */}
-                                        <div className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 ${cam.is_active ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-500'
-                                            }`}>
-                                            <span className={`w-2 h-2 rounded-full ${cam.is_active ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`}></span>
-                                            {cam.is_active ? 'ACTIVE' : 'OFFLINE'}
-                                        </div>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                                        <Clock size={14} className="text-primary" />
+                                        Jam Masuk
+                                    </label>
+                                    <input
+                                        type="time"
+                                        value={jamMasuk}
+                                        onChange={(e) => setJamMasuk(e.target.value)}
+                                        className="w-full px-5 py-3 rounded-xl border border-slate-200 text-sm font-medium focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all bg-white/50 outline-none"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                                        <Clock size={14} className="text-primary" />
+                                        Jam Pulang
+                                    </label>
+                                    <input
+                                        type="time"
+                                        value={jamPulang}
+                                        onChange={(e) => setJamPulang(e.target.value)}
+                                        className="w-full px-5 py-3 rounded-xl border border-slate-200 text-sm font-medium focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all bg-white/50 outline-none"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Hari Aktif Sekolah Section */}
+                            <div className="pt-8 border-t border-slate-200/50 mt-8">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <div className="p-2 bg-primary/10 rounded-lg">
+                                        <CalendarDays size={20} className="text-primary" />
                                     </div>
+                                    <h2 className="text-xl font-bold text-slate-800 tracking-wide">Hari Aktif Sekolah</h2>
+                                </div>
+                                <p className="text-sm font-medium text-slate-500 mb-6 leading-relaxed max-w-2xl">Pilih hari kerja aktif untuk institusi Anda. Pemantauan AI dan peringatan pelanggaran tata tertib hanya akan diaktifkan pada hari-hari yang dipilih.</p>
 
-                                    <div className="flex flex-col gap-2 ml-2">
-
-                                        {/* Power Toggle */}
+                                <div className="flex flex-wrap gap-3">
+                                    {[
+                                        { key: 'senin', label: 'Senin' },
+                                        { key: 'selasa', label: 'Selasa' },
+                                        { key: 'rabu', label: 'Rabu' },
+                                        { key: 'kamis', label: 'Kamis' },
+                                        { key: 'jumat', label: 'Jumat' },
+                                        { key: 'sabtu', label: 'Sabtu' },
+                                        { key: 'minggu', label: 'Minggu' },
+                                    ].map((day) => (
                                         <button
-                                            onClick={() => toggleCamera(cam)}
-                                            title={cam.is_active ? "Matikan" : "Nyalakan"}
-                                            className={`p-2 rounded-lg transition-colors ${cam.is_active
-                                                ? "bg-emerald-100 text-emerald-600 hover:bg-emerald-200"
-                                                : "bg-slate-100 text-slate-400 hover:bg-slate-200"
+                                            key={day.key}
+                                            onClick={() => setActiveDays(prev => ({ ...prev, [day.key]: !prev[day.key] }))}
+                                            className={`px-5 py-3 rounded-xl text-sm font-bold transition-all border-2 flex items-center gap-2 ${activeDays[day.key]
+                                                ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
+                                                : 'bg-slate-50 text-slate-400 border-slate-200 hover:border-slate-300'
                                                 }`}
                                         >
-                                            <Power size={18} />
+                                            <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors ${activeDays[day.key] ? 'border-primary bg-primary' : 'border-slate-300 bg-white'}`}>
+                                                {activeDays[day.key] && <Check size={10} className="text-white" />}
+                                            </div>
+                                            {day.label}
                                         </button>
-
-                                        {/* Test Button */}
-                                        <button
-                                            onClick={() => testCamera(cam)}
-                                            disabled={testingCamera === cam.ID}
-                                            className="p-2 bg-blue-100 text-blue-600 hover:bg-blue-200 rounded-lg transition-colors disabled:opacity-50"
-                                            title="Test Koneksi"
-                                        >
-                                            {testingCamera === cam.ID ? (
-                                                <Loader2 size={18} className="animate-spin" />
-                                            ) : (
-                                                <ExternalLink size={18} />
-                                            )}
-                                        </button>
-
-                                        {/* Reconnect Button */}
-                                        <button
-                                            onClick={() => handleReconnect(cam.ID)}
-                                            className="p-2 bg-purple-50 text-purple-600 hover:bg-purple-100 rounded-lg transition-colors"
-                                            title="Reconnect Stream"
-                                        >
-                                            <RefreshCw size={18} />
-                                        </button>
-
-                                        {/* Edit Button */}
-                                        <button
-                                            onClick={() => {
-                                                const sType = getSourceType(cam.rtsp_url);
-                                                setEditingCamera({
-                                                    ...cam,
-                                                    sourceType: sType,
-                                                    webCamId: sType === 'webcam' ? Number(cam.rtsp_url) : 0
-                                                });
-                                            }}
-                                            className="p-2 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-lg transition-colors"
-                                        >
-                                            <Edit2 size={18} />
-                                        </button>
-
-                                        {/* Delete Button */}
-                                        <button
-                                            onClick={() => deleteCamera(cam.ID)}
-                                            className="p-2 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg transition-colors"
-                                        >
-                                            <Trash2 size={18} />
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        )
-                    })}
-                </div>
-            )
-            }
-
-            {
-                cameras.length === 0 && !isLoading && (
-                    <div className="text-center py-12 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200">
-                        <Camera className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                        <p className="text-slate-500">Belum ada kamera dikonfigurasi</p>
-                        <button
-                            onClick={addCamera}
-                            className="mt-4 px-4 py-2 bg-orange-500 text-white rounded-lg font-medium"
-                        >
-                            Tambah Kamera Pertama
-                        </button>
-                    </div>
-                )
-            }
-
-            {/* Edit Modal */}
-            {
-                editingCamera && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                        <div className="bg-white rounded-2xl p-6 w-full max-w-lg mx-4 shadow-2xl">
-                            <h3 className="text-lg font-bold text-slate-900 mb-6">
-                                {editingCamera.ID ? "Edit Kamera" : "Tambah Kamera"}
-                            </h3>
-
-                            <div className="space-y-4">
-                                {/* Name */}
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Nama Kamera</label>
-                                    <input
-                                        type="text"
-                                        value={editingCamera.name}
-                                        onChange={(e) => setEditingCamera({ ...editingCamera, name: e.target.value })}
-                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none"
-                                    />
+                                    ))}
                                 </div>
 
-                                {/* Location */}
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Lokasi</label>
-                                    <input
-                                        type="text"
-                                        value={editingCamera.location}
-                                        onChange={(e) => setEditingCamera({ ...editingCamera, location: e.target.value })}
-                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none"
-                                    />
+                                <div className="mt-8 p-4 bg-amber-50 rounded-xl border border-amber-200/50 flex items-start gap-3">
+                                    <div className="text-xl">💡</div>
+                                    <p className="text-sm font-medium text-amber-800 leading-relaxed">
+                                        <b>Tip Konfigurasi:</b> Sesuaikan dengan jadwal khusus sekolah Anda. Jika sekolah menerapkan sistem 5 hari kerja (Senin-Jumat), pastikan Sabtu dan Minggu dinonaktifkan untuk menghindari laporan kosong.
+                                    </p>
                                 </div>
-
-                                {/* Coordinates */}
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">Latitude</label>
-                                        <input
-                                            type="number"
-                                            step="0.000001"
-                                            value={editingCamera.latitude || 0}
-                                            onChange={(e) => setEditingCamera({ ...editingCamera, latitude: parseFloat(e.target.value) })}
-                                            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">Longitude</label>
-                                        <input
-                                            type="number"
-                                            step="0.000001"
-                                            value={editingCamera.longitude || 0}
-                                            onChange={(e) => setEditingCamera({ ...editingCamera, longitude: parseFloat(e.target.value) })}
-                                            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none"
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* Source Type */}
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Jenis Sumber</label>
-                                    <select
-                                        value={editingCamera.sourceType}
-                                        onChange={(e) => setEditingCamera({ ...editingCamera, sourceType: e.target.value })}
-                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none"
-                                    >
-                                        <option value="webcam">Webcam USB (Device ID)</option>
-                                        <option value="rtsp">RTSP Stream (IP Camera)</option>
-                                        <option value="ip">HTTP IP Camera</option>
-                                        <option value="mjpeg">MJPEG Stream</option>
-                                    </select>
-                                </div>
-
-                                {/* Source URL / Webcam ID */}
-                                {editingCamera.sourceType === "webcam" ? (
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">Webcam Device ID</label>
-                                        <select
-                                            value={editingCamera.webCamId || 0}
-                                            onChange={(e) => setEditingCamera({ ...editingCamera, webCamId: Number(e.target.value), rtsp_url: e.target.value })}
-                                            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none"
-                                        >
-                                            <option value={0}>Device 0 (Default Webcam)</option>
-                                            <option value={1}>Device 1</option>
-                                            <option value={2}>Device 2</option>
-                                            <option value={3}>Device 3</option>
-                                        </select>
-                                        <p className="mt-1 text-xs text-slate-500">Pilih webcam yang terpasang di komputer</p>
-                                    </div>
-                                ) : (
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">
-                                            {editingCamera.sourceType === "rtsp" ? "RTSP URL" :
-                                                editingCamera.sourceType === "ip" ? "IP Camera URL" : "MJPEG URL"}
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={editingCamera.rtsp_url}
-                                            onChange={(e) => setEditingCamera({ ...editingCamera, rtsp_url: e.target.value })}
-                                            placeholder={
-                                                editingCamera.sourceType === "rtsp"
-                                                    ? "rtsp://192.168.1.100:554/stream"
-                                                    : editingCamera.sourceType === "ip"
-                                                        ? "http://192.168.1.100:8080/video"
-                                                        : "http://localhost:8000/video_feed"
-                                            }
-                                            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-mono text-sm focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none"
-                                        />
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="flex gap-3 mt-6">
-                                <button
-                                    onClick={() => setEditingCamera(null)}
-                                    className="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors"
-                                >
-                                    Batal
-                                </button>
-                                <button
-                                    onClick={handleSaveCamera}
-                                    className="flex-1 px-4 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-medium transition-colors"
-                                >
-                                    Simpan
-                                </button>
                             </div>
                         </div>
-                    </div>
-                )
-            }
-        </div >
+                    )}
+
+                    {/* TAB 2: INTEGRASI */}
+                    {activeTab === "integrasi" && (
+                        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            {/* Connection Status Banner */}
+                            <div className="p-5 bg-gradient-to-r from-emerald-50 to-emerald-100/50 rounded-2xl border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm relative overflow-hidden">
+                                {/* Decorative Glow */}
+                                <div className="absolute top-1/2 left-0 w-32 h-32 bg-emerald-400/10 blur-2xl rounded-full -translate-y-1/2 pointer-events-none"></div>
+
+                                <div className="flex items-center gap-4 relative z-10">
+                                    <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center shadow-inner border border-emerald-200">
+                                        <Check size={24} className="text-emerald-600" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-bold text-emerald-900 tracking-wide">Status Integrasi: Aktif</p>
+                                        <p className="text-xs font-medium text-emerald-700 mt-1">Terhubung sebagai <span className="font-mono bg-emerald-200/50 px-1.5 py-0.5 rounded text-emerald-800 font-bold ml-1">@SiRapiBot</span></p>
+                                    </div>
+                                </div>
+                                <span className="px-4 py-2 bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-2 relative z-10">
+                                    <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                                    Sistem Online
+                                </span>
+                            </div>
+
+                            {/* Telegram Section */}
+                            <div>
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-blue-50 rounded-lg text-blue-500 border border-blue-100">
+                                            <MessageSquare size={20} />
+                                        </div>
+                                        <h2 className="text-xl font-bold text-slate-800 tracking-wide">Telegram Notification Bot</h2>
+                                    </div>
+                                    <a href="https://t.me/BotFather" target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-primary hover:text-blue-700 hover:underline px-3 py-1.5 bg-primary/5 rounded-lg transition-colors border border-primary/10">
+                                        Panduan Setup →
+                                    </a>
+                                </div>
+
+                                <div className="space-y-5 p-6 bg-slate-50/50 rounded-2xl border border-slate-200">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Bot API Token</label>
+                                        <div className="relative">
+                                            <input
+                                                type={botToken === "••••••••••••••••" ? "password" : "text"}
+                                                value={botToken}
+                                                onChange={(e) => setBotToken(e.target.value)}
+                                                className="w-full px-5 py-3 rounded-xl border border-slate-200 text-sm font-mono focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all bg-white outline-none pr-12 shadow-sm"
+                                                placeholder="123456789:ABC-DEF..."
+                                            />
+                                            <button className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors bg-slate-100 p-1.5 rounded-md">
+                                                <Eye size={16} />
+                                            </button>
+                                        </div>
+                                        <p className="text-xs font-medium text-slate-400 mt-2 ml-1">Kredensial unik dari @BotFather untuk identifikasi bot.</p>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Target Chat ID (Grup/Personal)</label>
+                                        <input
+                                            type="text"
+                                            value={chatId}
+                                            onChange={(e) => setChatId(e.target.value)}
+                                            className="w-full px-5 py-3 rounded-xl border border-slate-200 text-sm font-mono focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all bg-white outline-none shadow-sm"
+                                            placeholder="-1001234567890"
+                                        />
+                                        <a href="https://t.me/userinfobot" target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-primary hover:underline mt-2 inline-flex items-center gap-1 ml-1">
+                                            <span className="text-base">🔍</span> Cara mendapatkan Chat ID
+                                        </a>
+                                    </div>
+
+                                    <div className="flex items-center gap-4 pt-4 border-t border-slate-200/50 mt-2">
+                                        <button
+                                            onClick={handleTestConnection}
+                                            disabled={testingConnection}
+                                            className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white font-bold rounded-xl hover:bg-blue-700 transition-all text-sm disabled:opacity-50 shadow-sm hover:shadow-md"
+                                        >
+                                            {testingConnection ? <Loader2 size={18} className="animate-spin" /> : <Wifi size={18} />}
+                                            {testingConnection ? "Menghubungi API..." : "Test Notifikasi"}
+                                        </button>
+                                        {connectionSuccess && (
+                                            <span className="text-safe text-sm font-bold flex items-center gap-1.5 bg-safe/10 px-3 py-1.5 rounded-lg border border-safe/20 animate-in fade-in slide-in-from-left-4">
+                                                <div className="w-5 h-5 bg-safe rounded-full flex items-center justify-center">
+                                                    <Check size={12} className="text-white" />
+                                                </div>
+                                                Pesan berhasil terkirim!
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Notification Triggers */}
+                            <div>
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="p-2 bg-amber-50 rounded-lg text-amber-500 border border-amber-100">
+                                        <Bell size={20} />
+                                    </div>
+                                    <h2 className="text-xl font-bold text-slate-800 tracking-wide">Pemicu Notifikasi</h2>
+                                </div>
+
+                                <div className="space-y-4 p-6 bg-slate-50/50 rounded-2xl border border-slate-200">
+                                    <label className="flex items-start gap-4 p-4 bg-white rounded-xl border border-slate-200 cursor-pointer hover:border-primary/40 hover:shadow-soft transition-all group">
+                                        <input type="checkbox" defaultChecked className="w-5 h-5 mt-0.5 rounded border-slate-300 text-primary focus:ring-primary/20 cursor-pointer" />
+                                        <div>
+                                            <p className="text-sm font-bold text-slate-800 group-hover:text-primary transition-colors">Pelanggaran Atribut Berat</p>
+                                            <p className="text-xs font-medium text-slate-500 mt-1">Kirim peringatan instan saat siswa terdeteksi tidak memakai atribut wajib (Sepatu/Dasi/Sabuk).</p>
+                                        </div>
+                                    </label>
+
+                                    <label className="flex items-start gap-4 p-4 bg-white rounded-xl border border-slate-200 cursor-pointer hover:border-primary/40 hover:shadow-soft transition-all group">
+                                        <input type="checkbox" defaultChecked className="w-5 h-5 mt-0.5 rounded border-slate-300 text-primary focus:ring-primary/20 cursor-pointer" />
+                                        <div>
+                                            <p className="text-sm font-bold text-slate-800 group-hover:text-primary transition-colors">Rekapitulasi Laporan Harian (PDF)</p>
+                                            <p className="text-xs font-medium text-slate-500 mt-1">Kirim file PDF berisi rekap data pelanggaran secara otomatis setiap pukul 16:00 WIB.</p>
+                                        </div>
+                                    </label>
+
+                                    <label className="flex items-start gap-4 p-4 bg-white rounded-xl border border-slate-200 cursor-pointer hover:border-primary/40 hover:shadow-soft transition-all group">
+                                        <input type="checkbox" className="w-5 h-5 mt-0.5 rounded border-slate-300 text-primary focus:ring-primary/20 cursor-pointer" />
+                                        <div>
+                                            <p className="text-sm font-bold text-slate-800 group-hover:text-primary transition-colors">Peringatan Status CCTV (Offline Alert)</p>
+                                            <p className="text-xs font-medium text-slate-500 mt-1">Sistem akan memberi tahu admin jika koneksi kamera (RTSP) terputus lebih dari 5 menit.</p>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            {/* CCTV Section */}
+                            <div>
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="p-2 bg-purple-50 rounded-lg text-purple-600 border border-purple-100">
+                                        <Camera size={20} />
+                                    </div>
+                                    <h2 className="text-xl font-bold text-slate-800 tracking-wide">Koneksi Stream CCTV</h2>
+                                </div>
+
+                                <div className="space-y-5 p-6 bg-slate-50/50 rounded-2xl border border-slate-200">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">RTSP URL (Alamat Kamera)</label>
+                                        <input
+                                            type="text"
+                                            value={rtspUrl}
+                                            onChange={(e) => setRtspUrl(e.target.value)}
+                                            className="w-full px-5 py-3 rounded-xl border border-slate-200 text-sm font-mono focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all bg-white shadow-sm outline-none"
+                                            placeholder="rtsp://192.168.1.100:554/stream1"
+                                        />
+                                    </div>
+                                    <div className="flex flex-col sm:flex-row sm:items-center gap-4 pt-2">
+                                        <span className="px-4 py-2 bg-safe/10 text-safe rounded-xl text-xs font-bold border border-safe/20 flex items-center justify-center gap-2 shadow-sm">
+                                            <span className="relative flex h-2.5 w-2.5">
+                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-safe opacity-75"></span>
+                                                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-safe"></span>
+                                            </span>
+                                            Kamera Online & Decoding
+                                        </span>
+                                        <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-slate-500 bg-white px-3 py-2 rounded-lg border border-slate-200">
+                                            <span className="font-mono bg-slate-100 px-1.5 py-0.5 rounded">Ping: 24ms</span>
+                                            <span className="text-slate-300">•</span>
+                                            <span className="font-mono bg-slate-100 px-1.5 py-0.5 rounded">FPS: 30</span>
+                                            <span className="text-slate-300">•</span>
+                                            <span className="font-mono bg-slate-100 px-1.5 py-0.5 rounded">1920x1080</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+
+                    {/* TAB 3: KONFIGURASI AI */}
+                    {activeTab === "ai" && (
+                        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <div>
+                                <h2 className="text-xl font-bold text-slate-800 mb-1 tracking-wide">Fine Tuning Model AI</h2>
+                                <p className="text-sm font-medium text-slate-500">Sesuaikan parameter deteksi Computer Vision</p>
+                            </div>
+
+                            {/* Sensitivity Slider */}
+                            <div className="p-6 bg-slate-50/50 rounded-2xl border border-slate-200">
+                                <label className="block text-sm font-bold text-slate-700 mb-6 flex items-center justify-between">
+                                    <span className="flex items-center gap-3">
+                                        <div className="p-2 bg-purple-100 text-purple-600 rounded-lg shadow-sm">
+                                            <Brain size={18} />
+                                        </div>
+                                        Tingkat Kepercayaan Deteksi (Confidence Threshold)
+                                    </span>
+                                    <span className="px-4 py-1.5 bg-primary font-mono text-white rounded-lg text-sm font-bold shadow-sm shadow-blue-200">{sensitivity}%</span>
+                                </label>
+                                <input
+                                    type="range"
+                                    min="0"
+                                    max="100"
+                                    value={sensitivity}
+                                    onChange={(e) => setSensitivity(Number(e.target.value))}
+                                    className="w-full h-3 bg-slate-200 rounded-full appearance-none cursor-pointer accent-primary hover:accent-blue-700 transition-all shadow-inner"
+                                />
+                                <div className="flex justify-between text-xs font-bold text-slate-400 mt-4 px-1">
+                                    <span className="bg-slate-100 px-2 py-1 rounded border border-slate-200">Lebih Sensitif (Banyak False-Positive)</span>
+                                    <span className="text-slate-300">Skor Optimal: 70-85%</span>
+                                    <span className="bg-slate-100 px-2 py-1 rounded border border-slate-200">Lebih Akurat (Ketat)</span>
+                                </div>
+                            </div>
+
+                            {/* Detection Toggles */}
+                            <div>
+                                <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4 border-b border-slate-200 pb-2">Filter Kelas Objek Aktif</h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {/* Toggle Item */}
+                                    <ToggleItem
+                                        icon={<Shirt size={20} className="text-blue-500" />}
+                                        label="Klasifikasi Dasi"
+                                        description="Deteksi penggunaan dasi seragam"
+                                        checked={detectTie}
+                                        onChange={() => setDetectTie(!detectTie)}
+                                    />
+                                    <ToggleItem
+                                        icon={<Shield size={20} className="text-amber-500" />}
+                                        label="Klasifikasi Sabuk"
+                                        description="Deteksi penggunaan sabuk/gesper"
+                                        checked={detectBelt}
+                                        onChange={() => setDetectBelt(!detectBelt)}
+                                    />
+                                    <ToggleItem
+                                        icon={<Footprints size={20} className="text-rose-500" />}
+                                        label="Klasifikasi Sepatu"
+                                        description="Deteksi warna/jenis sepatu"
+                                        checked={detectShoes}
+                                        onChange={() => setDetectShoes(!detectShoes)}
+                                    />
+                                    <ToggleItem
+                                        icon={<GraduationCap size={20} className="text-emerald-500" />}
+                                        label="Klasifikasi Topi"
+                                        description="Dikhususkan untuk hari upacara"
+                                        checked={detectHat}
+                                        onChange={() => setDetectHat(!detectHat)}
+                                    />
+                                </div>
+                                <div className="mt-6 p-4 bg-blue-50/50 rounded-xl border border-blue-100 flex items-start gap-3">
+                                    <div className="text-xl">ℹ️</div>
+                                    <p className="text-sm font-medium text-blue-800 leading-relaxed">
+                                        Mematikan flag klasifikasi yang tidak dibutuhkan dapat mengurangi beban pemrosesan (inference time) dan meningkatkan stabilitas FPS kamera.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* TAB 4: NOTIFIKASI */}
+                    {activeTab === "notifikasi" && (
+                        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <div>
+                                <h2 className="text-xl font-bold text-slate-800 mb-1 tracking-wide">Preferensi Pemberitahuan</h2>
+                                <p className="text-sm font-medium text-slate-500">Atur jadwal dan metode pengiriman informasi pelanggaran</p>
+                            </div>
+
+                            <div className="space-y-4">
+                                <ToggleItem
+                                    icon={<Bell size={20} className="text-blue-500" />}
+                                    label="Distribusi Laporan Harian Terjadwal (PDF)"
+                                    description="Kirim ringkasan statistik dan daftar pelanggar ke grup Telegram manajemen sekolah setiap jam 16:00."
+                                    checked={dailyReport}
+                                    onChange={() => setDailyReport(!dailyReport)}
+                                />
+                                <ToggleItem
+                                    icon={<MessageSquare size={20} className="text-rose-500" />}
+                                    label="Sistem Peringatan Dini (Real-time Alerts)"
+                                    description="Kirim notifikasi instan segera setelah kamera mendeteksi siswa yang melanggar atribut berat."
+                                    checked={realtimeAlert}
+                                    onChange={() => setRealtimeAlert(!realtimeAlert)}
+                                />
+                            </div>
+                            <div className="mt-6 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                                <p className="text-sm font-medium text-slate-600 text-center">Lebih banyak opsi integrasi pengiriman (Email, WhatsApp) akan hadir pada pembaruan mendatang.</p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
     );
 }
 
-export default function SettingsPage() {
-    const [activeTab, setActiveTab] = useState("notification");
-    const [notifSettings, setNotifSettings] = useState<NotificationSettings>(defaultNotificationSettings);
-    const [isSaving, setIsSaving] = useState(false);
-    const [saveStatus, setSaveStatus] = useState<"idle" | "success" | "error">("idle");
-    const [testStatus, setTestStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
-    const [testStatus, setTestStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
-    const [testMessage, setTestMessage] = useState("");
-
-    // Reset Data States
-    const [showResetConfirm, setShowResetConfirm] = useState(false);
-    const [isResetting, setIsResetting] = useState(false);
-
-    const handleResetData = async () => {
-        setIsResetting(true);
-        try {
-            const res = await fetch("http://localhost:8000/api/cleanup", { method: "DELETE" });
-            if (res.ok) {
-                alert("Data berhasil dibersihkan!");
-                setShowResetConfirm(false);
-                // Optional: Force reload to clear cached images/stats
-                window.location.reload();
-            } else {
-                alert("Gagal membersihkan data.");
-            }
-        } catch (e) {
-            alert("Error: Backend tidak merespon.");
-        } finally {
-            setIsResetting(false);
-        }
-    };
-
-    // Load settings from localStorage on mount
-    useEffect(() => {
-        const saved = localStorage.getItem("smartapd-notification-settings");
-        if (saved) {
-            try {
-                setNotifSettings(JSON.parse(saved));
-            } catch (e) {
-                console.error("Failed to parse settings:", e);
-            }
-        }
-    }, []);
-
-    // Save settings to localStorage
-    const handleSave = async () => {
-        setIsSaving(true);
-        setSaveStatus("idle");
-
-
-        try {
-            localStorage.setItem("smartapd-notification-settings", JSON.stringify(notifSettings));
-
-            // Save Telegram settings to Go Backend
-            try {
-                await fetch("http://localhost:8080/api/v1/settings/telegram", {
-                    method: "PUT",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        bot_token: notifSettings.telegramBotToken,
-                        chat_id: notifSettings.telegramChatId,
-                    }),
-                });
-            } catch {
-                // Backend not available, settings saved locally
-            }
-
-            // Save Email settings to Go Backend
-            if (notifSettings.enableEmail && notifSettings.emailRecipient) {
-                try {
-                    await fetch("http://localhost:8080/api/v1/email/settings", {
-                        method: "PUT",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            recipients: [notifSettings.emailRecipient],
-                            enabled: notifSettings.enableEmail,
-                        }),
-                    });
-                } catch {
-                    // Backend not available
-                }
-            }
-
-            setSaveStatus("success");
-            setTimeout(() => setSaveStatus("idle"), 3000);
-        } catch (error) {
-            console.error("Failed to save settings:", error);
-            setSaveStatus("error");
-        } finally {
-            setIsSaving(false);
-        }
-    };
-
-    // Test Telegram connection
-    const testTelegramConnection = async () => {
-        // Get chat_id from form or use TELEGRAM_CHAT_ID from .env via backend
-        const chatId = notifSettings.telegramChatId;
-
-        if (!chatId) {
-            setTestMessage("Chat ID harus diisi! (Bot Token sudah dikonfigurasi di server)");
-            setTestStatus("error");
-            return;
-        }
-
-        setTestStatus("loading");
-        setTestMessage("");
-
-        try {
-            // Use new API that uses server-side TELEGRAM_BOT_TOKEN
-            const response = await fetch(
-                `http://localhost:8080/api/v1/telegram/chats/${chatId}/test`,
-                { method: "POST" }
-            );
-
-            if (response.ok) {
-                setTestStatus("success");
-                setTestMessage("Pesan test berhasil dikirim! Cek Telegram Anda.");
-            } else {
-                const data = await response.json().catch(() => ({}));
-                setTestStatus("error");
-                setTestMessage(data.error || "Gagal mengirim pesan test");
-            }
-        } catch (error) {
-            setTestStatus("error");
-            setTestMessage("Backend tidak aktif atau tidak ada koneksi internet.");
-        }
-    };
-
-    const tabs = [
-        { id: "notification", label: "Notifikasi", icon: Bell },
-        { id: "camera", label: "Kamera", icon: Camera },
-        { id: "security", label: "Keamanan", icon: Shield },
-        { id: "system", label: "Sistem", icon: Database },
-    ];
-
-    const updateSetting = <K extends keyof NotificationSettings>(
-        key: K,
-        value: NotificationSettings[K]
-    ) => {
-        setNotifSettings((prev) => ({ ...prev, [key]: value }));
-    };
-
-    // Toggle Switch Component
-    const ToggleSwitch = ({ enabled, onToggle }: { enabled: boolean; onToggle: () => void }) => (
-        <button
-            onClick={onToggle}
-            className={`relative w-12 h-7 rounded-full transition-colors ${enabled ? "bg-orange-500" : "bg-slate-300"
-                }`}
-        >
-            <div
-                className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow transition-transform ${enabled ? "translate-x-6" : "translate-x-1"
-                    }`}
-            />
-        </button>
-    );
-
+// Toggle Component
+function ToggleItem({ icon, label, description, checked, onChange }: { icon: React.ReactNode; label: string; description?: string; checked: boolean; onChange: () => void }) {
     return (
-        <div className="space-y-6">
-
-            {/* Header */}
-            <div>
-                <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
-                    <Settings className="text-orange-500" />
-                    Pengaturan Sistem
-                </h1>
-                <p className="text-slate-500">Konfigurasi notifikasi, kamera, dan sistem</p>
-            </div>
-
-            {/* Tabs */}
-            <div className="flex gap-2 bg-white/90 backdrop-blur-xl border border-slate-200 rounded-2xl p-2 shadow-lg">
-                {tabs.map((tab) => (
-                    <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id)}
-                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all ${activeTab === tab.id
-                            ? "bg-orange-500 text-white shadow-lg"
-                            : "text-slate-600 hover:bg-slate-100"
-                            }`}
-                    >
-                        <tab.icon size={18} />
-                        {tab.label}
-                    </button>
-                ))}
-            </div>
-
-            {/* Content */}
-            <div className="bg-white/90 backdrop-blur-xl border border-slate-200 rounded-2xl p-6 shadow-lg">
-
-                {activeTab === "notification" && (
-                    <div className="space-y-6">
-                        <div className="flex items-center justify-between">
-                            <h3 className="text-lg font-bold text-slate-900">Pengaturan Notifikasi</h3>
-                            <div className="flex items-center gap-2 text-sm text-slate-500">
-                                <Wifi size={16} className={notifSettings.telegramBotToken ? "text-emerald-500" : "text-slate-400"} />
-                                {notifSettings.telegramBotToken ? "Telegram Terkonfigurasi" : "Telegram Belum Diatur"}
-                            </div>
-                        </div>
-
-                        {/* Telegram Section */}
-                        <div className="p-5 bg-gradient-to-br from-blue-50 to-slate-50 rounded-xl border border-blue-100">
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="p-2 bg-blue-500 rounded-lg">
-                                    <MessageSquare className="text-white" size={20} />
-                                </div>
-                                <div className="flex-1">
-                                    <h4 className="font-bold text-slate-900">Telegram Bot</h4>
-                                    <p className="text-sm text-slate-500">Terima notifikasi pelanggaran via Telegram</p>
-                                </div>
-                                <ToggleSwitch
-                                    enabled={notifSettings.enableTelegram}
-                                    onToggle={() => updateSetting("enableTelegram", !notifSettings.enableTelegram)}
-                                />
-                            </div>
-
-                            {notifSettings.enableTelegram && (
-                                <div className="space-y-4 mt-4 pt-4 border-t border-blue-100">
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                                            Bot Token <span className="text-red-500">*</span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={notifSettings.telegramBotToken}
-                                            onChange={(e) => updateSetting("telegramBotToken", e.target.value)}
-                                            placeholder="123456789:ABCdefGHIjklMNOpqrSTUvwxYZ"
-                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-mono text-sm focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none transition-all"
-                                        />
-                                        <p className="mt-1 text-xs text-slate-500">
-                                            Dapatkan dari <a href="https://t.me/BotFather" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">@BotFather</a>
-                                        </p>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                                            Chat ID <span className="text-red-500">*</span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={notifSettings.telegramChatId}
-                                            onChange={(e) => updateSetting("telegramChatId", e.target.value)}
-                                            placeholder="-1001234567890 atau 123456789"
-                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-mono text-sm focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none transition-all"
-                                        />
-                                        <p className="mt-1 text-xs text-slate-500">
-                                            ID grup atau user. Kirim pesan ke bot lalu cek via API.
-                                        </p>
-                                    </div>
-
-                                    {/* Test Connection Button */}
-                                    <button
-                                        onClick={testTelegramConnection}
-                                        disabled={testStatus === "loading"}
-                                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all ${testStatus === "success"
-                                            ? "bg-emerald-500 text-white"
-                                            : testStatus === "error"
-                                                ? "bg-red-500 text-white"
-                                                : "bg-blue-500 hover:bg-blue-600 text-white"
-                                            }`}
-                                    >
-                                        {testStatus === "loading" ? (
-                                            <>
-                                                <Loader2 size={18} className="animate-spin" />
-                                                Menguji...
-                                            </>
-                                        ) : testStatus === "success" ? (
-                                            <>
-                                                <CheckCircle size={18} />
-                                                Berhasil!
-                                            </>
-                                        ) : testStatus === "error" ? (
-                                            <>
-                                                <XCircle size={18} />
-                                                Gagal
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Send size={18} />
-                                                Test Koneksi
-                                            </>
-                                        )}
-                                    </button>
-
-                                    {testMessage && (
-                                        <p className={`text-sm ${testStatus === "success" ? "text-emerald-600" : "text-red-600"}`}>
-                                            {testMessage}
-                                        </p>
-                                    )}
-
-                                    {/* Telegram Schedule Settings */}
-                                    <div className="mt-6 pt-6 border-t border-blue-100 space-y-4">
-                                        <h5 className="font-bold text-slate-800 flex items-center gap-2">
-                                            <Clock size={16} className="text-blue-500" />
-                                            Jadwal Laporan Otomatis
-                                        </h5>
-
-                                        {/* Enable Scheduled Report */}
-                                        <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-slate-200">
-                                            <div>
-                                                <p className="font-medium text-slate-800">Aktifkan Laporan Terjadwal</p>
-                                                <p className="text-xs text-slate-500">Kirim laporan otomatis setiap hari</p>
-                                            </div>
-                                            <ToggleSwitch
-                                                enabled={notifSettings.scheduledReportEnabled}
-                                                onToggle={() => updateSetting("scheduledReportEnabled", !notifSettings.scheduledReportEnabled)}
-                                            />
-                                        </div>
-
-                                        {notifSettings.scheduledReportEnabled && (
-                                            <>
-                                                {/* Report Time */}
-                                                <div>
-                                                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                                                        Jam Kirim Laporan
-                                                    </label>
-                                                    <input
-                                                        type="time"
-                                                        value={notifSettings.scheduledReportTime}
-                                                        onChange={(e) => updateSetting("scheduledReportTime", e.target.value)}
-                                                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none"
-                                                    />
-                                                </div>
-
-                                                {/* Report Days */}
-                                                <div>
-                                                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                                                        Hari Aktif
-                                                    </label>
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {[
-                                                            { key: "monday", label: "Sen" },
-                                                            { key: "tuesday", label: "Sel" },
-                                                            { key: "wednesday", label: "Rab" },
-                                                            { key: "thursday", label: "Kam" },
-                                                            { key: "friday", label: "Jum" },
-                                                            { key: "saturday", label: "Sab" },
-                                                            { key: "sunday", label: "Min" },
-                                                        ].map((day) => (
-                                                            <button
-                                                                key={day.key}
-                                                                onClick={() => {
-                                                                    const days = notifSettings.scheduledReportDays;
-                                                                    if (days.includes(day.key)) {
-                                                                        updateSetting("scheduledReportDays", days.filter(d => d !== day.key));
-                                                                    } else {
-                                                                        updateSetting("scheduledReportDays", [...days, day.key]);
-                                                                    }
-                                                                }}
-                                                                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${notifSettings.scheduledReportDays.includes(day.key)
-                                                                    ? "bg-blue-500 text-white"
-                                                                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                                                                    }`}
-                                                            >
-                                                                {day.label}
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            </>
-                                        )}
-
-                                        {/* Send Screenshots */}
-                                        <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-slate-200">
-                                            <div>
-                                                <p className="font-medium text-slate-800">Sertakan Screenshot</p>
-                                                <p className="text-xs text-slate-500">Kirim foto pelanggaran dalam notifikasi</p>
-                                            </div>
-                                            <ToggleSwitch
-                                                enabled={notifSettings.sendScreenshotsWithNotifications}
-                                                onToggle={() => updateSetting("sendScreenshotsWithNotifications", !notifSettings.sendScreenshotsWithNotifications)}
-                                            />
-                                        </div>
-
-                                        {/* Notification Type */}
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-2">
-                                                Jenis Notifikasi
-                                            </label>
-                                            <div className="flex gap-2">
-                                                <button
-                                                    onClick={() => updateSetting("notificationType", "violations")}
-                                                    className={`flex-1 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${notifSettings.notificationType === "violations"
-                                                        ? "bg-red-500 text-white"
-                                                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                                                        }`}
-                                                >
-                                                    🚨 Pelanggaran Saja
-                                                </button>
-                                                <button
-                                                    onClick={() => updateSetting("notificationType", "all")}
-                                                    className={`flex-1 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${notifSettings.notificationType === "all"
-                                                        ? "bg-blue-500 text-white"
-                                                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                                                        }`}
-                                                >
-                                                    📊 Semua Aktivitas
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Email Section */}
-                        <div className="p-5 bg-gradient-to-br from-amber-50 to-slate-50 rounded-xl border border-amber-100">
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="p-2 bg-amber-500 rounded-lg">
-                                    <Mail className="text-white" size={20} />
-                                </div>
-                                <div className="flex-1">
-                                    <h4 className="font-bold text-slate-900">Email Laporan</h4>
-                                    <p className="text-sm text-slate-500">Terima laporan harian via email</p>
-                                </div>
-                                <ToggleSwitch
-                                    enabled={notifSettings.enableEmail}
-                                    onToggle={() => updateSetting("enableEmail", !notifSettings.enableEmail)}
-                                />
-                            </div>
-
-                            {notifSettings.enableEmail && (
-                                <div className="mt-4 pt-4 border-t border-amber-100 space-y-4">
-                                    {/* Info Box */}
-                                    <div className="p-3 bg-amber-100 rounded-lg border border-amber-200">
-                                        <p className="text-sm text-amber-800 font-medium">📧 Cara menggunakan Email:</p>
-                                        <ol className="text-xs text-amber-700 mt-2 list-decimal list-inside space-y-1">
-                                            <li>Gunakan akun Gmail</li>
-                                            <li>Buat App Password di: <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer" className="underline">Google App Passwords</a></li>
-                                            <li>Masukkan email dan App Password di bawah</li>
-                                        </ol>
-                                    </div>
-
-                                    {/* Email Recipient */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                                            Email Penerima Laporan
-                                        </label>
-                                        <input
-                                            type="email"
-                                            value={notifSettings.emailRecipient}
-                                            onChange={(e) => updateSetting("emailRecipient", e.target.value)}
-                                            placeholder="hse@company.com"
-                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none transition-all"
-                                        />
-                                    </div>
-
-                                    {/* Note about future feature */}
-                                    <p className="text-xs text-slate-500 italic">
-                                        * Fitur email akan mengirim laporan harian/mingguan secara otomatis ke alamat di atas.
-                                        Konfigurasi SMTP akan ditambahkan di versi selanjutnya.
-                                    </p>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Browser Push Section */}
-                        <div className="p-5 bg-gradient-to-br from-purple-50 to-slate-50 rounded-xl border border-purple-100">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-purple-500 rounded-lg">
-                                    <Smartphone className="text-white" size={20} />
-                                </div>
-                                <div className="flex-1">
-                                    <h4 className="font-bold text-slate-900">Push Notification</h4>
-                                    <p className="text-sm text-slate-500">Notifikasi langsung di browser</p>
-                                </div>
-                                <ToggleSwitch
-                                    enabled={notifSettings.enablePushNotification}
-                                    onToggle={() => updateSetting("enablePushNotification", !notifSettings.enablePushNotification)}
-                                />
-                            </div>
-                        </div>
-
-                        {/* Sound Section */}
-                        <div className="p-5 bg-gradient-to-br from-emerald-50 to-slate-50 rounded-xl border border-emerald-100">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-emerald-500 rounded-lg">
-                                    <Volume2 className="text-white" size={20} />
-                                </div>
-                                <div className="flex-1">
-                                    <h4 className="font-bold text-slate-900">Suara Notifikasi</h4>
-                                    <p className="text-sm text-slate-500">Bunyi alarm saat ada pelanggaran</p>
-                                </div>
-                                <ToggleSwitch
-                                    enabled={notifSettings.enableSound}
-                                    onToggle={() => updateSetting("enableSound", !notifSettings.enableSound)}
-                                />
-                            </div>
-                        </div>
-
-                        {/* Cooldown Setting */}
-                        <div className="p-5 bg-slate-50 rounded-xl border border-slate-200">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-slate-500 rounded-lg">
-                                    <Clock className="text-white" size={20} />
-                                </div>
-                                <div className="flex-1">
-                                    <h4 className="font-bold text-slate-900">Cooldown Notifikasi</h4>
-                                    <p className="text-sm text-slate-500">Jeda antar notifikasi untuk zona yang sama</p>
-                                </div>
-                                <select
-                                    value={notifSettings.cooldownSeconds}
-                                    onChange={(e) => updateSetting("cooldownSeconds", Number(e.target.value))}
-                                    className="px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm"
-                                >
-                                    <option value={30}>30 detik</option>
-                                    <option value={60}>1 menit</option>
-                                    <option value={120}>2 menit</option>
-                                    <option value={300}>5 menit</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-
-                {activeTab === "telegram" && (
-                    <TelegramSettings />
-                )}
-
-                {activeTab === "camera" && (
-                    <CameraSettingsTab />
-                )}
-
-                {activeTab === "security" && (
-                    <div className="space-y-6">
-                        <h3 className="text-lg font-bold text-slate-900">Keamanan</h3>
-
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
-                                <div>
-                                    <p className="font-medium text-slate-900">Two-Factor Authentication</p>
-                                    <p className="text-sm text-slate-500">Tambahkan lapisan keamanan ekstra</p>
-                                </div>
-                                <ToggleSwitch enabled={false} onToggle={() => { }} />
-                            </div>
-
-                            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
-                                <div>
-                                    <p className="font-medium text-slate-900">Session Timeout</p>
-                                    <p className="text-sm text-slate-500">Auto logout setelah tidak aktif</p>
-                                </div>
-                                <select className="px-4 py-2 bg-white border border-slate-200 rounded-lg">
-                                    <option>30 menit</option>
-                                    <option>1 jam</option>
-                                    <option>4 jam</option>
-                                    <option>Tidak pernah</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {activeTab === "system" && (
-                    <div className="space-y-6">
-                        <h3 className="text-lg font-bold text-slate-900">Informasi Sistem</h3>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="p-4 bg-slate-50 rounded-xl">
-                                <p className="text-sm text-slate-500">Versi Aplikasi</p>
-                                <p className="text-lg font-bold text-slate-900 font-mono">v2.0.0</p>
-                            </div>
-                            <div className="p-4 bg-slate-50 rounded-xl">
-                                <p className="text-sm text-slate-500">Model AI</p>
-                                <p className="text-lg font-bold text-slate-900 font-mono">YOLOv8n</p>
-                            </div>
-                            <div className="p-4 bg-slate-50 rounded-xl">
-                                <p className="text-sm text-slate-500">Database</p>
-                                <p className="text-lg font-bold text-slate-900 font-mono">SQLite</p>
-                            </div>
-                            <div className="p-4 bg-slate-50 rounded-xl">
-                                <p className="text-sm text-slate-500">Uptime</p>
-                                <p className="text-lg font-bold text-emerald-600 font-mono">99.8%</p>
-                            </div>
-                        </div>
-
-                        <div className="flex flex-col gap-3">
-                            <div className="p-4 bg-red-50 border border-red-100 rounded-xl">
-                                <h4 className="font-bold text-red-800 mb-1">Danger Zone</h4>
-                                <p className="text-sm text-red-600 mb-4">Tindakan ini tidak dapat dibatalkan.</p>
-
-                                <button
-                                    onClick={() => setShowResetConfirm(true)}
-                                    className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-colors"
-                                >
-                                    <Trash2 size={18} />
-                                    Bersihkan Data & Riwayat
-                                </button>
-                            </div>
-
-                            <button className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-slate-700 font-medium transition-colors w-fit">
-                                <RefreshCw size={18} />
-                                Restart Sistem
-                            </button>
-                        </div>
-                    </div>
-                )}
-
-                {/* Reset Confirmation Modal */}
-                {showResetConfirm && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-                        <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl animate-in fade-in zoom-in duration-200">
-                            <div className="flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mx-auto mb-4">
-                                <AlertTriangle className="w-8 h-8 text-red-600" />
-                            </div>
-                            <h3 className="text-xl font-bold text-center text-slate-900 mb-2">Hapus Semua Data?</h3>
-                            <p className="text-center text-slate-500 mb-6">
-                                Tindakan ini akan menghapus semua <strong>foto bukti pelanggaran</strong> dan <strong>riwayat statistik</strong>. Data yang dihapus tidak dapat dikembalikan.
-                            </p>
-
-                            <div className="flex gap-3">
-                                <button
-                                    onClick={() => setShowResetConfirm(false)}
-                                    className="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors"
-                                >
-                                    Batal
-                                </button>
-                                <button
-                                    onClick={handleResetData}
-                                    disabled={isResetting}
-                                    className="flex-1 px-4 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
-                                >
-                                    {isResetting ? <Loader2 className="animate-spin" /> : <Trash2 size={18} />}
-                                    Ya, Hapus
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Save Button */}
-                <div className="mt-8 flex justify-end gap-3">
-                    {saveStatus === "success" && (
-                        <div className="flex items-center gap-2 text-emerald-600">
-                            <CheckCircle size={18} />
-                            <span className="text-sm font-medium">Tersimpan!</span>
-                        </div>
-                    )}
-                    <button
-                        onClick={handleSave}
-                        disabled={isSaving}
-                        className="flex items-center gap-2 px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-medium shadow-lg transition-colors disabled:opacity-70"
-                    >
-                        {isSaving ? (
-                            <>
-                                <Loader2 size={18} className="animate-spin" />
-                                Menyimpan...
-                            </>
-                        ) : (
-                            <>
-                                <Save size={18} />
-                                Simpan Pengaturan
-                            </>
-                        )}
-                    </button>
+        <div className={`flex items-center justify-between p-5 rounded-2xl border transition-all duration-300 font-sans cursor-pointer group ${checked ? 'bg-primary/5 border-primary/20 shadow-sm' : 'bg-white border-slate-200 hover:border-slate-300 hover:shadow-soft'}`} onClick={onChange}>
+            <div className="flex items-start gap-4">
+                <div className={`p-2.5 rounded-xl transition-colors ${checked ? 'bg-white shadow-sm border border-primary/10' : 'bg-slate-50 border border-slate-100 group-hover:bg-slate-100'}`}>
+                    {icon}
+                </div>
+                <div className="mt-0.5 pr-4">
+                    <p className={`text-sm font-bold tracking-wide transition-colors ${checked ? 'text-slate-800' : 'text-slate-600 group-hover:text-slate-800'}`}>{label}</p>
+                    {description && <p className="text-xs font-medium text-slate-500 mt-1 leading-relaxed">{description}</p>}
                 </div>
             </div>
-
+            <div
+                className={`flex-shrink-0 relative w-14 h-7 rounded-full transition-colors duration-300 flex items-center px-1 border-2 ${checked ? 'bg-primary border-primary' : 'bg-slate-200 border-slate-200'}`}
+            >
+                <span className={`w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-300 ${checked ? 'translate-x-7' : 'translate-x-0'}`} />
+            </div>
         </div>
     );
 }

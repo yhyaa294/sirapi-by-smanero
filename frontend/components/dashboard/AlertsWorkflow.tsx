@@ -34,8 +34,8 @@ type EvidencePayload = {
 
 const deriveSeverity = (violation: string): WorkflowAlert["severity"] => {
   const value = violation.toLowerCase();
-  if (value.includes("helm") || value.includes("helmet")) return "high";
-  if (value.includes("rompi") || value.includes("vest") || value.includes("goggle")) return "medium";
+  if (value.includes("helm") || value.includes("topi")) return "high";
+  if (value.includes("rompi") || value.includes("dasi") || value.includes("goggle")) return "medium";
   return "low";
 };
 

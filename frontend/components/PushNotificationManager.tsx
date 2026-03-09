@@ -41,10 +41,10 @@ export default function PushNotificationManager() {
   const subscribeToPush = async () => {
     try {
       const registration = await navigator.serviceWorker.ready;
-      
+
       // In production, this would come from your server
       const vapidPublicKey = 'YOUR_VAPID_PUBLIC_KEY';
-      
+
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: vapidPublicKey
@@ -68,7 +68,7 @@ export default function PushNotificationManager() {
 
     try {
       await subscription.unsubscribe();
-      
+
       // Remove subscription from server
       await fetch('/api/unsubscribe-push', {
         method: 'POST',
@@ -86,8 +86,8 @@ export default function PushNotificationManager() {
     if (!isSupported || permission !== 'granted') return;
 
     const registration = await navigator.serviceWorker.ready;
-    registration.showNotification('SmartAPD Test', {
-      body: 'This is a test notification from SmartAPD!',
+    registration.showNotification('SiRapi Test', {
+      body: 'This is a test notification from SiRapi!',
       icon: '/icons/icon-192x192.png',
       badge: '/icons/icon-192x192.png',
       vibrate: [200, 100, 200],
@@ -99,7 +99,7 @@ export default function PushNotificationManager() {
           icon: '/icons/view.png'
         }
       ]
-    });
+    } as NotificationOptions);
   };
 
   if (!isSupported) {
@@ -116,11 +116,11 @@ export default function PushNotificationManager() {
         <div>
           <h3 className="font-semibold">Push Notifications</h3>
           <p className="text-sm text-gray-600">
-            {permission === 'granted' ? '✅ Enabled' : 
-             permission === 'denied' ? '❌ Blocked' : '⚠️ Not set'}
+            {permission === 'granted' ? '✅ Enabled' :
+              permission === 'denied' ? '❌ Blocked' : '⚠️ Not set'}
           </p>
         </div>
-        
+
         {permission === 'granted' ? (
           <button
             onClick={subscription ? unsubscribeFromPush : subscribeToPush}

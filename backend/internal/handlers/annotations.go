@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/smartapd/backend/internal/database"
-	"github.com/smartapd/backend/internal/models"
+	"github.com/sirapi/backend/internal/database"
+	"github.com/sirapi/backend/internal/models"
 )
 
 // ==================== ANNOTATION / FEEDBACK HANDLERS ====================

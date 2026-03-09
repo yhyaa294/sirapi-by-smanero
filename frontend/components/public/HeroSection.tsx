@@ -147,7 +147,7 @@ const HeroCarousel = () => {
         <motion.img
           key={index}
           src={CAROUSEL_IMAGES[index]}
-          alt={`SmartAPD Worker ${index + 1}`}
+          alt={`SiRapi Worker ${index + 1}`}
           className="absolute bottom-0 h-[85%] lg:h-[95%] w-auto object-contain object-bottom z-10 drop-shadow-2xl [mask-image:linear-gradient(to_bottom,black_80%,transparent_100%)]"
           initial={{ opacity: 0, y: 20 }}
           animate={{ 
@@ -187,13 +187,13 @@ export default function HeroSection() {
           <div className="relative h-10 w-10 lg:h-12 lg:w-12 flex items-center justify-center rounded-xl overflow-hidden border border-orange-500/30 bg-white shadow-lg shadow-orange-500/20 group-hover:scale-105 transition-transform mix-blend-screen">
              {/* eslint-disable-next-line @next/next/no-img-element */}
              <img 
-                src="/images/logo-smartapd.jpg" 
-                alt="SmartAPD Logo" 
+                src="/images/logo-sirapi.jpg" 
+                alt="SiRapi Logo" 
                 className="h-full w-full object-contain" 
              />
           </div>
           <div className="flex items-center gap-3">
-            <span className="font-bold text-white text-xl tracking-wider">SMARTAPD</span>
+            <span className="font-bold text-white text-xl tracking-wider">SIRAPI</span>
             <div className="h-6 w-px bg-slate-700 hidden sm:block"></div>
             <span className="font-thin text-orange-400 text-lg tracking-wide hidden sm:block">Vision AI</span>
           </div>

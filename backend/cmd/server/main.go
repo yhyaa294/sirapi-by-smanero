@@ -11,21 +11,21 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/joho/godotenv"
 
-	"github.com/smartapd/backend/internal/cache"
-	"github.com/smartapd/backend/internal/config"
-	"github.com/smartapd/backend/internal/database"
-	"github.com/smartapd/backend/internal/errors"
-	"github.com/smartapd/backend/internal/handlers"
-	"github.com/smartapd/backend/internal/middleware"
-	"github.com/smartapd/backend/internal/scheduler"
-	"github.com/smartapd/backend/internal/services"
+	"github.com/sirapi/backend/internal/cache"
+	"github.com/sirapi/backend/internal/config"
+	"github.com/sirapi/backend/internal/database"
+	"github.com/sirapi/backend/internal/errors"
+	"github.com/sirapi/backend/internal/handlers"
+	"github.com/sirapi/backend/internal/middleware"
+	"github.com/sirapi/backend/internal/scheduler"
+	"github.com/sirapi/backend/internal/services"
 )
 
 func main() {
 	middleware.InitLogger()
 
 	log.Println("╔═══════════════════════════════════════╗")
-	log.Println("║     SMARTAPD BACKEND - Starting...    ║")
+	log.Println("║     SIRAPI BACKEND - Starting...    ║")
 	log.Println("╚═══════════════════════════════════════╝")
 
 	// Load .env file
@@ -59,7 +59,7 @@ func main() {
 		SMTPUser:  cfg.SMTPUser,
 		SMTPPass:  cfg.SMTPPass,
 		FromEmail: cfg.SMTPFromEmail,
-		FromName:  "SmartAPD",
+		FromName:  "SiRapi",
 		Enabled:   cfg.SMTPUser != "" && cfg.SMTPPass != "",
 	}
 	emailService := services.NewEmailService(emailSettings)
@@ -84,12 +84,12 @@ func main() {
 	telegramSender.Start()
 
 	// Send startup notification
-	telegramService.SendSystemStatus("started", "SmartAPD Backend berhasil dijalankan")
+	telegramService.SendSystemStatus("started", "SiRapi Backend berhasil dijalankan")
 
 	// Create Fiber app
 	app := fiber.New(fiber.Config{
-		AppName:      "SmartAPD Backend v1.0.0",
-		ServerHeader: "SmartAPD",
+		AppName:      "SiRapi Backend v1.0.0",
+		ServerHeader: "SiRapi",
 		ErrorHandler: errors.ErrorHandler,
 	})
 
@@ -99,7 +99,7 @@ func main() {
 	app.Use(middleware.RedactedLogger()) // Replaced EnhancedLogger with RedactedLogger
 	app.Use(middleware.RateLimit())
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: os.Getenv("FRONTEND_URL"), // e.g. "http://localhost:3000,https://smartapd.id"
+		AllowOrigins: os.Getenv("FRONTEND_URL"), // e.g. "http://localhost:3000,https://sirapi.id"
 		AllowHeaders: "Origin, Content-Type, Accept, Authorization, X-API-Key",
 		AllowMethods: "GET, POST, PUT, DELETE, OPTIONS",
 	}))
@@ -116,7 +116,7 @@ func main() {
 		stats := detectionService.GetTodayStats()
 		return c.JSON(fiber.Map{
 			"status":  "healthy",
-			"service": "SmartAPD Backend",
+			"service": "SiRapi Backend",
 			"version": "1.0.0",
 			"uptime":  "ok",
 			"today_stats": fiber.Map{
@@ -291,7 +291,7 @@ func main() {
 
 		log.Println("\n🛑 Shutting down gracefully...")
 		sched.Stop()
-		telegramService.SendSystemStatus("stopped", "SmartAPD Backend dihentikan")
+		telegramService.SendSystemStatus("stopped", "SiRapi Backend dihentikan")
 		app.Shutdown()
 	}()
 
@@ -301,7 +301,7 @@ func main() {
 		port = "8080"
 	}
 
-	log.Printf("🚀 SmartAPD Backend running on http://localhost:%s", port)
+	log.Printf("🚀 SiRapi Backend running on http://localhost:%s", port)
 	log.Printf("📡 WebSocket available at ws://localhost:%s/ws", port)
 	log.Printf("📊 Health check: http://localhost:%s/health", port)
 

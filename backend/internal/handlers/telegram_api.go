@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/smartapd/backend/internal/database"
-	"github.com/smartapd/backend/internal/models"
+	"github.com/sirapi/backend/internal/database"
+	"github.com/sirapi/backend/internal/models"
 )
 
 // CreateRegistration creates a new registration link
@@ -42,7 +42,7 @@ func CreateRegistration(c *fiber.Ctx) error {
 	// Build deep link
 	botUsername := os.Getenv("TELEGRAM_BOT_USERNAME")
 	if botUsername == "" {
-		botUsername = "SmartAPDbyAI_bot"
+		botUsername = "SiRapibyAI_bot"
 	}
 	deepLink := fmt.Sprintf("https://t.me/%s?start=reg_%s", botUsername, token)
 
@@ -197,7 +197,7 @@ func TestTelegramChat(c *fiber.Ctx) error {
 
 	message := fmt.Sprintf(`🧪 <b>Test Connection</b>
 
-✅ Chat ini terdaftar dengan SmartAPD.
+✅ Chat ini terdaftar dengan SiRapi.
 
 📋 <b>Detail:</b>
 • Chat ID: <code>%d</code>
@@ -284,7 +284,7 @@ func GetTelegramStatus(c *fiber.Ctx) error {
 	botToken := os.Getenv("TELEGRAM_BOT_TOKEN")
 	botUsername := os.Getenv("TELEGRAM_BOT_USERNAME")
 	if botUsername == "" {
-		botUsername = "SmartAPDbyAI_bot"
+		botUsername = "SiRapibyAI_bot"
 	}
 
 	status := "inactive"

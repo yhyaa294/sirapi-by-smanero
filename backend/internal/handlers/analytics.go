@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/smartapd/backend/internal/database"
+	"github.com/sirapi/backend/internal/database"
 )
 
 // ==================== ANALYTICS HANDLERS ====================

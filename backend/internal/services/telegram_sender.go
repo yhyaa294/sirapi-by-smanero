@@ -11,9 +11,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/smartapd/backend/internal/database"
-	"github.com/smartapd/backend/internal/models"
-	"github.com/smartapd/backend/internal/utils"
+	"github.com/sirapi/backend/internal/database"
+	"github.com/sirapi/backend/internal/models"
+	"github.com/sirapi/backend/internal/utils"
 )
 
 // TelegramSender handles sending notifications via Telegram
@@ -153,7 +153,7 @@ func (s *TelegramSender) sendViolationAlert(chatID int64, task NotificationTask)
 		emoji = "⚠️"
 	}
 
-	text := fmt.Sprintf(`%s <b>PELANGGARAN APD TERDETEKSI</b>
+	text := fmt.Sprintf(`%s <b>PELANGGARAN SERAGAM TERDETEKSI</b>
 
 📍 <b>Lokasi:</b> %s
 🚨 <b>Jenis:</b> %s
@@ -240,10 +240,10 @@ func (s *TelegramSender) logMessage(chatID int64, msgID int64, detectionID *uint
 // formatViolationType formats violation type for display
 func formatViolationType(vt string) string {
 	types := map[string]string{
-		"no_helmet": "Tidak Pakai Helm",
-		"no_vest":   "Tidak Pakai Rompi",
-		"no_gloves": "Tidak Pakai Sarung Tangan",
-		"no_boots":  "Tidak Pakai Sepatu Safety",
+		"no_topi":   "Tidak Pakai Helm",
+		"no_dasi":   "Tidak Pakai Rompi",
+		"no_sabuk":  "Tidak Pakai Sarung Tangan",
+		"no_sepatu": "Tidak Pakai Sepatu Safety",
 	}
 	if formatted, ok := types[vt]; ok {
 		return formatted

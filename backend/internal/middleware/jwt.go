@@ -15,7 +15,7 @@ func ValidateToken(tokenString string) (*jwt.Token, error) {
 	if secretKey == "" {
 		// Fallback for development if not set, but warn
 		fmt.Println("WARNING: JWT_SECRET not set, using default (CHANGE IN PRODUCTION!)")
-		secretKey = "smartapd-secret-key-2024"
+		secretKey = "sirapi-secret-key-2024"
 	}
 
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {

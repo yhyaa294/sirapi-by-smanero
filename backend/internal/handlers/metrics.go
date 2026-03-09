@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/smartapd/backend/internal/database"
-	"github.com/smartapd/backend/internal/models"
+	"github.com/sirapi/backend/internal/database"
+	"github.com/sirapi/backend/internal/models"
 )
 
 // MetricsSummary returns JSON metrics for frontend widgets
@@ -83,30 +83,30 @@ func PrometheusMetrics(c *fiber.Ctx) error {
 	var memStats runtime.MemStats
 	runtime.ReadMemStats(&memStats)
 
-	metrics := `# HELP smartapd_cameras_total Total number of cameras
-# TYPE smartapd_cameras_total gauge
-smartapd_cameras_total ` + formatInt(cameraTotal) + `
-# HELP smartapd_cameras_online Number of online cameras
-# TYPE smartapd_cameras_online gauge
-smartapd_cameras_online ` + formatInt(cameraOnline) + `
-# HELP smartapd_detections_total Total number of detections
-# TYPE smartapd_detections_total counter
-smartapd_detections_total ` + formatInt(detectionTotal) + `
-# HELP smartapd_violations_total Total number of violations
-# TYPE smartapd_violations_total counter
-smartapd_violations_total ` + formatInt(violationTotal) + `
-# HELP smartapd_review_queue_pending Pending items in review queue
-# TYPE smartapd_review_queue_pending gauge
-smartapd_review_queue_pending ` + formatInt(pendingReviews) + `
-# HELP smartapd_uptime_seconds Uptime in seconds
-# TYPE smartapd_uptime_seconds gauge
-smartapd_uptime_seconds ` + formatFloat(time.Since(startTime).Seconds()) + `
-# HELP smartapd_memory_bytes Memory usage in bytes
-# TYPE smartapd_memory_bytes gauge
-smartapd_memory_bytes ` + formatUint(memStats.Alloc) + `
-# HELP smartapd_goroutines Number of goroutines
-# TYPE smartapd_goroutines gauge
-smartapd_goroutines ` + formatInt(int64(runtime.NumGoroutine())) + `
+	metrics := `# HELP sirapi_cameras_total Total number of cameras
+# TYPE sirapi_cameras_total gauge
+sirapi_cameras_total ` + formatInt(cameraTotal) + `
+# HELP sirapi_cameras_online Number of online cameras
+# TYPE sirapi_cameras_online gauge
+sirapi_cameras_online ` + formatInt(cameraOnline) + `
+# HELP sirapi_detections_total Total number of detections
+# TYPE sirapi_detections_total counter
+sirapi_detections_total ` + formatInt(detectionTotal) + `
+# HELP sirapi_violations_total Total number of violations
+# TYPE sirapi_violations_total counter
+sirapi_violations_total ` + formatInt(violationTotal) + `
+# HELP sirapi_review_queue_pending Pending items in review queue
+# TYPE sirapi_review_queue_pending gauge
+sirapi_review_queue_pending ` + formatInt(pendingReviews) + `
+# HELP sirapi_uptime_seconds Uptime in seconds
+# TYPE sirapi_uptime_seconds gauge
+sirapi_uptime_seconds ` + formatFloat(time.Since(startTime).Seconds()) + `
+# HELP sirapi_memory_bytes Memory usage in bytes
+# TYPE sirapi_memory_bytes gauge
+sirapi_memory_bytes ` + formatUint(memStats.Alloc) + `
+# HELP sirapi_goroutines Number of goroutines
+# TYPE sirapi_goroutines gauge
+sirapi_goroutines ` + formatInt(int64(runtime.NumGoroutine())) + `
 `
 	c.Set("Content-Type", "text/plain; version=0.0.4; charset=utf-8")
 	return c.SendString(metrics)

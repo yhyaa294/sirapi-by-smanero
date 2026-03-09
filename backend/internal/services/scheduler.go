@@ -106,6 +106,6 @@ func (s *Scheduler) checkHourlyStats() {
 	if rate < 70 {
 		log.Printf("⚠️ Low compliance rate detected: %.1f%%", rate)
 		s.telegramService.SendSystemStatus("warning",
-			"Tingkat kepatuhan APD turun di bawah 70%. Segera lakukan inspeksi!")
+			"Tingkat kepatuhan seragam turun di bawah 70%. Segera lakukan inspeksi!")
 	}
 }

@@ -1,4 +1,3 @@
-```go
 package database
 
 import (
@@ -11,7 +10,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
-	"github.com/smartapd/backend/internal/models"
+	"github.com/sirapi/backend/internal/models"
 )
 
 var DB *gorm.DB

@@ -109,10 +109,10 @@ func TestTelegramConnection(c *fiber.Ctx) error {
 	// Test 2: Send test message
 	sendMessageURL := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", settings.BotToken)
 	message := fmt.Sprintf(`
-✅ <b>SmartAPD - Koneksi Berhasil!</b>
+✅ <b>SiRapi - Koneksi Berhasil!</b>
 
-Bot @%s terkoneksi dengan sistem SmartAPD.
-Anda akan menerima notifikasi pelanggaran APD melalui chat ini.
+Bot @%s terkoneksi dengan sistem SiRapi.
+Anda akan menerima notifikasi pelanggaran seragam melalui chat ini.
 
 🕐 Waktu Tes: %s
 `, getMeResult.Result.Username, c.Context().Time().Format("15:04:05"))
@@ -170,7 +170,7 @@ func SendTelegramNotification(c *fiber.Ctx) error {
 		confidence := request.Data["confidence"]
 
 		message = fmt.Sprintf(`
-🚨 <b>PELANGGARAN APD TERDETEKSI</b>
+🚨 <b>PELANGGARAN SERAGAM TERDETEKSI</b>
 
 ⚠️ %v
 📍 <b>Lokasi:</b> %v
@@ -186,7 +186,7 @@ Segera lakukan tindakan!
 		compliance := request.Data["compliance_rate"]
 
 		message = fmt.Sprintf(`
-📊 <b>LAPORAN HARIAN SMARTAPD</b>
+📊 <b>LAPORAN HARIAN SIRAPI</b>
 ━━━━━━━━━━━━━━━━━━━━━
 
 📈 <b>Statistik:</b>
@@ -195,13 +195,13 @@ Segera lakukan tindakan!
 • Tingkat Kepatuhan: %.1f%%
 
 ━━━━━━━━━━━━━━━━━━━━━
-<i>SmartAPD - AI Safety Monitoring</i>
+<i>SiRapi - AI Safety Monitoring</i>
 `, detections, violations, compliance)
 
 	case "system":
 		status := request.Data["status"]
 		msg := request.Data["message"]
-		message = fmt.Sprintf("ℹ️ <b>SmartAPD System</b>\n\nStatus: %v\n%v", status, msg)
+		message = fmt.Sprintf("ℹ️ <b>SiRapi System</b>\n\nStatus: %v\n%v", status, msg)
 
 	default:
 		return c.Status(400).JSON(fiber.Map{

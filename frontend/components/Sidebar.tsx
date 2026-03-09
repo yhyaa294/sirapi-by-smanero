@@ -1,14 +1,65 @@
 "use client";
+
+import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Camera, AlertTriangle, FileText, Settings, LogOut, ChevronLeft, ChevronRight } from "lucide-react";
+import { 
+  LayoutDashboard, 
+  MonitorPlay,
+  Inbox, 
+  ShieldAlert, 
+  MessageSquare, 
+  BrainCircuit, 
+  Server, 
+  Users, 
+  School, 
+  FileBarChart, 
+  CreditCard, 
+  Settings, 
+  LogOut, 
+  ChevronLeft, 
+  ChevronDown,
+  ShieldCheck
+} from "lucide-react";
 
-const menuItems = [
-  { name: "Ringkasan", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Pantauan CCTV", href: "/dashboard/monitoring", icon: Camera },
-  { name: "Riwayat Bahaya", href: "/dashboard/alerts", icon: AlertTriangle },
-  { name: "Laporan K3", href: "/dashboard/reports", icon: FileText },
-  { name: "Pengaturan", href: "/dashboard/settings", icon: Settings },
+const menuGroups = [
+  {
+    groupLabel: "Main Dashboard",
+    items: [
+      { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
+      { name: "Live Command Center", href: "/dashboard/cctv", icon: MonitorPlay },
+    ]
+  },
+  {
+    groupLabel: "Operasional Tata Tertib",
+    items: [
+      { name: "Inbox Pelanggaran", href: "#inbox", icon: Inbox },
+      { name: "Rule Engine", href: "#rule-engine", icon: ShieldAlert },
+      { name: "Pusat Komunikasi", href: "#komunikasi", icon: MessageSquare },
+    ]
+  },
+  {
+    groupLabel: "AI Core & Infra",
+    items: [
+      { name: "AI Training Studio", href: "#ai-studio", icon: BrainCircuit },
+      { name: "Hardware & IoT", href: "#hardware", icon: Server },
+    ]
+  },
+  {
+    groupLabel: "Data Master",
+    items: [
+      { name: "Direktori Entitas", href: "/dashboard/students", icon: Users },
+      { name: "Manajemen Kelas", href: "/dashboard/classes", icon: School },
+    ]
+  },
+  {
+    groupLabel: "Administrasi",
+    items: [
+      { name: "Laporan & Analitik", href: "/dashboard/reports", icon: FileBarChart },
+      { name: "Lisensi & Langganan", href: "#billing", icon: CreditCard },
+      { name: "Pengaturan Sistem", href: "/dashboard/settings", icon: Settings },
+    ]
+  }
 ];
 
 interface SidebarProps {
@@ -20,91 +71,169 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen = false, onClose, isCollapsed, toggleCollapse }: SidebarProps) {
   const pathname = usePathname();
+  // State accordion
+  const [openGroups, setOpenGroups] = useState<Record<number, boolean>>({
+    0: true, 1: true, 2: true, 3: true, 4: true
+  });
+
+  const toggleGroup = (index: number) => {
+    setOpenGroups(prev => ({ ...prev, [index]: !prev[index] }));
+  };
 
   return (
     <>
       {/* Mobile Overlay */}
       {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-30 lg:hidden backdrop-blur-sm transition-opacity"
+        <div
+          className="fixed inset-0 bg-slate-900/60 z-30 lg:hidden backdrop-blur-sm transition-opacity"
           onClick={onClose}
         />
       )}
 
       <aside className={`
-        bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800/50 h-screen fixed left-0 top-0 
-        text-slate-600 dark:text-slate-300 flex flex-col z-40 transition-all duration-300 ease-in-out shadow-xl
+        bg-white dark:bg-[#0f1117] border-r border-slate-200 dark:border-slate-800/60 
+        h-screen fixed left-0 top-0 text-slate-600 dark:text-slate-400 
+        flex flex-col z-40 transition-all duration-300 ease-in-out shadow-2xl lg:shadow-none
         ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
-        ${isCollapsed ? "w-20" : "w-64"}
+        ${isCollapsed ? "w-[88px]" : "w-72"}
       `}>
-        <div className={`p-6 flex items-center ${isCollapsed ? "justify-center" : "justify-between lg:justify-start gap-3"} transition-all bg-slate-50/50 dark:bg-slate-950/30`}>
+        {/* Header Branding */}
+        <div className={`
+          h-20 px-6 flex items-center border-b border-slate-100 dark:border-slate-800/40
+          ${isCollapsed ? "justify-center" : "justify-between"} transition-all
+        `}>
           <div className="flex items-center gap-3">
-             <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center font-bold text-white flex-shrink-0 shadow-lg shadow-orange-500/20">S</div>
-             {!isCollapsed && (
-               <span className="text-xl font-bold text-slate-900 dark:text-white tracking-wider whitespace-nowrap overflow-hidden transition-opacity duration-300">
-                 SMART<span className="text-orange-600 dark:text-orange-500">APD</span>
-               </span>
-             )}
+            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-600/20 flex-shrink-0">
+              <ShieldCheck size={24} className="text-white" />
+            </div>
+            {!isCollapsed && (
+              <div className="flex flex-col overflow-hidden transition-opacity duration-300">
+                <span className="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-none">
+                  Si<span className="text-indigo-600">Rapi</span>
+                </span>
+                <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400 mt-1">Enterprise</span>
+              </div>
+            )}
           </div>
-          
-          {/* Mobile Close Button */}
-          <button 
+
+          <button
             onClick={onClose}
-            className="lg:hidden p-1 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+            className="lg:hidden p-2 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors"
           >
-            <ChevronLeft size={24} />
+            <ChevronLeft size={20} />
           </button>
         </div>
 
-        <nav className="flex-1 px-3 space-y-2 mt-6">
-          {menuItems.map((item) => {
-            const isActive = pathname === item.href;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => onClose?.()}
-                title={isCollapsed ? item.name : ""}
-                className={`flex items-center gap-3 px-4 py-3.5 rounded-lg transition-all duration-200 group relative font-medium ${
-                  isActive 
-                    ? "bg-gradient-to-r from-orange-100 to-orange-50 dark:from-orange-500/20 dark:to-orange-500/5 text-orange-600 dark:text-orange-400 border-l-4 border-orange-500 shadow-sm dark:shadow-inner" 
-                    : "hover:bg-slate-100 dark:hover:bg-slate-800/80 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-                } ${isCollapsed ? "justify-center px-2" : ""}`}
-              >
-                <item.icon size={22} className={`flex-shrink-0 transition-colors ${isActive ? "text-orange-600 dark:text-orange-400" : "text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300"}`} />
-                {!isCollapsed && <span className="whitespace-nowrap overflow-hidden">{item.name}</span>}
-                
-                {/* Tooltip for collapsed state */}
-                {isCollapsed && (
-                  <div className="absolute left-full ml-2 px-3 py-1.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-semibold rounded-md opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 shadow-lg border border-slate-200 dark:border-slate-700 tracking-wide">
-                    {item.name}
+        {/* Navigation Wrapper */}
+        <nav className={`flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide py-6 ${isCollapsed ? "px-3" : "px-4"}`}>
+          <div className="space-y-6">
+            {menuGroups.map((group, groupIdx) => {
+              const isGroupOpen = openGroups[groupIdx];
+              
+              return (
+                <div key={groupIdx} className="flex flex-col">
+                  {/* Group Label / Accordion Header */}
+                  {!isCollapsed ? (
+                    <button 
+                      onClick={() => toggleGroup(groupIdx)}
+                      className="flex items-center justify-between w-full px-3 mb-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                    >
+                      <span>{group.groupLabel}</span>
+                      <ChevronDown size={14} className={`transition-transform duration-200 ${isGroupOpen ? "rotate-180" : ""}`} />
+                    </button>
+                  ) : (
+                    <div className="w-full h-px bg-slate-200 dark:bg-slate-800/60 my-3 opacity-50" />
+                  )}
+
+                  {/* Sub Menu Links */}
+                  <div className={`space-y-1 overflow-hidden transition-all duration-300 ease-in-out ${!isCollapsed && !isGroupOpen ? "max-h-0 opacity-0 hidden" : "max-h-[500px] opacity-100"}`}>
+                    {group.items.map((item) => {
+                      const isActive = pathname === item.href;
+
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => onClose?.()}
+                          className={`
+                            group relative flex items-center gap-3 rounded-xl transition-all duration-200 font-medium
+                            ${isCollapsed ? "justify-center h-12 w-12 mx-auto" : "px-3 py-2.5"}
+                            ${isActive
+                              ? "bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400"
+                              : "text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white"
+                            }
+                          `}
+                        >
+                          {isActive && !isCollapsed && (
+                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-indigo-600 rounded-r-full" />
+                          )}
+                          
+                          <item.icon 
+                            strokeWidth={isActive ? 2.5 : 2} 
+                            size={isCollapsed ? 22 : 20} 
+                            className={`flex-shrink-0 transition-colors ${
+                              isActive ? "text-indigo-600 dark:text-indigo-400" : "text-slate-400 group-hover:text-indigo-500"
+                            }`} 
+                          />
+                          
+                          {!isCollapsed && (
+                            <span className="text-[14px] leading-none whitespace-nowrap">{item.name}</span>
+                          )}
+
+                          {/* Tooltip on Collapsed State */}
+                          {isCollapsed && (
+                            <div className="absolute left-14 px-3 py-2 bg-slate-900 dark:bg-slate-800 text-white text-xs font-semibold rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 shadow-xl translate-x-1 group-hover:translate-x-0 transition-all duration-200">
+                              {item.name}
+                              <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-slate-900 dark:bg-slate-800 rotate-45" />
+                            </div>
+                          )}
+                        </Link>
+                      );
+                    })}
                   </div>
-                )}
-              </Link>
-            );
-          })}
+                </div>
+              );
+            })}
+          </div>
         </nav>
 
-        {/* Collapse Toggle Button (Desktop Only) */}
-        <button 
-          onClick={toggleCollapse}
-          className="hidden lg:flex items-center justify-center p-4 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 transition-colors border-t border-slate-200 dark:border-slate-800/50"
-        >
-          {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
-        </button>
+        {/* User Profile / Actions Bottom */}
+        <div className="p-4 border-t border-slate-100 dark:border-slate-800/60 flex flex-col gap-2 bg-slate-50/50 dark:bg-[#0f1117]/50">
+          {!isCollapsed && (
+            <div className="flex items-center gap-3 px-3 py-3 mb-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+              <div className="w-9 h-9 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center flex-shrink-0">
+                <span className="text-sm font-bold text-slate-600 dark:text-slate-300">AD</span>
+              </div>
+              <div className="flex flex-col overflow-hidden">
+                <span className="text-sm font-semibold text-slate-900 dark:text-white truncate">Admin SiRapi</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400 truncate">admin@sekolah.sch.id</span>
+              </div>
+            </div>
+          )}
 
-        <div className="p-2 border-t border-slate-200 dark:border-slate-800/50 lg:hidden">
-          <Link href="/" className="flex items-center gap-3 px-4 py-3 text-red-600 dark:text-red-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg font-medium">
-            <LogOut size={20} />
-            <span>Keluar</span>
+          <Link 
+            href="/" 
+            className={`
+              flex items-center gap-3 rounded-xl transition-colors font-medium text-slate-500 dark:text-slate-400 
+              hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-500/10 dark:hover:text-red-400
+              ${isCollapsed ? "justify-center h-12 w-12 mx-auto" : "px-3 py-2.5"}
+            `}
+          >
+            <LogOut size={isCollapsed ? 22 : 20} className="flex-shrink-0" />
+            {!isCollapsed && <span className="text-[14px] leading-none">Keluar Sistem</span>}
           </Link>
-        </div>
-        {/* Desktop Logout (Collapsed/Expanded handled) */}
-         <div className="hidden lg:block p-2 border-t border-slate-200 dark:border-slate-800/50">
-          <Link href="/" className={`flex items-center gap-3 px-4 py-3 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-700 dark:hover:text-red-300 rounded-lg transition-colors font-medium ${isCollapsed ? "justify-center" : ""}`}>
-            <LogOut size={20} />
-            {!isCollapsed && <span>Keluar</span>}
-          </Link>
+
+          {/* Toggle Sidebar Collapse */}
+          <button
+            onClick={toggleCollapse}
+            className={`
+               hidden lg:flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all
+               ${isCollapsed ? "justify-center h-12 w-12 mx-auto" : "px-3 py-2.5 justify-between"}
+            `}
+          >
+            {!isCollapsed && <span className="text-[14px] font-medium">Sembunyikan Menu</span>}
+            <ChevronLeft size={isCollapsed ? 22 : 20} className={`transition-transform duration-300 ${isCollapsed ? "rotate-180" : ""}`} />
+          </button>
         </div>
       </aside>
     </>

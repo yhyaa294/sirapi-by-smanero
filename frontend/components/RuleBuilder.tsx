@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { Play, Save, Plus, Trash2, Zap } from 'lucide-react';
+import { Play, Save, Plus, Trash2, Zap, AlertTriangle, Check } from 'lucide-react';
 
 interface AlertRule {
     ID?: number;
@@ -50,7 +50,7 @@ export default function RuleBuilder() {
                     rule: currentRule,
                     sample: {
                         confidence: 0.95,
-                        violation_type: "no_helmet"
+                        violation_type: "no_topi"
                     }
                 })
             });
@@ -77,7 +77,7 @@ export default function RuleBuilder() {
                             className="w-full px-4 py-2 border rounded-xl text-sm"
                             value={currentRule.name}
                             onChange={e => setCurrentRule({ ...currentRule, name: e.target.value })}
-                            placeholder="e.g. Critical Helmet Violation"
+                            placeholder="e.g. Critical Topi Violation"
                         />
                     </div>
 
@@ -149,7 +149,7 @@ export default function RuleBuilder() {
                                 Reason: {simulateResult.reason}
                             </div>
                             <div className="text-xs text-slate-400 mt-4 border-t pt-2">
-                                Sample Input: Confidence 95%, No Helmet
+                                Sample Input: Confidence 95%, Tidak Bertopi
                             </div>
                         </div>
                     )}

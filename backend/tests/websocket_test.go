@@ -8,7 +8,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/smartapd/backend/internal/handlers"
+	"github.com/sirapi/backend/internal/handlers"
 	"github.com/stretchr/testify/assert"
 )
 

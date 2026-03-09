@@ -5,8 +5,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/smartapd/backend/internal/database"
-	"github.com/smartapd/backend/internal/models"
+	"github.com/sirapi/backend/internal/database"
+	"github.com/sirapi/backend/internal/models"
 )
 
 // TriageWorker evaluates triage rules against recent detections

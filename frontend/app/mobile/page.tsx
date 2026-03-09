@@ -18,10 +18,10 @@ type QuickStat = {
 const deriveSeverityFromText = (text?: string): AlertItem["severity"] => {
   if (!text) return "low";
   const normalized = text.toLowerCase();
-  if (normalized.includes("helm") || normalized.includes("helmet")) {
+  if (normalized.includes("helm") || normalized.includes("topi")) {
     return "high";
   }
-  if (normalized.includes("rompi") || normalized.includes("vest") || normalized.includes("goggle")) {
+  if (normalized.includes("rompi") || normalized.includes("dasi") || normalized.includes("goggle")) {
     return "medium";
   }
   return "low";
@@ -237,7 +237,7 @@ export default function MobileDashboard() {
                 <Menu className="w-5 h-5" />
               </button>
               <div>
-                <h1 className="text-xl font-bold">SmartAPD™</h1>
+                <h1 className="text-xl font-bold">SiRapi™</h1>
                 <p className="text-xs opacity-90">Monitoring Mandor</p>
               </div>
             </div>

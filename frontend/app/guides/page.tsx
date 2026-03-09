@@ -17,7 +17,7 @@ const resources = [
     actionLabel: "Lihat Slide"
   },
   {
-    title: "Video Training SmartAPD™",
+    title: "Video Training SiRapi™",
     description: "Tutorial 5 menit cara membaca dashboard dan menindaklanjuti pelanggaran.",
     type: "Video"
   }
@@ -30,7 +30,7 @@ export default function GuidesPage() {
         <div className="max-w-5xl mx-auto px-4 py-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-3xl font-bold">Panduan & SOP</h1>
-            <p className="text-sm opacity-90">Dokumentasi operasional SmartAPD™ untuk mandor dan manajemen</p>
+            <p className="text-sm opacity-90">Dokumentasi operasional SiRapi™ untuk mandor dan manajemen</p>
           </div>
           <Link
             href="/mobile"

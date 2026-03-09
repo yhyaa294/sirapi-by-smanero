@@ -57,10 +57,10 @@ function AlertToast({ alert, onDismiss, autoHide = 10000 }: AlertToastProps) {
     };
 
     const typeLabels: Record<string, string> = {
-        no_helmet: "Tidak Memakai Helm",
-        no_vest: "Tidak Memakai Rompi",
-        no_gloves: "Tidak Memakai Sarung Tangan",
-        no_boots: "Tidak Memakai Sepatu Safety",
+        no_topi: "Tidak Memakai Helm",
+        no_dasi: "Tidak Memakai Rompi",
+        no_sabuk: "Tidak Memakai Sarung Tangan",
+        no_sepatu: "Tidak Memakai Sepatu Safety",
     };
 
     return (
@@ -167,9 +167,9 @@ export function AlertToastContainer({ maxAlerts = 5 }: AlertToastContainerProps)
             });
         };
 
-        window.addEventListener("smartapd-violation", handleNewViolation as EventListener);
+        window.addEventListener("sirapi-violation", handleNewViolation as EventListener);
         return () => {
-            window.removeEventListener("smartapd-violation", handleNewViolation as EventListener);
+            window.removeEventListener("sirapi-violation", handleNewViolation as EventListener);
         };
     }, [maxAlerts]);
 
@@ -199,7 +199,7 @@ export function triggerViolationAlert(alert: Omit<ViolationAlert, "id" | "timest
     };
 
     window.dispatchEvent(
-        new CustomEvent("smartapd-violation", { detail: fullAlert })
+        new CustomEvent("sirapi-violation", { detail: fullAlert })
     );
 }
 

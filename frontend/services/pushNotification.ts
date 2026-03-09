@@ -1,6 +1,6 @@
 "use client";
 
-// Push Notification Service for SmartAPD
+// Push Notification Service for SiRapi
 // Handles browser push notifications for violations
 
 interface NotificationPayload {
@@ -99,17 +99,17 @@ class PushNotificationService {
         cameraId?: string
     ): Promise<Notification | null> {
         const typeLabels: Record<string, string> = {
-            no_helmet: "Tidak Memakai Helm",
-            no_vest: "Tidak Memakai Rompi",
-            no_gloves: "Tidak Memakai Sarung Tangan",
-            no_boots: "Tidak Memakai Sepatu Safety",
+            no_topi: "Tidak Memakai Helm",
+            no_dasi: "Tidak Memakai Rompi",
+            no_sabuk: "Tidak Memakai Sarung Tangan",
+            no_sepatu: "Tidak Memakai Sepatu Safety",
         };
 
         const typeEmoji: Record<string, string> = {
-            no_helmet: "⚠️",
-            no_vest: "🦺",
-            no_gloves: "🧤",
-            no_boots: "👢",
+            no_topi: "⚠️",
+            no_dasi: "🦺",
+            no_sabuk: "🧤",
+            no_sepatu: "👢",
         };
 
         const label = typeLabels[violationType] || violationType;

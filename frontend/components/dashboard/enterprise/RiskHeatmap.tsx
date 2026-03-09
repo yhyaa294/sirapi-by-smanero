@@ -71,7 +71,7 @@ export default function RiskHeatmap() {
             <div className="mt-4 p-3 bg-surface border border-border rounded-sm">
                 <div className="text-[10px] font-mono text-foreground-dim mb-1">LIVE INSIGHT</div>
                 <p className="text-xs text-foreground">
-                    Detected <span className="text-critical font-bold">High Risk</span> in Logistics Zone due to 3 missing helmets in the last hour.
+                    Detected <span className="text-critical font-bold">High Risk</span> in Logistics Zone due to 3 missing topis in the last hour.
                 </p>
             </div>
         </div>

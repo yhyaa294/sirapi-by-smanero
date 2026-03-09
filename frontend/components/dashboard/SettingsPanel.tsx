@@ -29,7 +29,7 @@ const SettingsPanel = () => {
             <Settings className="h-5 w-5 text-orange-500" /> Pengaturan Sistem
           </h2>
           <p className="text-sm text-gray-600">
-            Sesuaikan preferensi SmartAPD™ agar sesuai dengan kebutuhan operasional harian.
+            Sesuaikan preferensi SiRapi™ agar sesuai dengan kebutuhan operasional harian.
           </p>
         </div>
         <button className="inline-flex items-center gap-2 rounded-lg bg-orange-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-orange-600">
@@ -117,7 +117,7 @@ const SettingsPanel = () => {
                 onChange={(event) => setTelegramEnabled(event.target.checked)}
                 className="h-4 w-4 rounded text-orange-500 focus:ring-orange-500"
               />
-              Aktifkan broadcast Telegram @SmartAPD_Bot
+              Aktifkan broadcast Telegram @SiRapi_Bot
             </label>
             {telegramEnabled && (
               <div className="flex flex-col gap-1 text-xs text-gray-500">
@@ -134,7 +134,7 @@ const SettingsPanel = () => {
           <ShieldCheck className="h-6 w-6 text-green-500" />
           <div>
             <h3 className="text-lg font-semibold text-gray-900">Instalasi & Akses</h3>
-            <p className="text-sm text-gray-600">Pastikan SmartAPD tersedia saat offline dan mudah diakses.</p>
+            <p className="text-sm text-gray-600">Pastikan SiRapi tersedia saat offline dan mudah diakses.</p>
           </div>
         </div>
 
@@ -143,7 +143,7 @@ const SettingsPanel = () => {
             <h4 className="flex items-center gap-2 font-semibold text-gray-800">
               <Smartphone className="h-4 w-4" /> Install Aplikasi
             </h4>
-            <p className="text-xs text-gray-500">Tambahkan SmartAPD ke home screen agar terasa seperti aplikasi native.</p>
+            <p className="text-xs text-gray-500">Tambahkan SiRapi ke home screen agar terasa seperti aplikasi native.</p>
             <InstallPrompt showOnDesktop showOnMobile />
           </div>
 
@@ -154,8 +154,8 @@ const SettingsPanel = () => {
             <p className="text-xs text-gray-500">Gunakan domain produksi agar mandor di lapangan tidak tergantung IP lokal.</p>
             <ul className="space-y-1 text-xs text-gray-500">
               <li>• Demo lokal: <code>http://localhost:3000</code></li>
-              <li>• Staging: <code>https://staging.smartapd.id</code></li>
-              <li>• Produksi: <code>https://app.smartapd.id</code> (target)</li>
+              <li>• Staging: <code>https://staging.sirapi.id</code></li>
+              <li>• Produksi: <code>https://app.sirapi.id</code> (target)</li>
             </ul>
           </div>
         </div>

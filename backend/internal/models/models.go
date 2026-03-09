@@ -10,7 +10,7 @@ import (
 type Detection struct {
 	gorm.Model
 	CameraID      uint      `json:"camera_id" gorm:"index"`
-	ViolationType string    `json:"violation_type" gorm:"index"` // no_helmet, no_vest, no_gloves
+	ViolationType string    `json:"violation_type" gorm:"index"` // no_topi, no_dasi, no_sabuk
 	Confidence    float64   `json:"confidence"`
 	ImagePath     string    `json:"image_path"`
 	Location      string    `json:"location"`

@@ -4,8 +4,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/smartapd/backend/internal/database"
-	"github.com/smartapd/backend/internal/models"
+	"github.com/sirapi/backend/internal/database"
+	"github.com/sirapi/backend/internal/models"
 )
 
 // DetectionService handles detection business logic
@@ -127,7 +127,7 @@ func (s *DetectionService) ProcessNewDetection(detection *models.Detection) erro
 // calculateSeverity determines alert severity based on violation type
 func (s *DetectionService) calculateSeverity(violationType string, confidence float64) string {
 	// Higher severity for head protection
-	if violationType == "no_helmet" {
+	if violationType == "no_topi" {
 		if confidence > 0.8 {
 			return "critical"
 		}
@@ -135,7 +135,7 @@ func (s *DetectionService) calculateSeverity(violationType string, confidence fl
 	}
 
 	// Medium for visibility
-	if violationType == "no_vest" {
+	if violationType == "no_dasi" {
 		return "medium"
 	}
 
@@ -146,15 +146,15 @@ func (s *DetectionService) calculateSeverity(violationType string, confidence fl
 // formatAlertMessage creates a human-readable alert message
 func (s *DetectionService) formatAlertMessage(detection *models.Detection) string {
 	messages := map[string]string{
-		"no_helmet": "Pekerja terdeteksi tidak menggunakan helm safety",
-		"no_vest":   "Pekerja terdeteksi tidak menggunakan rompi safety",
-		"no_gloves": "Pekerja terdeteksi tidak menggunakan sarung tangan",
-		"no_boots":  "Pekerja terdeteksi tidak menggunakan sepatu safety",
+		"no_topi":   "Pekerja terdeteksi tidak menggunakan helm safety",
+		"no_dasi":   "Pekerja terdeteksi tidak menggunakan rompi safety",
+		"no_sabuk":  "Pekerja terdeteksi tidak menggunakan sarung tangan",
+		"no_sepatu": "Pekerja terdeteksi tidak menggunakan sepatu safety",
 	}
 
 	msg := messages[detection.ViolationType]
 	if msg == "" {
-		msg = "Pelanggaran APD terdeteksi: " + detection.ViolationType
+		msg = "Pelanggaran seragam terdeteksi: " + detection.ViolationType
 	}
 
 	return msg

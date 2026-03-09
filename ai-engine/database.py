@@ -1,3 +1,4 @@
+
 """
 Database Management Module
 Handles SQLite database operations for logging detections and violations

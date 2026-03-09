@@ -38,7 +38,7 @@ export default function Loading() {
           SYSTEM INITIALIZING...
         </p>
         <p className="mt-2 text-xs text-slate-500 font-mono">
-          SmartAPD Command Center
+          SiRapi Command Center
         </p>
       </div>
 

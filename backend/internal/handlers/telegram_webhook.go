@@ -11,9 +11,9 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/smartapd/backend/internal/database"
-	"github.com/smartapd/backend/internal/models"
-	"github.com/smartapd/backend/internal/utils"
+	"github.com/sirapi/backend/internal/database"
+	"github.com/sirapi/backend/internal/models"
+	"github.com/sirapi/backend/internal/utils"
 )
 
 // TelegramUpdate represents an incoming Telegram update

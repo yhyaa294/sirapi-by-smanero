@@ -139,7 +139,7 @@ const RiskInsights: FC<RiskInsightsProps> = ({ riskMap, isLoading, error, onRelo
                   <div className="mt-4">
                     <p className="text-xs font-semibold opacity-90">Risiko per Shift</p>
                     <div className="mt-2 grid grid-cols-3 gap-2 text-[11px]">
-                      {area.shiftRisks.map((shift) => (
+                      {area.shiftRisks?.map((shift) => (
                         <span key={shift.shift} className="rounded-lg bg-white/20 px-2 py-1 text-center font-semibold">
                           {shift.shift}
                           <br />

@@ -1,6 +1,6 @@
 "use client";
 
-// Screenshot Service for SmartAPD
+// Screenshot Service for SiRapi
 // Captures screenshots from webcam or canvas when violations are detected
 
 interface ScreenshotResult {

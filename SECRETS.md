@@ -1,6 +1,6 @@
 # 🔐 Panduan Konfigurasi Secret & Environment Variables
 
-Dokumen ini menjelaskan semua environment variables yang dibutuhkan untuk menjalankan SmartAPD.
+Dokumen ini menjelaskan semua environment variables yang dibutuhkan untuk menjalankan **SiRapi**.
 
 ## ⚠️ PENTING
 
@@ -12,14 +12,12 @@ Dokumen ini menjelaskan semua environment variables yang dibutuhkan untuk menjal
 
 | Variable | Deskripsi | Contoh | Wajib? |
 |----------|-----------|--------|--------|
-| `DATABASE_URL` | Path ke database SQLite atau connection string PostgreSQL | `./data/smartapd.db` | ✅ |
+| `DATABASE_URL` | Path ke database SQLite atau connection string PostgreSQL | `./data/sirapi.db` | ✅ |
 | `JWT_SECRET` | Secret key untuk signing JWT token. **HARUS DIGANTI DI PRODUCTION!** | `your-super-secret-key-min-32-chars` | ✅ |
 | `PORT` | Port server backend | `8080` | ❌ (default: 8080) |
 | `ENVIRONMENT` | Mode aplikasi | `development` / `production` | ❌ |
-| `TELEGRAM_BOT_TOKEN` | Token bot Telegram untuk notifikasi | `123456:ABC...` | ❌ |
-| `TELEGRAM_CHAT_ID` | Chat ID tujuan notifikasi | `-100123456789` | ❌ |
-| `RATE_LIMIT_DEFAULT` | Limit request per menit (global) | `100` | ❌ (default: 100) |
-| `RATE_LIMIT_AUTH` | Limit request per menit (login) | `10` | ❌ (default: 10) |
+| `TELEGRAM_BOT_TOKEN` | Token bot Telegram untuk notifikasi pelanggaran | `123456:ABC...` | ❌ |
+| `TELEGRAM_CHAT_ID` | Chat ID tujuan notifikasi guru BK/Piket | `-100123456789` | ❌ |
 
 ---
 
@@ -33,44 +31,30 @@ Dokumen ini menjelaskan semua environment variables yang dibutuhkan untuk menjal
 
 ## AI Engine (Python)
 
+AI didesain sebagai subservice tersendiri menggunakan FastAPI.
+
 | Variable | Deskripsi | Contoh | Wajib? |
 |----------|-----------|--------|--------|
-| `BACKEND_URL` | URL backend untuk mengirim deteksi | `http://localhost:8080` | ✅ |
-| `CAMERA_SOURCE` | Sumber kamera (0 = webcam, atau RTSP URL) | `0` | ❌ |
+| `BACKEND_URL` | URL backend untuk mengirim deteksi pelanggaran atribut | `http://localhost:8080/api/violation` | ✅ |
 
 ---
 
-## Contoh File `.env`
+## Contoh File `.env` (Global)
 
 ```env
 # Backend
-DATABASE_URL=./data/smartapd.db
-JWT_SECRET=ganti-dengan-secret-yang-kuat-minimal-32-karakter
+DATABASE_URL=./data/sirapi.db
+JWT_SECRET=rahasia-sirapi-super-aman-2026-minimal-32-karakter
 PORT=8080
 ENVIRONMENT=development
 
-# Telegram (opsional)
+# Telegram (Notifikasi Guru)
 TELEGRAM_BOT_TOKEN=
 TELEGRAM_CHAT_ID=
 
-# Frontend
+# Frontend (bisa di .env.local)
 NEXT_PUBLIC_API_URL=http://localhost:8080/api/v1
 
 # AI Engine
-BACKEND_URL=http://localhost:8080
-CAMERA_SOURCE=0
+BACKEND_URL=http://localhost:8080/api/violation
 ```
-
----
-
-## 🚀 Tips Production
-
-1. **Gunakan secret manager** (HashiCorp Vault, AWS Secrets Manager, dll.)
-2. **Generate JWT_SECRET yang kuat**:
-
-   ```bash
-   openssl rand -base64 32
-   ```
-
-3. **Jangan gunakan default secret** di production
-4. **Set ENVIRONMENT=production** untuk menonaktifkan debug features

@@ -44,7 +44,7 @@ export default function AdminPanel() {
       {/* Header */}
       <div className="bg-gradient-to-r from-orange-500 to-green-500 text-white shadow-lg">
         <div className="max-w-7xl mx-auto px-4 py-6">
-          <h1 className="text-2xl font-bold">Admin Panel - SmartAPD™</h1>
+          <h1 className="text-2xl font-bold">Admin Panel - SiRapi™</h1>
           <p className="text-sm opacity-90">Kelola Data Sistem Tanpa Coding</p>
         </div>
       </div>

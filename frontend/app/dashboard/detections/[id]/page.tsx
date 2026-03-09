@@ -20,13 +20,13 @@ export default function DetectionDetailPage({ params }: { params: { id: string }
 
             <EvidenceViewer
                 detectionId={detectionId}
-                initialImageUrl="http://localhost:8000/screenshots/no_helmet_2025-12-25_09-28-44.jpg" // Example real path from previous logs or dynamic
+                initialImageUrl="http://localhost:8000/screenshots/no_topi_2025-12-25_09-28-44.jpg" // Example real path from previous logs or dynamic
                 bbox={[100, 100, 300, 400]}
             />
 
             {/* Fallback note if image 404s in demo */}
             <p className="text-xs text-slate-400 italic">
-                * Static demo image path used for verification. In production, this loads dynamic `/api/v1/images/{id}`
+                {"* Static demo image path used for verification. In production, this loads dynamic /api/v1/images/:id"}
             </p>
         </div>
     );

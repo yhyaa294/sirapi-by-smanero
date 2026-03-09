@@ -1,10 +1,10 @@
-# Telegram Bot Integration - SmartAPD
+# Telegram Bot Integration - SiRapi
 
 ## Overview
 
-SmartAPD menggunakan **Central Bot** architecture - satu bot dikelola server, admin hanya perlu mendaftarkan chat.
+SiRapi menggunakan **Central Bot** architecture - satu bot dikelola server, admin hanya perlu mendaftarkan chat.
 
-**Bot:** [@SmartAPDbyAI_bot](https://t.me/SmartAPDbyAI_bot)
+**Bot:** [@SiRapiBot](https://t.me/SmartAPDbyAI_bot)
 
 ---
 
@@ -16,7 +16,7 @@ TELEGRAM_BOT_TOKEN=your_bot_token_from_botfather
 SECRET_KEY=your_secret_key_for_hmac
 
 # OPSIONAL
-TELEGRAM_BOT_USERNAME=SmartAPDbyAI_bot
+TELEGRAM_BOT_USERNAME=SiRapiBot
 REDIS_URL=redis://localhost:6379
 REPORT_BASE_URL=http://localhost:3000
 COOLDOWN_SECONDS=60
@@ -49,7 +49,7 @@ go run cmd/server/main.go
 ```bash
 # Create registration link
 curl -X POST http://localhost:8080/api/v1/telegram/registrations/create
-# Returns: { deep_link: "https://t.me/SmartAPDbyAI_bot?start=reg_abc123" }
+# Returns: { deep_link: "https://t.me/SiRapiBot?start=reg_abc123" }
 
 # Manual add (after validation)
 curl -X POST http://localhost:8080/api/v1/telegram/chats/manual-add \

@@ -52,17 +52,17 @@ export default function ReportExportModal({ isOpen, onClose, data }: ReportExpor
         const score = stats.compliance || 0;
 
         return {
-            Title: `Laporan ${typeLabels[reportType]} Kepatuhan APD`,
-            Unit: "SmartAPD Main Facility",
+            Title: `Laporan ${typeLabels[reportType]} Kepatuhan Seragam`,
+            Unit: "SiRapi Main Facility",
             Period: reportType === 'daily' ? dateStr : `Periode: ${dateStr}`,
             GeneratedAt: now.toLocaleString('id-ID'),
-            SummaryText: `Tingkat kepatuhan APD periode ini adalah ${score.toFixed(1)}%. Sistem mendeteksi total ${stats.totalDetections} aktivitas dengan ${stats.violationsToday} insiden pelanggaran K3.`,
+            SummaryText: `Tingkat kepatuhan seragam periode ini adalah ${score.toFixed(1)}%. Sistem mendeteksi total ${stats.totalDetections} aktivitas dengan ${stats.violationsToday} insiden pelanggaran.`,
             StatusColor: score >= 90 ? "green" : score >= 75 ? "yellow" : "red",
             Recommendation: score >= 90
-                ? "Kinerja K3 sangat baik. Pertahankan kedisiplinan penggunaan APD."
+                ? "Kinerja sangat baik. Pertahankan kedisiplinan penggunaan seragam."
                 : score >= 75
                     ? "Tingkatkan pengawasan di area rawan pelanggaran."
-                    : "PERHATIAN: Kepatuhan rendah. Lakukan safety talk dan audit segera.",
+                    : "PERHATIAN: Kepatuhan rendah. Lakukan pembinaan dan inspeksi segera.",
             SafetyScore: Math.round(score),
             TotalViolations: stats.violationsToday,
             ViolationsIncrease: 0, // Placeholder
@@ -118,7 +118,7 @@ export default function ReportExportModal({ isOpen, onClose, data }: ReportExpor
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `SmartAPD_Report_${Date.now()}.pdf`;
+            a.download = `SiRapi_Report_${Date.now()}.pdf`;
             document.body.appendChild(a);
             a.click();
             a.remove();

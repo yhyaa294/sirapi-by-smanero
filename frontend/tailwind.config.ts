@@ -10,42 +10,54 @@ const config: Config = {
         extend: {
             colors: {
                 background: "hsl(var(--background))",
-                surface: {
-                    DEFAULT: "hsl(var(--surface))",
-                    highlight: "hsl(var(--surface-highlight))",
-                },
                 foreground: {
                     DEFAULT: "hsl(var(--foreground))",
                     muted: "hsl(var(--foreground-muted))",
-                    dim: "hsl(var(--foreground-dim))",
                 },
                 primary: {
                     DEFAULT: "hsl(var(--primary))",
                     hover: "hsl(var(--primary-hover))",
                 },
-                // Semantic Roles
+                secondary: "hsl(var(--secondary))",
+                accent: "hsl(var(--accent))",
+                info: "hsl(var(--info))",
                 safe: "hsl(var(--safe))",
                 warning: "hsl(var(--warning))",
                 critical: "hsl(var(--critical))",
-                info: "hsl(var(--info))",
-                border: "hsl(var(--border))",
             },
             fontFamily: {
                 sans: ['var(--font-inter)', 'Inter', 'ui-sans-serif', 'system-ui'],
                 mono: ['var(--font-jetbrains)', 'JetBrains Mono', 'ui-monospace', 'SFMono-Regular'],
             },
-            backgroundImage: {
-                'grid-pattern': "linear-gradient(to right, #1e293b 1px, transparent 1px), linear-gradient(to bottom, #1e293b 1px, transparent 1px)",
-                'vignette': "radial-gradient(circle, transparent 50%, rgba(2,6,23,0.8) 100%)",
+            boxShadow: {
+                'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.04)',
+                'glow': '0 0 20px rgba(121, 107, 255, 0.4)',
+                'glow-critical': '0 0 20px rgba(255, 87, 87, 0.4)',
             },
             animation: {
+                'gradient-x': 'gradient-x 15s ease infinite',
+                'float': 'float 6s ease-in-out infinite',
                 'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                'stripe-flow': 'stripe-flow 20s linear infinite',
+                'slide-up': 'slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
             },
             keyframes: {
-                'stripe-flow': {
-                    '0%': { backgroundPosition: '0 0' },
-                    '100%': { backgroundPosition: '100% 100%' },
+                'gradient-x': {
+                    '0%, 100%': {
+                        'background-size': '200% 200%',
+                        'background-position': 'left center'
+                    },
+                    '50%': {
+                        'background-size': '200% 200%',
+                        'background-position': 'right center'
+                    },
+                },
+                'float': {
+                    '0%, 100%': { transform: 'translateY(0)' },
+                    '50%': { transform: 'translateY(-10px)' },
+                },
+                'slide-up': {
+                    '0%': { transform: 'translateY(20px)', opacity: '0' },
+                    '100%': { transform: 'translateY(0)', opacity: '1' },
                 }
             }
         },

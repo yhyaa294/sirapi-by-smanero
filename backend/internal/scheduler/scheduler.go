@@ -13,9 +13,9 @@ import (
 	"github.com/robfig/cron/v3"
 	"gorm.io/gorm"
 
-	"github.com/smartapd/backend/internal/database"
-	"github.com/smartapd/backend/internal/models"
-	"github.com/smartapd/backend/internal/services"
+	"github.com/sirapi/backend/internal/database"
+	"github.com/sirapi/backend/internal/models"
+	"github.com/sirapi/backend/internal/services"
 )
 
 type Scheduler struct {
@@ -152,7 +152,7 @@ func (s *Scheduler) ExecuteJob(sched models.ReportSchedule) {
 	}
 
 	// 2. Send to Target
-	filename := fmt.Sprintf("SmartAPD_Report_%s_%s.pdf", sched.ReportType, time.Now().Format("20060102_1504"))
+	filename := fmt.Sprintf("SiRapi_Report_%s_%s.pdf", sched.ReportType, time.Now().Format("20060102_1504"))
 
 	// Create temporary file for sending
 	tmpPath := fmt.Sprintf("./temp_%d_%s", time.Now().UnixNano(), filename)
@@ -258,7 +258,7 @@ func (s *Scheduler) fetchPDFReport(reportType string) ([]byte, error) {
 	}
 
 	payload := map[string]interface{}{
-		"Title":           fmt.Sprintf("SmartAPD Automated Report (%s)", reportType),
+		"Title":           fmt.Sprintf("SiRapi Automated Report (%s)", reportType),
 		"Unit":            "All Units",
 		"GeneratedAt":     time.Now().Format("02 Jan 2006 15:04"),
 		"SummaryText":     fmt.Sprintf("Compliance Rate: %.1f%%. Total Detections: %d.", compliance, totalDetections),

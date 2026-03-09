@@ -8,8 +8,8 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/smartapd/backend/internal/database"
-	"github.com/smartapd/backend/internal/models"
+	"github.com/sirapi/backend/internal/database"
+	"github.com/sirapi/backend/internal/models"
 )
 
 type LoginRequest struct {
@@ -36,7 +36,7 @@ type AuthResponse struct {
 func generateTokens(user models.User) (string, string, error) {
 	secretKey := []byte(os.Getenv("JWT_SECRET"))
 	if len(secretKey) == 0 {
-		secretKey = []byte("smartapd-secret-key-2024")
+		secretKey = []byte("sirapi-secret-key-2024")
 	}
 
 	// Access Token (15 minutes or 1 hour)
@@ -123,7 +123,7 @@ func Refresh(c *fiber.Ctx) error {
 
 	secretKey := []byte(os.Getenv("JWT_SECRET"))
 	if len(secretKey) == 0 {
-		secretKey = []byte("smartapd-secret-key-2024")
+		secretKey = []byte("sirapi-secret-key-2024")
 	}
 
 	// Parse Refresh Token

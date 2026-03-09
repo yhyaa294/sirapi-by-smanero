@@ -10,7 +10,7 @@ interface CameraDetailModalProps {
 
 // Mock logs generator
 const generateLogs = (count: number) => {
-  const actions = ["Worker Detected", "Safe: Helmet On", "Violation: No Vest", "Zone Entry", "Safe: Vest On"];
+  const actions = ["Worker Detected", "Safe: Topi On", "Violation: Tidak Berdasi", "Zone Entry", "Safe: Dasi On"];
   return Array.from({ length: count }).map((_, i) => ({
     id: i,
     time: new Date(Date.now() - i * 1000 * 60 * 5).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),

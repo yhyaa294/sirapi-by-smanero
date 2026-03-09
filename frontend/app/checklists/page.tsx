@@ -6,7 +6,7 @@ import { ClipboardCheck, CheckCircle2, AlertTriangle, ArrowLeft, FilePlus2 } fro
 const checklistTemplates = [
   {
     title: "Pemeriksaan APD Mandor",
-    items: ["Helmet & Pelindung Kepala", "Rompi Reflektif", "Sepatu Safety", "Sarung Tangan"],
+    items: ["Topi & Pelindung Kepala", "Rompi Reflektif", "Sepatu Safety", "Sarung Tangan"],
     frequency: "Setiap shift"
   },
   {
@@ -23,7 +23,7 @@ export default function ChecklistsPage() {
         <div className="max-w-5xl mx-auto px-4 py-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-3xl font-bold">Checklist Lapangan</h1>
-            <p className="text-sm opacity-90">Pantau kepatuhan APD dan kondisi area sebelum pekerjaan dimulai</p>
+            <p className="text-sm opacity-90">Pantau kepatuhan seragam dan kedisiplinan siswa sebelum kegiatan dimulai</p>
           </div>
           <Link
             href="/mobile"

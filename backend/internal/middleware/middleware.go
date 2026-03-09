@@ -17,7 +17,7 @@ func getJWTSecret() []byte {
 			log.Fatal("FATAL: JWT_SECRET must be set in production")
 		}
 		log.Println("⚠️ WARNING: Using weak default secret for development")
-		return []byte("smartapd-secret-key-2024") // Only for dev
+		return []byte("sirapi-secret-key-2024") // Only for dev
 	}
 	return []byte(secret)
 }

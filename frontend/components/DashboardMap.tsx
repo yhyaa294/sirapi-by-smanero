@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo, memo, useCallback } from "react";
-import dynamic from "next/dynamic";
+
 import { Video, AlertTriangle, Wifi, Ghost, Plus, MousePointerClick, Grid, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { api, Camera } from "@/services/api";

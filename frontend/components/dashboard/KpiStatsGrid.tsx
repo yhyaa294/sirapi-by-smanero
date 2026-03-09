@@ -1,6 +1,4 @@
-"use client";
-
-import { Users, AlertOctagon, ShieldCheck, Activity } from "lucide-react";
+import { Users, AlertTriangle, Award, Camera, TrendingUp, TrendingDown } from "lucide-react";
 
 interface KpiCardProps {
   title: string;
@@ -9,64 +7,75 @@ interface KpiCardProps {
   trend?: string;
   trendUp?: boolean;
   accentColor: string;
+  subValue?: string;
+  iconBg: string;
 }
 
-function KpiCard({ title, value, icon: Icon, trend, trendUp, accentColor }: KpiCardProps) {
+function KpiCard({ title, value, icon: Icon, trend, trendUp, accentColor, subValue, iconBg }: KpiCardProps) {
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-5 shadow-sm hover:bg-slate-800 transition-colors">
+    <div className="glass-card p-6 flex flex-col justify-between group">
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">{title}</p>
-          <h3 className="mt-2 text-2xl font-bold text-slate-100">{value}</h3>
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">{title}</p>
+          <div className="flex items-baseline gap-2">
+            <h3 className="text-3xl font-bold text-slate-800">{value}</h3>
+            {trend && (
+              <span className={`flex items-center text-xs font-bold px-1.5 py-0.5 rounded-md ${trendUp ? "text-safe bg-safe/10" : "text-critical bg-critical/10"}`}>
+                {trendUp ? <TrendingUp size={12} className="mr-1" /> : <TrendingDown size={12} className="mr-1" />}
+                {trend}
+              </span>
+            )}
+          </div>
+          {subValue && <p className="text-xs font-medium text-slate-400 mt-1">{subValue}</p>}
         </div>
-        <div className={`rounded-lg p-2 bg-opacity-10 ${accentColor.replace('text-', 'bg-')}`}>
-          <Icon className={`h-5 w-5 ${accentColor}`} />
+        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-soft transition-transform group-hover:scale-110 ${iconBg}`}>
+          <Icon className={`h-6 w-6 ${accentColor}`} strokeWidth={2.5} />
         </div>
       </div>
-      {trend && (
-        <div className="mt-4 flex items-center gap-2 text-xs">
-          <span className={trendUp ? "text-emerald-400" : "text-rose-400"}>
-            {trendUp ? "↑" : "↓"} {trend}
-          </span>
-          <span className="text-slate-500">vs last week</span>
-        </div>
-      )}
     </div>
   );
 }
 
 export default function KpiStatsGrid() {
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
       <KpiCard
-        title="Total Workers"
-        value="124"
+        title="Total Siswa"
+        value="850"
         icon={Users}
-        trend="12%"
+        trend="2.4%"
         trendUp={true}
-        accentColor="text-blue-500"
+        accentColor="text-primary"
+        iconBg="bg-primary/10"
+        subValue="Active students"
       />
       <KpiCard
-        title="Compliance Rate"
-        value="94.2%"
-        icon={ShieldCheck}
-        trend="2.1%"
-        trendUp={true}
-        accentColor="text-emerald-500"
+        title="Pelanggaran"
+        value="12"
+        icon={AlertTriangle}
+        trend="1.8%"
+        trendUp={false}
+        accentColor="text-critical"
+        iconBg="bg-critical/10"
+        subValue="Today's anomalies"
       />
       <KpiCard
-        title="Active Violations"
-        value="3"
-        icon={AlertOctagon}
-        accentColor="text-rose-500 animate-pulse"
+        title="Kepatuhan"
+        value="94%"
+        icon={Award}
+        trend="0.5%"
+        trendUp={true}
+        accentColor="text-safe"
+        iconBg="bg-safe/10"
+        subValue="Compliance rate"
       />
       <KpiCard
-        title="Safety Score"
-        value="88/100"
-        icon={Activity}
-        trend="5pts"
-        trendUp={true}
-        accentColor="text-purple-500"
+        title="CCTV Gerbang"
+        value="Online"
+        subValue="Live Monitoring Active"
+        icon={Camera}
+        accentColor="text-info"
+        iconBg="bg-info/10"
       />
     </div>
   );

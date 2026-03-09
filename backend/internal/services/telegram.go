@@ -171,10 +171,10 @@ func (t *TelegramService) SendViolationAlert(violationType, location string, con
 
 	// Format violation type for display
 	violationDisplay := map[string]string{
-		"no_helmet": "🔴 TIDAK PAKAI HELM",
-		"no_vest":   "🟠 TIDAK PAKAI ROMPI",
-		"no_gloves": "🟡 TIDAK PAKAI SARUNG TANGAN",
-		"no_boots":  "🟤 TIDAK PAKAI SEPATU SAFETY",
+		"no_topi":   "🔴 TIDAK PAKAI HELM",
+		"no_dasi":   "🟠 TIDAK PAKAI ROMPI",
+		"no_sabuk":  "🟡 TIDAK PAKAI SARUNG TANGAN",
+		"no_sepatu": "🟤 TIDAK PAKAI SEPATU SAFETY",
 	}
 
 	display := violationDisplay[violationType]
@@ -184,7 +184,7 @@ func (t *TelegramService) SendViolationAlert(violationType, location string, con
 
 	// Build message
 	message := fmt.Sprintf(`
-🚨 <b>PELANGGARAN APD TERDETEKSI</b>
+🚨 <b>PELANGGARAN SERAGAM TERDETEKSI</b>
 
 %s
 
@@ -217,7 +217,7 @@ func (t *TelegramService) SendDailySummary(totalDetections, totalViolations int,
 	}
 
 	message := fmt.Sprintf(`
-📊 <b>LAPORAN HARIAN SMARTAPD</b>
+📊 <b>LAPORAN HARIAN SIRAPI</b>
 ━━━━━━━━━━━━━━━━━━━━━
 
 📅 Tanggal: %s
@@ -230,7 +230,7 @@ func (t *TelegramService) SendDailySummary(totalDetections, totalViolations int,
 🎯 <b>Status:</b> %s
 
 ━━━━━━━━━━━━━━━━━━━━━
-<i>SmartAPD - AI Safety Monitoring</i>
+<i>SiRapi - AI Safety Monitoring</i>
 `, time.Now().Format("02 January 2006"), totalDetections, totalViolations, complianceRate, status)
 
 	return t.SendMessage(message)
@@ -255,7 +255,7 @@ func (t *TelegramService) SendSystemStatus(status, message string) error {
 	}
 
 	msg := fmt.Sprintf(`
-%s <b>SMARTAPD SYSTEM</b>
+%s <b>SIRAPI SYSTEM</b>
 
 Status: <code>%s</code>
 %s

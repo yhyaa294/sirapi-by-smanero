@@ -10,7 +10,7 @@ interface FavoritePage {
   timestamp: number;
 }
 
-const FAVORITES_KEY = "smartapd_favorites";
+const FAVORITES_KEY = "sirapi_favorites";
 const MAX_FAVORITES = 8;
 
 const pageIcons: Record<string, string> = {

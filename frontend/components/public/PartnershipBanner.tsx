@@ -13,7 +13,7 @@ export default function PartnershipBanner() {
           <div className="text-center md:text-left mb-6 md:mb-0">
             <h3 className="text-xl font-bold mb-2 text-amber-200">PENAWARAN TERBATAS</h3>
             <h2 className="text-2xl md:text-3xl font-bold mb-3">
-              Kemitraan Eksklusif SmartAPD <span className="text-amber-300">+ Pasalku.ai</span>
+              Kemitraan Eksklusif SiRapi <span className="text-amber-300">+ Pasalku.ai</span>
             </h2>
             <p className="text-amber-100 max-w-2xl">
               Dapatkan akses premium ke platform manajemen K3 terintegrasi kami

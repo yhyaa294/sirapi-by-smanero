@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import puppeteer from 'puppeteer';
+// puppeteer is dynamically imported inside POST to avoid webpack bundling
 import handlebars from 'handlebars';
 import fs from 'fs';
 import path from 'path';
@@ -50,8 +50,8 @@ export async function POST(req: NextRequest) {
         // 1. Read Templates
         // Note: In production (Vercel), reading files like this might require path.join(process.cwd(), ...)
         // and ensuring files are included in the build.
-        const templatePath = path.join(process.cwd(), 'public/reports/templates/smartapd_report.html');
-        const cssPath = path.join(process.cwd(), 'public/reports/templates/smartapd_report.css');
+        const templatePath = path.join(process.cwd(), 'public/reports/templates/sirapi_report.html');
+        const cssPath = path.join(process.cwd(), 'public/reports/templates/sirapi_report.css');
 
         let htmlTemplate = '';
         let cssContent = '';
@@ -85,8 +85,10 @@ export async function POST(req: NextRequest) {
 
         // 3. Launch Puppeteer
         // Warning: This consumes significant memory. Verify hosting environment limits.
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const puppeteer = require('puppeteer');
         const browser = await puppeteer.launch({
-            headless: 'new',
+            headless: true,
             args: ['--no-sandbox', '--disable-setuid-sandbox']
         });
 
@@ -109,7 +111,7 @@ export async function POST(req: NextRequest) {
         await browser.close();
 
         // 5. Return PDF Response
-        const filename = `SmartAPD_Report_${Date.now()}.pdf`;
+        const filename = `SiRapi_Report_${Date.now()}.pdf`;
 
         return new NextResponse(pdfBuffer, {
             status: 200,

@@ -114,10 +114,10 @@ export default function AnalyticsPage() {
                 });
 
                 setViolationCounts([
-                    { name: "No vest", count: aiStatsResult.no_vest || 0 },
-                    { name: "No gloves", count: aiStatsResult.no_gloves || 0 },
-                    { name: "No helmet", count: aiStatsResult.no_helmet || 0 },
-                    { name: "No boots", count: aiStatsResult.no_boots || 0 },
+                    { name: "No dasi", count: aiStatsResult.no_dasi || 0 },
+                    { name: "No sabuk", count: aiStatsResult.no_sabuk || 0 },
+                    { name: "No topi", count: aiStatsResult.no_topi || 0 },
+                    { name: "No sepatu", count: aiStatsResult.no_sepatu || 0 },
                 ].filter((v: any) => v.count > 0).sort((a: any, b: any) => b.count - a.count));
             } else {
                 // console.log('AI Engine not available, falling back to backend');
@@ -284,7 +284,7 @@ export default function AnalyticsPage() {
         }
 
         const workbook = new ExcelJS.Workbook();
-        workbook.creator = 'SmartAPD';
+        workbook.creator = 'SiRapi';
         workbook.created = new Date();
 
         const worksheet = workbook.addWorksheet('Laporan Deteksi', {
@@ -307,7 +307,7 @@ export default function AnalyticsPage() {
         worksheet.insertRow(1, []);
         worksheet.mergeCells('A1:H1');
         const titleCell = worksheet.getCell('A1');
-        titleCell.value = 'SMARTAPD - LAPORAN DETEKSI PPE';
+        titleCell.value = 'SIRAPI - LAPORAN DETEKSI PPE';
         titleCell.font = { bold: true, size: 18, color: { argb: 'FFFFFFFF' } };
         titleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF97316' } }; // Orange
         titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
@@ -384,7 +384,7 @@ export default function AnalyticsPage() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `SmartAPD_Laporan_${now.toISOString().split('T')[0]}.xlsx`;
+        a.download = `SiRapi_Laporan_${now.toISOString().split('T')[0]}.xlsx`;
         a.click();
         URL.revokeObjectURL(url);
         setShowDownloadMenu(false);
@@ -569,9 +569,9 @@ export default function AnalyticsPage() {
                     <div className="h-[300px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={violationCounts.length > 0 ? violationCounts : [
-                                { name: "No Helmet", count: 0 },
-                                { name: "No Vest", count: 0 },
-                                { name: "No Gloves", count: 0 },
+                                { name: "Tidak Bertopi", count: 0 },
+                                { name: "Tidak Berdasi", count: 0 },
+                                { name: "No Sabuk", count: 0 },
                             ]} layout="vertical">
                                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#1e293b" />
                                 <XAxis type="number" stroke="#64748b" hide />

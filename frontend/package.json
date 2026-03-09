@@ -1,7 +1,7 @@
 {
-  "name": "smart-safety-vision-dashboard",
+  "name": "sirapi-dashboard",
   "version": "1.0.0",
-  "description": "Modern React Dashboard for Smart Safety Vision PPE Detection",
+  "description": "SiRapi - Sistem Deteksi Seragam Berbasis Computer Vision",
   "private": true,
   "scripts": {
     "dev": "next dev",

@@ -130,7 +130,7 @@ func (e *EmailService) wrapInTemplate(content string) string {
 <body style="font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; margin: 0;">
     <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 10px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
         <div style="text-align: center; margin-bottom: 20px;">
-            <h1 style="color: #f97316; margin: 0;">🛡️ SmartAPD</h1>
+            <h1 style="color: #f97316; margin: 0;">🛡️ SiRapi</h1>
             <p style="color: #64748b; margin: 5px 0;">HSE Command Center</p>
         </div>
         <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
@@ -139,7 +139,7 @@ func (e *EmailService) wrapInTemplate(content string) string {
         </div>
         <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
         <p style="color: #94a3b8; font-size: 12px; text-align: center;">
-            Laporan ini dikirim otomatis oleh sistem SmartAPD.<br>
+            Laporan ini dikirim otomatis oleh sistem SiRapi.<br>
             Waktu: %s
         </p>
     </div>
@@ -160,10 +160,10 @@ func (e *EmailService) SendViolationAlert(violationType, location string, confid
 		return nil
 	}
 
-	subject := fmt.Sprintf("🚨 Pelanggaran APD: %s", violationType)
+	subject := fmt.Sprintf("🚨 Pelanggaran Seragam: %s", violationType)
 
 	body := fmt.Sprintf(`
-		<h2 style="color: #dc2626;">🚨 PELANGGARAN APD TERDETEKSI</h2>
+		<h2 style="color: #dc2626;">🚨 PELANGGARAN SERAGAM TERDETEKSI</h2>
 		<table style="width: 100%%; border-collapse: collapse; margin: 15px 0;">
 			<tr>
 				<td style="padding: 10px; background: #fef2f2; border-radius: 5px;">
@@ -217,10 +217,10 @@ func (e *EmailService) SendDailySummary(totalDetections, totalViolations int, co
 		statusColor = "#dc2626"
 	}
 
-	subject := fmt.Sprintf("📊 Laporan Harian SmartAPD - %s", time.Now().Format("02 Jan 2006"))
+	subject := fmt.Sprintf("📊 Laporan Harian SiRapi - %s", time.Now().Format("02 Jan 2006"))
 
 	body := fmt.Sprintf(`
-		<h2 style="color: #1e40af;">📊 LAPORAN HARIAN SMARTAPD</h2>
+		<h2 style="color: #1e40af;">📊 LAPORAN HARIAN SIRAPI</h2>
 		<p style="color: #64748b;">%s</p>
 		
 		<table style="width: 100%%; border-collapse: collapse; margin: 20px 0;">
@@ -260,11 +260,11 @@ func (e *EmailService) TestConnection(to string) error {
 		return fmt.Errorf("email service disabled - configure SMTP settings first")
 	}
 
-	subject := "✅ SmartAPD - Test Connection"
+	subject := "✅ SiRapi - Test Connection"
 	body := `
 		<h2 style="color: #22c55e;">✅ Koneksi Email Berhasil!</h2>
 		<p>Email ini mengkonfirmasi bahwa konfigurasi SMTP Anda sudah benar.</p>
-		<p>Sistem SmartAPD siap mengirim notifikasi ke alamat email ini.</p>
+		<p>Sistem SiRapi siap mengirim notifikasi ke alamat email ini.</p>
 	`
 
 	return e.SendEmail(to, subject, body)

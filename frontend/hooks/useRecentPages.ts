@@ -8,7 +8,7 @@ interface RecentPage {
   timestamp: number;
 }
 
-const RECENT_PAGES_KEY = "smartapd_recent_pages";
+const RECENT_PAGES_KEY = "sirapi_recent_pages";
 const MAX_RECENT_PAGES = 5;
 
 const pageLabels: Record<string, string> = {

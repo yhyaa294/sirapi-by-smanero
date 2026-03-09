@@ -1,12 +1,12 @@
-# 🛡️ SmartAPD - Next Gen AI Safety Monitoring
+# 🛡️ SiRapi - Sistem Deteksi Seragam Berbasis Computer Vision
 
 <div align="center">
 
-<img src="frontend/public/images/logo.jpg" alt="SmartAPD Logo" width="180" style="border-radius: 24px; margin-bottom: 20px; box-shadow: 0 8px 32px rgba(249, 115, 22, 0.2);"/>
+<img src="frontend/public/images/logo.jpg" alt="SiRapi Logo" width="180" style="border-radius: 24px; margin-bottom: 20px; box-shadow: 0 8px 32px rgba(99, 102, 241, 0.2);"/>
 
-### **Sistem Pemantauan K3 & Kepatuhan APD Berbasis Computer Vision**
+### **Sistem Monitoring Kedisiplinan Atribut Seragam Berbasis AI**
 
-*Enterprise Grade Safety Solution for Construction & Manufacturing*
+*Mewujudkan Sustainable City di Wilayah Jombang*
 
 [![Next.js](https://img.shields.io/badge/Frontend-Next.js%2014-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
 [![Go](https://img.shields.io/badge/Backend-Go%20Fiber-00ADD8?style=for-the-badge&logo=go&logoColor=white)](https://gofiber.io/)
@@ -25,7 +25,7 @@
 
 ```mermaid
 sequenceDiagram
-    participant Worker as 👷 Worker
+    participant Student as 👨‍🎓 Siswa
     participant CCTV as 📷 CCTV
     participant AI as 🧠 AI Engine
     participant Backend as 🚀 Server
@@ -33,12 +33,12 @@ sequenceDiagram
     participant Dashboard as 💻 Admin UI
     participant TG as 📱 Telegram Bot
 
-    Worker->>CCTV: Masuk Area Kerja
+    Student->>CCTV: Melewati Gerbang Sekolah
     CCTV->>AI: Streaming Video (RTSP)
     
     rect rgb(20, 20, 20)
-        Note over AI: Deteksi APD (YOLOv8)
-        AI->>AI: Cek Helm, Rompi, Sepatu
+        Note over AI: Deteksi Atribut Seragam (YOLOv8)
+        AI->>AI: Cek Dasi, Topi, Sabuk, Bed, Sepatu
     end
 
     alt Pelanggaran Terdeteksi
@@ -46,7 +46,7 @@ sequenceDiagram
         Backend->>DB: Simpan Record
         Backend->>Dashboard: Alert WebSocket (Real-time)
         Backend->>TG: Kirim Notifikasi & Bukti Foto
-    else Patuh APD
+    else Atribut Lengkap
         AI->>Backend: Kirim Data Kepatuhan
         Backend->>DB: Log Kepatuhan
     end
@@ -54,40 +54,39 @@ sequenceDiagram
 
 ---
 
-## 🎯 Tentang SmartAPD
+## 🎯 Tentang SiRapi
 
-**SmartAPD** adalah platform keselamatan kerja cerdas yang menggabungkan kekuatan **Artificial Intelligence** dan **IoT**. Sistem ini bekerja 24/7 mendeteksi kelengkapan Alat Pelindung Diri (APD) pekerja secara otomatis melalui kamera CCTV yang sudah ada.
+**SiRapi** (Sistem Deteksi Kerapihan Berbasis AI) adalah inovasi teknologi berbasis Computer Vision yang dirancang untuk mengatasi tantangan pengawasan kedisiplinan atribut seragam di sekolah, khususnya SMAN Ngoro Jombang. Sistem ini mengintegrasikan AI dan CCTV untuk mendeteksi kelengkapan seragam secara otomatis dan real-time.
 
-> 💡 **"Safety First" bukan sekadar slogan.** SmartAPD mentransformasi pengawasan manual menjadi sistem digital yang proaktif, mencegah kecelakaan kerja sebelum terjadi.
+> 💡 **"Membangun Smart People, Menuju Smart City."** SiRapi mengubah pengawasan manual menjadi objektif dan berbasis data (automation-based), membebaskan guru piket untuk lebih fokus pada pembinaan karakter.
 
 ### Key Capabilities
 
-* ✅ **Deteksi Presisi:** Mengidentifikasi Helm, Rompi, Sepatu, Kacamata, dan Sarung Tangan.
-* ✅ **0% Downtime:** Arsitektur Microservices yang tahan banting (Fault Tolerant).
-* ✅ **Evidence Based:** Setiap pelanggaran direkam dengan foto bukti (Snapshot) dan Timestamp valid.
+* ✅ **Deteksi Presisi Tinggi:** Mengidentifikasi kelengkapan Dasi, Topi, Sabuk, Bed Kelas, dan warna Sepatu secara akurat dalam waktu singkat.
+* ✅ **Penanganan Arus Padat:** Mampu memantau 25 siswa per menit saat jam kedatangan (06.30 - 07.00 WIB).
+* ✅ **Evidence Based:** Setiap ketidaklengkapan dicatat beserta foto bukti (Snapshot) dan Timestamp valid.
 
 ---
 
-## ✨ Fitur Unggulan V2.0
+## ✨ Fitur Unggulan
 
 ### 1. 🧠 High-Performance AI Engine
 
-* **Model:** YOLOv8 Custom Fine-tuned (Akurasi > 90%).
-* **Speed:** Pemrosesan < 80ms per frame (Real-time).
-* **Adaptif:** Otomatis menyesuaikan pencahayaan (Brightness/Contrast Enhancer).
-* **Smart Rewind:** Fitur otomatis rewind untuk video demo/testing.
+* **Model:** Rekayasa Deep Learning (YOLOv8) untuk pendeteksian atribut sekolah.
+* **Speed:** Pemrosesan Real-time menyesuaikan kemampuan perangkat keras.
+* **Smart Eye:** "Mata Digital" yang mampu memindai banyak siswa secara bersamaan.
 
 ### 2. ⚡ Backend & Infrastructure
 
-* **Go Fiber:** REST API super cepat dengan Go Routines.
-* **WebSocket Hub:** Streaming data deteksi tanpa delay (Low Latency).
-* **Auto Maintenance:** Sistem otomatis menghapus data sampah (> 7 hari) untuk menghemat storage.
+* **Go Fiber:** REST API super cepat.
+* **WebSocket Hub:** Streaming data deteksi secara real-time ke Dashboard.
+* **Otomasi Laporan:** Menyediakan data statistik objektif sebagai dasar pengambilan kebijakan sekolah.
 
 ### 3. 📱 Dashboard & Reporting
 
-* **Live Center:** Tampilan grid kamera dinamis (Smart Grid) dengan status koneksi.
-* **PDF Reports Pro:** Laporan pelanggaran lengkap dengan **Foto Bukti Tertanam**, grafik, dan breakdown lokasi.
-* **Cross Platform:** Responsif di Desktop, Tablet, dan Mobile.
+* **Live Center:** Tampilan grid kamera gerbang dengan status koneksi.
+* **Laporan Kepatuhan PDF:** Laporan data kedisiplinan lengkap dengan statistik dan foto pelanggaran.
+* **Cross Platform:** Responsif digunakan oleh manajemen sekolah di Desktop, Tablet, dan Mobile.
 
 ---
 
@@ -98,7 +97,7 @@ Sistem dibangun dengan prinsip **Clean Architecture** dan **Microservices**:
 ```mermaid
 graph LR
     subgraph "Perception Layer"
-        CAM["📷 CCTV"] -->|RTSP/USB| AI["🧠 AI Engine (Python)"]
+        CAM["📷 CCTV (Gerbang)"] -->|RTSP| AI["🧠 AI Engine (Python)"]
     end
 
     subgraph "Core Logic"
@@ -116,19 +115,19 @@ graph LR
 ### Folder Structure
 
 ```bash
-smartapd/
+sirapi/
 ├── 🤖 ai-engine/             # Python + YOLOv8 + OpenCV
-├── 🔧 backend/               # Go (Golang) + GORM + Fiber
-├── 🎨 frontend/              # Next.js 14 + Tailwind + Shadcn/UI
-├── 📚 data/                  # SQLite DB & Screenshots storage
-└── 📜 start-all-external.bat # One-click Startup Script
+├── 🔧 backend/               # Go Server (REST API / WebSocket)
+├── 🎨 frontend/              # Next.js 14 Dashboard
+├── 📚 data/                  # SQLite DB & penyimpanan foto
+└── 📜 start-all-external.bat # Script Menjalankan Semua Komponen
 ```
 
 ---
 
 ## 🚀 Instalasi & Quick Start
 
-Sistem ini didesain "Plug & Play" untuk Windows.
+Sistem ini didesain agar mudah dijalankan pada lingkungan Windows.
 
 ### Persyaratan
 
@@ -138,43 +137,36 @@ Sistem ini didesain "Plug & Play" untuk Windows.
 
 ### Cara Menjalankan (Satu Klik)
 
-Cukup jalankan script launcher:
+Jalankan script launcher:
 
 ```powershell
 ./start-all-external.bat
 ```
 
-Script ini akan otomatis:
+Script ini akan:
 
-1. Membuka 3 Terminal terpisah (AI, Backend, Frontend).
-2. Menjalankan migrasi database jika perlu.
-3. Membuka Dashboard di browser default.
+1. Membuka 3 Terminal terpisah.
+2. Memuat environment database.
+3. Membuka Dashboard di Edge/Chrome.
 
 ---
 
 ## 👨‍💻 Tim Pengembang
 
-Project ini dikembangkan dengan dedikasi tinggi untuk kemajuan K3 di Indonesia.
+Proyek ini dibuat untuk **YOUNG CHANGE-MAKER SUMMIT 2026** (Innovative Technology for Sustainability).
 
-<div align="center">
+**Tim Peneliti:**
 
-<img src="https://ui-avatars.com/api/?name=Syarif+Yahya&background=f97316&color=fff&size=128" style="border-radius: 50%; border: 4px solid #f97316; margin-bottom: 10px;">
+1. Muhammad Syarifuddin Yahya
+2. Nurjanah Favela Asma'ul Qhusna
+3. Gendis Hasnaa' Muflih
 
-**SmartAPD Team - Safety Tech Division**
-
-**Lead Developer:** [@syarfddn_yhya](https://instagram.com/syarfddn_yhya)
-**Role:** Fullstack AI Engineer
-**Contact:** [WhatsApp](https://wa.me/6282330919114) | [Email](mailto:developer@smartapd.id)
-
-</div>
+**Pembimbing:** Rohma Wati, S.Pd., Gr.
+**Asal Sekolah:** SMAN Ngoro Jombang
 
 ---
 
 ## 📄 Lisensi
 
-Copyright © 2025 SmartAPD. All Rights Reserved.
+Copyright © 2026 SiRapi Team. All Rights Reserved.
 Dilisensikan di bawah **MIT License**.
-
-<div align="center">
-<i>"Keselamatan adalah kunci produktivitas masa depan."</i>
-</div>

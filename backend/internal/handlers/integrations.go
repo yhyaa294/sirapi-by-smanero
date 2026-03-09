@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/smartapd/backend/internal/database"
-	"github.com/smartapd/backend/internal/models"
+	"github.com/sirapi/backend/internal/database"
+	"github.com/sirapi/backend/internal/models"
 )
 
 // ==================== INTEGRATION HANDLERS ====================
@@ -86,7 +86,7 @@ func TestIntegration(c *fiber.Ctx) error {
 		// Send Test Payload with Retries (Simple Logic)
 		payload := map[string]string{
 			"event":     "test_ping",
-			"message":   "This is a test from SmartAPD",
+			"message":   "This is a test from SiRapi",
 			"timestamp": time.Now().Format(time.RFC3339),
 		}
 

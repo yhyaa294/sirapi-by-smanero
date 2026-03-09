@@ -242,7 +242,7 @@ export default function TelegramSettings() {
                         </div>
                         <div>
                             <h3 className="text-lg font-bold">Telegram Bot</h3>
-                            <p className="text-blue-100 text-sm">Central Bot • SmartAPD</p>
+                            <p className="text-blue-100 text-sm">Central Bot • SiRapi</p>
                         </div>
                     </div>
                     <div className="text-right">

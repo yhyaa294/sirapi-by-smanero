@@ -1,89 +1,41 @@
 "use client";
 
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Area,
-  AreaChart,
-} from "recharts";
+import { BarChart2 } from "lucide-react";
 
-const data = [
-  { day: "Mon", violations: 12, safe: 88 },
-  { day: "Tue", violations: 8, safe: 92 },
-  { day: "Wed", violations: 15, safe: 85 },
-  { day: "Thu", violations: 5, safe: 95 },
-  { day: "Fri", violations: 10, safe: 90 },
-  { day: "Sat", violations: 4, safe: 96 },
-  { day: "Sun", violations: 2, safe: 98 },
-];
-
-const CustomTooltip = ({ active, payload, label }: any) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="rounded-lg border border-slate-700 bg-slate-800 p-3 shadow-xl">
-        <p className="mb-1 text-xs font-medium text-slate-400">{label}</p>
-        <p className="text-sm font-bold text-rose-400">
-          {payload[0].value} Violations
-        </p>
-      </div>
-    );
-  }
-  return null;
-};
+// Empty data - will be populated from backend
+const data: Array<{ day: string; violations: number; safe: number }> = [];
 
 export default function ViolationTrendChart() {
   return (
-    <section className="rounded-xl border border-slate-800 bg-slate-900/50 p-5">
-      <div className="mb-6 flex items-center justify-between">
+    <section className="glass-card p-6 h-full flex flex-col relative overflow-hidden">
+      {/* Decorative Glow */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2"></div>
+
+      <div className="mb-6 flex items-start justify-between relative z-10">
         <div>
-          <h3 className="font-semibold text-slate-100">Weekly Violation Trend</h3>
-          <p className="text-xs text-slate-400">7-day safety compliance overview</p>
+          <h3 className="font-bold text-slate-800 tracking-wide">Tren Pelanggaran Minggu Ini</h3>
+          <p className="text-xs font-medium text-slate-500 mt-1">Overview kepatuhan 7 hari terakhir</p>
         </div>
-        <select className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-1 text-xs text-slate-300 outline-none focus:border-blue-500">
+        <select className="rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-xs font-semibold text-slate-600 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm">
           <option>Last 7 Days</option>
           <option>Last 30 Days</option>
         </select>
       </div>
 
-      <div className="h-[250px] w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-            <defs>
-              <linearGradient id="colorViolations" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.2} />
-                <stop offset="95%" stopColor="#f43f5e" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-            <XAxis 
-              dataKey="day" 
-              tick={{ fill: "#64748b", fontSize: 12 }} 
-              tickLine={false}
-              axisLine={false}
-              dy={10}
-            />
-            <YAxis 
-              tick={{ fill: "#64748b", fontSize: 12 }} 
-              tickLine={false}
-              axisLine={false}
-            />
-            <Tooltip content={<CustomTooltip />} cursor={{ stroke: "#334155" }} />
-            <Area
-              type="monotone"
-              dataKey="violations"
-              stroke="#f43f5e"
-              strokeWidth={2}
-              fillOpacity={1}
-              fill="url(#colorViolations)"
-            />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
+      {/* Empty State */}
+      {data.length === 0 ? (
+        <div className="flex-1 flex flex-col items-center justify-center relative z-10">
+          <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-4 border border-slate-100 shadow-inner">
+            <BarChart2 size={32} className="text-slate-300" />
+          </div>
+          <p className="text-sm font-bold text-slate-600 tracking-wide">Belum Ada Data</p>
+          <p className="text-xs font-medium text-slate-400 mt-1 max-w-[200px] text-center">Data tren akan muncul setelah sistem aktif melakukan monitoring</p>
+        </div>
+      ) : (
+        <div className="flex-1 w-full relative z-10">
+          {/* Chart will render when data exists */}
+        </div>
+      )}
     </section>
   );
 }

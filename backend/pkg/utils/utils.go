@@ -95,14 +95,14 @@ func CalculatePercentage(part, total int64) float64 {
 // MapViolationType maps violation type to human readable name
 func MapViolationType(violationType string) string {
 	mapping := map[string]string{
-		"no_helmet": "Tidak Pakai Helm",
-		"no_vest":   "Tidak Pakai Rompi",
-		"no_gloves": "Tidak Pakai Sarung Tangan",
-		"no_boots":  "Tidak Pakai Sepatu Safety",
-		"helmet":    "Pakai Helm",
-		"vest":      "Pakai Rompi",
-		"gloves":    "Pakai Sarung Tangan",
-		"boots":     "Pakai Sepatu Safety",
+		"no_topi": "Tidak Pakai Helm",
+		"no_dasi":   "Tidak Pakai Rompi",
+		"no_sabuk": "Tidak Pakai Sarung Tangan",
+		"no_sepatu":  "Tidak Pakai Sepatu Safety",
+		"topi":    "Pakai Helm",
+		"dasi":      "Pakai Rompi",
+		"sabuk":    "Pakai Sarung Tangan",
+		"sepatu":     "Pakai Sepatu Safety",
 	}
 
 	if name, ok := mapping[violationType]; ok {

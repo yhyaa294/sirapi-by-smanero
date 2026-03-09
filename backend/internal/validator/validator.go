@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/smartapd/backend/internal/errors"
+	"github.com/sirapi/backend/internal/errors"
 )
 
 // XValidator wraps the validator instance

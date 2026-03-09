@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/smartapd/backend/internal/database"
-	"github.com/smartapd/backend/internal/models"
+	"github.com/sirapi/backend/internal/database"
+	"github.com/sirapi/backend/internal/models"
 )
 
 // ==================== ALERT RULE HANDLERS ====================
@@ -101,7 +101,7 @@ func GetBlurredImage(c *fiber.Ctx) error {
 	}
 
 	// Extract filename from path
-	// path is like "data/screenshots/no_helmet_....jpg"
+	// path is like "data/screenshots/no_topi_....jpg"
 	// Python expects just filename
 	parts := strings.Split(detection.ImagePath, "\\")
 	if len(parts) == 1 {

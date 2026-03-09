@@ -6,8 +6,8 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jung-kurt/gofpdf"
-	"github.com/smartapd/backend/internal/database"
-	"github.com/smartapd/backend/internal/models"
+	"github.com/sirapi/backend/internal/database"
+	"github.com/sirapi/backend/internal/models"
 )
 
 // ==================== REPORT HANDLERS ====================
@@ -163,7 +163,7 @@ func ExportReport(c *fiber.Ctx) error {
 
 		// 1. Header & Title
 		pdf.SetFont("Helvetica", "B", 20)
-		pdf.CellFormat(190, 15, "Laporan Pelanggaran K3 - SmartAPD", "", 1, "C", false, 0, "")
+		pdf.CellFormat(190, 15, "Laporan Pelanggaran K3 - SiRapi", "", 1, "C", false, 0, "")
 
 		pdf.SetFont("Helvetica", "I", 10)
 		pdf.CellFormat(190, 8, fmt.Sprintf("Periode: %s s/d %s", startDate.Format("02 Jan 2006"), endDate.Format("02 Jan 2006")), "B", 1, "C", false, 0, "")
@@ -188,7 +188,7 @@ func ExportReport(c *fiber.Ctx) error {
 
 		// Define Base Path for Images (Assuming backend is running in 'backend' dir and ai-engine is sibling)
 		// Need to adjust this based on actual deployment.
-		// For verification: 'd:/PROJECT PROJECT KU/smartapd/ai-engine'
+		// For verification: 'd:/PROJECT PROJECT KU/sirapi/ai-engine'
 		// We can try to use relative path first.
 		basePath := "../ai-engine"
 

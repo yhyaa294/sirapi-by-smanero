@@ -11,7 +11,7 @@ import (
 func main() {
 	url := "http://localhost:8080/api/v1/auth/login"
 	payload := map[string]string{
-		"email":    "admin@smartapd.id",
+		"email":    "admin@sirapi.id",
 		"password": "admin123",
 	}
 	data, _ := json.Marshal(payload)

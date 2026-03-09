@@ -11,7 +11,7 @@ export interface DemoDetection {
     camera: string;
     cameraId: string;
     location: string;
-    type: "no_helmet" | "no_vest" | "no_gloves" | "no_boots" | "person" | "helmet" | "vest";
+    type: "no_topi" | "no_dasi" | "no_sabuk" | "no_sepatu" | "person" | "topi" | "dasi";
     severity: "critical" | "high" | "medium" | "low" | "info";
     confidence: number;
     status: "detected" | "missing";
@@ -35,12 +35,12 @@ const violationTypes: Array<{
     severity: DemoDetection["severity"];
     weight: number;
 }> = [
-        { type: "no_helmet", severity: "critical", weight: 30 },
-        { type: "no_vest", severity: "high", weight: 25 },
-        { type: "no_gloves", severity: "medium", weight: 20 },
-        { type: "no_boots", severity: "medium", weight: 15 },
-        { type: "helmet", severity: "info", weight: 5 },
-        { type: "vest", severity: "info", weight: 5 },
+        { type: "no_topi", severity: "critical", weight: 30 },
+        { type: "no_dasi", severity: "high", weight: 25 },
+        { type: "no_sabuk", severity: "medium", weight: 20 },
+        { type: "no_sepatu", severity: "medium", weight: 15 },
+        { type: "topi", severity: "info", weight: 5 },
+        { type: "dasi", severity: "info", weight: 5 },
     ];
 
 // Generate random ID
@@ -105,7 +105,7 @@ export function useDemoMode() {
         };
 
         // Check initial state from localStorage
-        const saved = localStorage.getItem("smartapd-demo-mode");
+        const saved = localStorage.getItem("sirapi-demo-mode");
         if (saved === "true") {
             setIsDemo(true);
         }

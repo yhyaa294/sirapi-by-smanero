@@ -6,9 +6,9 @@ import (
 	"github.com/joho/godotenv"
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/smartapd/backend/internal/config"
-	"github.com/smartapd/backend/internal/database"
-	"github.com/smartapd/backend/internal/models"
+	"github.com/sirapi/backend/internal/config"
+	"github.com/sirapi/backend/internal/database"
+	"github.com/sirapi/backend/internal/models"
 )
 
 func main() {
@@ -31,7 +31,7 @@ func main() {
 	}
 
 	admin := models.User{
-		Email:        "admin@smartapd.id",
+		Email:        "admin@sirapi.id",
 		Name:         "Administrator",
 		Role:         "admin",
 		PasswordHash: string(hash),

@@ -1,6 +1,6 @@
-# SmartAPD Backend (Golang)
+# SiRapi Backend (Golang)
 
-Backend API server untuk SmartAPD menggunakan **Go** dengan **Fiber** framework.
+Backend API server untuk SiRapi menggunakan **Go** dengan **Fiber** framework.
 
 ## 🛠 Tech Stack
 
@@ -42,12 +42,14 @@ backend/
 ## 🚀 Quick Start
 
 ### 1. Install Dependencies
+
 ```bash
 cd backend
 go mod tidy
 ```
 
 ### 2. Run Server
+
 ```bash
 go run cmd/server/main.go
 ```
@@ -55,19 +57,22 @@ go run cmd/server/main.go
 Server akan berjalan di `http://localhost:8080`
 
 ### 3. Build Binary
+
 ```bash
-go build -o smartapd-backend cmd/server/main.go
-./smartapd-backend
+go build -o sirapi-backend cmd/server/main.go
+./sirapi-backend
 ```
 
 ## 📡 API Endpoints
 
 ### Health Check
+
 ```
 GET /health
 ```
 
 ### Detections
+
 ```
 GET    /api/v1/detections           # List all detections
 GET    /api/v1/detections/:id       # Get single detection
@@ -76,6 +81,7 @@ GET    /api/v1/detections/stats     # Get statistics
 ```
 
 ### Alerts
+
 ```
 GET    /api/v1/alerts               # List all alerts
 POST   /api/v1/alerts               # Create alert
@@ -83,6 +89,7 @@ PUT    /api/v1/alerts/:id/acknowledge  # Acknowledge alert
 ```
 
 ### Cameras
+
 ```
 GET    /api/v1/cameras              # List all cameras
 GET    /api/v1/cameras/:id          # Get single camera
@@ -92,6 +99,7 @@ DELETE /api/v1/cameras/:id          # Delete camera
 ```
 
 ### Reports
+
 ```
 GET    /api/v1/reports/daily        # Daily report
 GET    /api/v1/reports/weekly       # Weekly report
@@ -99,6 +107,7 @@ GET    /api/v1/reports/export       # Export report
 ```
 
 ### WebSocket
+
 ```
 WS     /ws                          # Real-time updates
 ```
@@ -117,8 +126,8 @@ ENVIRONMENT=development
 
 ```bash
 # Linux
-GOOS=linux GOARCH=amd64 go build -o smartapd-backend-linux cmd/server/main.go
+GOOS=linux GOARCH=amd64 go build -o sirapi-backend-linux cmd/server/main.go
 
 # Windows
-GOOS=windows GOARCH=amd64 go build -o smartapd-backend.exe cmd/server/main.go
+GOOS=windows GOARCH=amd64 go build -o sirapi-backend.exe cmd/server/main.go
 ```

@@ -1,4 +1,4 @@
-// SmartAPD API Client Service
+// SiRapi API Client Service
 // Connects frontend to Go backend API
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
@@ -43,6 +43,8 @@ export interface Detection {
   violation_type: string;
   confidence: number;
   image_path: string;
+  image_url?: string;
+  screenshot_path?: string;
   location: string;
   detected_at: string;
   created_at: string;
@@ -84,7 +86,43 @@ export interface AlertAction {
   timestamp: string;
 }
 
-// API Functions
+export interface DisciplineRecord {
+  worker: string;
+  detections: number;
+  violations: number;
+  complianceRate: number;
+  topViolations: string[];
+}
+
+export interface DisciplineStats {
+  generated_at: string;
+  summary: {
+    total_workers: number;
+    average_compliance: number;
+  };
+  leaderboard: DisciplineRecord[];
+}
+
+export interface RiskArea {
+  location: string;
+  camera: string;
+  riskScore: number;
+  trend: string;
+  topViolations: string[];
+  totalViolations: number;
+  recentViolations: number;
+  shiftRisks?: Array<{ shift: string; riskScore: number }>;
+}
+
+export interface RiskMap {
+  generated_at: string;
+  summary: {
+    total_areas: number;
+    highest_risk: { location: string; riskScore: number; trend: string };
+    average_risk: number;
+  };
+  areas: RiskArea[];
+}
 export const api = {
   // Stats
   async getStats(): Promise<any> {
@@ -260,7 +298,41 @@ export const api = {
   async resolveAlert(data: { alert_id: number; actor: string; notes?: string; evidence?: string }): Promise<boolean> {
     // Map to backend delete/update
     return this.deleteDetection(data.alert_id);
-  }
+  },
+
+  // Discipline Analytics
+  async getDiscipline(days: number = 7): Promise<DisciplineStats> {
+    try {
+      const res = await fetch(`${API_BASE}/discipline?days=${days}`);
+      if (!res.ok) throw new Error('Failed to fetch discipline data');
+      const data = await res.json();
+      return data.data;
+    } catch (error) {
+      console.error('API Error:', error);
+      return {
+        generated_at: new Date().toISOString(),
+        summary: { total_workers: 0, average_compliance: 0 },
+        leaderboard: [],
+      };
+    }
+  },
+
+  // Risk Map
+  async getRiskMap(days: number = 7): Promise<RiskMap> {
+    try {
+      const res = await fetch(`${API_BASE}/risk-map?days=${days}`);
+      if (!res.ok) throw new Error('Failed to fetch risk map');
+      const data = await res.json();
+      return data.data;
+    } catch (error) {
+      console.error('API Error:', error);
+      return {
+        generated_at: new Date().toISOString(),
+        summary: { total_areas: 0, highest_risk: { location: '-', riskScore: 0, trend: '-' }, average_risk: 0 },
+        areas: [],
+      };
+    }
+  },
 };
 
 // WebSocket Connection for Real-time Updates

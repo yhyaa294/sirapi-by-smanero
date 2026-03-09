@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/smartapd/backend/internal/services"
+	"github.com/sirapi/backend/internal/services"
 )
 
 // TestNotifyRequest represents the request body for test notification

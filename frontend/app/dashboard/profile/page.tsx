@@ -38,7 +38,7 @@ export default function ProfilePage() {
     const [loadingActivities, setLoadingActivities] = useState(true);
     const [profile, setProfile] = useState<UserProfile>({
         name: "Administrator",
-        email: "admin@smartapd.id",
+        email: "admin@sirapi.id",
         role: "HSE Supervisor",
         department: "Keselamatan & Kesehatan Kerja",
         phone: "+62 812 3456 7890",
@@ -55,7 +55,7 @@ export default function ProfilePage() {
     ]);
 
     useEffect(() => {
-        const saved = localStorage.getItem("smartapd-profile");
+        const saved = localStorage.getItem("sirapi-profile");
         if (saved) {
             try { setProfile(JSON.parse(saved)); } catch { }
         }
@@ -79,14 +79,14 @@ export default function ProfilePage() {
 
     const handleLogout = () => {
         document.cookie = "auth-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-        localStorage.removeItem("smartapd-profile");
+        localStorage.removeItem("sirapi-profile");
         router.push("/login");
     };
 
     const handleSave = async () => {
         setIsSaving(true);
         await new Promise(resolve => setTimeout(resolve, 1000));
-        localStorage.setItem("smartapd-profile", JSON.stringify(profile));
+        localStorage.setItem("sirapi-profile", JSON.stringify(profile));
         setIsSaving(false);
         setIsEditing(false);
     };

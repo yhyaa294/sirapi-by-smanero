@@ -10,7 +10,7 @@ export default function SupportPage() {
         <div className="max-w-4xl mx-auto px-4 py-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-3xl font-bold">Support Center</h1>
-            <p className="text-sm opacity-90">Hubungi tim SmartAPD™ kapan pun untuk dukungan teknis dan operasional</p>
+            <p className="text-sm opacity-90">Hubungi tim SiRapi™ kapan pun untuk dukungan teknis dan operasional</p>
           </div>
           <Link
             href="/mobile"
@@ -44,7 +44,7 @@ export default function SupportPage() {
               <p className="text-sm font-semibold text-gray-900 flex items-center gap-2">
                 <Mail className="w-4 h-4 text-blue-500" /> Email Dukungan
               </p>
-              <p className="text-sm text-gray-700">support@smartapd.id</p>
+              <p className="text-sm text-gray-700">support@sirapi.id</p>
               <p className="text-xs text-gray-500">Estimasi respon &lt; 1 jam pada jam kerja.</p>
             </div>
           </div>
@@ -58,11 +58,11 @@ export default function SupportPage() {
             <div className="rounded-xl border border-gray-200 p-4 space-y-2">
               <p className="text-sm font-semibold text-gray-900">WhatsApp Support</p>
               <p className="text-sm text-gray-600">+62 811 2222 3333</p>
-              <p className="text-xs text-gray-500">Admin siap bantu update data atau investigate alert.</p>
+              <p className="text-xs text-gray-500">Admin siap bantu update data atau indasiigate alert.</p>
             </div>
             <div className="rounded-xl border border-gray-200 p-4 space-y-2">
-              <p className="text-sm font-semibold text-gray-900">Telegram SmartAPD Bot</p>
-              <p className="text-sm text-gray-600">@SmartAPD_bot</p>
+              <p className="text-sm font-semibold text-gray-900">Telegram SiRapi Bot</p>
+              <p className="text-sm text-gray-600">@SiRapi_bot</p>
               <p className="text-xs text-gray-500">Dapatkan ringkasan harian & update status sistem.</p>
             </div>
           </div>
@@ -82,7 +82,7 @@ export default function SupportPage() {
             <MapPin className="w-5 h-5 text-green-500" /> Kunjungan & Training
           </h2>
           <p className="text-sm text-gray-600">
-            SmartAPD menyediakan onsite training untuk mandor dan safety officer. Hubungi kami untuk penjadwalan demo onsite atau audit kesiapan APD di lokasi Anda.
+            SiRapi menyediakan onsite training untuk mandor dan safety officer. Hubungi kami untuk penjadwalan demo onsite atau audit kesiapan APD di lokasi Anda.
           </p>
         </section>
       </div>

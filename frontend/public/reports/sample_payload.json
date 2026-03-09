@@ -16,28 +16,28 @@
         {
             "Time": "24 Des, 09:12",
             "Location": "Gate 3",
-            "Type": "No Helmet",
+            "Type": "Tidak Bertopi",
             "Confidence": 98,
             "Status": "Open"
         },
         {
             "Time": "24 Des, 14:30",
             "Location": "Maintenance Pit 1",
-            "Type": "No Vest",
+            "Type": "Tidak Berdasi",
             "Confidence": 92,
             "Status": "Resolved"
         },
         {
             "Time": "25 Des, 10:15",
             "Location": "Warehouse",
-            "Type": "No Helmet",
+            "Type": "Tidak Bertopi",
             "Confidence": 88,
             "Status": "Open"
         },
         {
             "Time": "26 Des, 16:45",
             "Location": "Gate 1",
-            "Type": "No Boots",
+            "Type": "No Sepatu",
             "Confidence": 95,
             "Status": "Verified"
         }
